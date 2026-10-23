@@ -32,12 +32,12 @@ describe("listor", () => {
   it("csv har BOM, rubrik och semikolumner", () => {
     const csv = listToCsv(list);
     expect(csv.startsWith("\uFEFF")).toBe(true);
-    expect(csv.split("\r\n")[0]).toBe('"Datum";"Tid";"Regnr";"Tjänst";"Kund"');
+    expect(csv.replace(/^\uFEFF/, "").split("\r\n")[0]).toBe('"Datum";"Tid";"Regnr";"Tjänst";"Kund"');
     expect(csv).toContain('"24 oktober, 2026";"09:00-10:00";"ABC123";"Skifte";"Kund"');
   });
   it("csv får lagerplatskolonn när plats anges", () => {
     const csv = listToCsv(list, (r) => (r === "ABC123" ? "A3" : ""));
-    expect(csv.split("\r\n")[0]).toContain('"Lagerplats"');
+    expect(csv.replace(/^\uFEFF/, "").split("\r\n")[0]).toContain('"Lagerplats"');
     expect(csv).toContain('";"A3"');
   });
 });

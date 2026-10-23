@@ -26,9 +26,10 @@ export function normalizeRegnr(s: string): string {
 export function parseSwedishDate(s: string): string {
   const m = (s || "").trim().match(/^(\d{1,2})\s+([a-zåäö]+),?\s+(\d{4})$/i);
   if (!m) return s;
-  const mon = MONTHS[m[2].toLowerCase()];
+  const [, d = "", monName = "", y = ""] = m;
+  const mon = MONTHS[monName.toLowerCase()];
   if (!mon) return s;
-  return `${m[3]}-${String(mon).padStart(2, "0")}-${m[1].padStart(2, "0")}`;
+  return `${y}-${String(mon).padStart(2, "0")}-${d.padStart(2, "0")}`;
 }
 
 export function parseCustomFields(text: string): Record<string, string> {
