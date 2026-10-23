@@ -1,14 +1,17 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useMemo, useState, type ChangeEvent } from "react";
-import { FileSpreadsheet, FileText, Search, Upload } from "lucide-react";
+import { ClipboardCheck, Copy, Download, FileSpreadsheet, FileText, Search, Upload } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
 import {
-  SERVICES, guessColumns, normalizeRegnr, parseBookingsCsv, type Booking, type Service,
+  SERVICES, guessColumns, listToCsv, listToText, normalizeRegnr, parseBookingsCsv, uniqueRegnrs,
+  type Booking, type Service,
 } from "@/lib/bookings";
+import { deliverFile } from "@/lib/download";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -49,6 +52,10 @@ function Index() {
   const [platsCol, setPlatsCol] = useState("");
   const [day, setDay] = useState("alla");
   const [query, setQuery] = useState("");
+  const [lday, setLday] = useState("alla");
+  const [lservice, setLservice] = useState("alla");
+  const [onlyRegnr, setOnlyRegnr] = useState(false);
+  const [copied, setCopied] = useState(false);
 
   async function onCsv(e: ChangeEvent<HTMLInputElement>) {
     const f = e.target.files?.[0];
@@ -63,7 +70,9 @@ function Index() {
     if (!f) return;
     const XLSX = await import("xlsx");
     const wb = XLSX.read(await f.arrayBuffer());
-    const data = XLSX.utils.sheet_to_json<Record<string, unknown>>(wb.Sheets[wb.SheetNames[0]], { defval: "" });
+    const sheet = wb.Sheets[wb.SheetNames[0] ?? ""];
+    if (!sheet) return;
+    const data = XLSX.utils.sheet_to_json<Record<string, unknown>>(sheet, { defval: "" });
     const h = data[0] ? Object.keys(data[0]) : [];
     const g = guessColumns(h);
     setRows(data); setHeaders(h); setRegCol(g.reg); setPlatsCol(g.plats); setXlsName(f.name);
@@ -101,6 +110,37 @@ function Index() {
   const missingPlats = bookings.filter(
     (b) => rows.length && (b.service === "Skifte och förvaring" || b.service === "Avsluta förvaring") && !platsMap.get(b.regnr),
   ).length;
+
+  const listFiltered = useMemo(() => {
+    let l = sorted;
+    if (lday !== "alla") l = l.filter((b) => b.date === lday);
+    if (lservice !== "alla") l = l.filter((b) => b.service === lservice);
+    return l;
+  }, [sorted, lday, lservice]);
+
+  const listText = useMemo(() => listToText(listFiltered, onlyRegnr), [listFiltered, onlyRegnr]);
+  const listCount = onlyRegnr ? uniqueRegnrs(listFiltered).length : listFiltered.length;
+
+  async function copyList() {
+    if (!listText) return;
+    try {
+      await navigator.clipboard.writeText(listText);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2500);
+    } catch {
+      // clipboard nekad – listan syns ändå på skärmen
+    }
+  }
+
+  function downloadList() {
+    if (!listFiltered.length) return;
+    if (onlyRegnr) {
+      deliverFile(new Blob([`${listText}\n`], { type: "text/plain;charset=utf-8" }), "regnummer.txt");
+      return;
+    }
+    const csv = listToCsv(listFiltered, rows.length ? (r) => platsMap.get(r) ?? "" : undefined);
+    deliverFile(new Blob([csv], { type: "text/csv;charset=utf-8" }), "bokade-bilar.csv");
+  }
 
   const Plats = ({ r }: { r: string }) => {
     const p = platsMap.get(r);
@@ -164,7 +204,7 @@ function Index() {
             <FileSpreadsheet className="h-9 w-9 shrink-0" />
             <div className="min-w-0 flex-1">
               <div className="font-display text-xl font-semibold uppercase">2. Billager (Excel)</div>
-              <div className="truncate text-sm text-muted-foreground">{xlsName ? `${xlsName} · ${rows.length} bilar` : "Välj Excel-filen med lagerplatser"}</div>
+              <div className="truncate text-sm text-muted-foreground">{xlsName ? `${xlsName} · ${rows.length} bilar` : "Valfritt – välj Excel-filen med lagerplatser"}</div>
             </div>
             <Upload className="h-5 w-5 text-muted-foreground group-hover:text-foreground" />
             <input type="file" accept=".xlsx,.xls,.csv" className="sr-only" onChange={onXls} />
@@ -190,6 +230,7 @@ function Index() {
         <Tabs defaultValue="bokade">
           <TabsList className="h-auto">
             <TabsTrigger value="bokade" className="px-5 py-2 font-display text-base uppercase">Bokade bilar</TabsTrigger>
+            <TabsTrigger value="listor" className="px-5 py-2 font-display text-base uppercase">Listor</TabsTrigger>
             <TabsTrigger value="sok" className="px-5 py-2 font-display text-base uppercase">Sök regnr</TabsTrigger>
             <TabsTrigger value="statistik" className="px-5 py-2 font-display text-base uppercase">Statistik</TabsTrigger>
           </TabsList>
@@ -207,6 +248,66 @@ function Index() {
               <span className="text-sm text-muted-foreground">{dayList.length} bokningar</span>
             </div>
             <Table list={dayList} showDate={day === "alla"} />
+          </TabsContent>
+
+          <TabsContent value="listor" className="mt-6 space-y-4">
+            <div className="flex flex-wrap items-center gap-3">
+              <span className="text-sm font-medium">Dag</span>
+              <Select value={lday} onValueChange={setLday}>
+                <SelectTrigger className="w-56 bg-card"><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="alla">Alla dagar</SelectItem>
+                  {days.map((d) => <SelectItem key={d} value={d}>{labelFor(d)}</SelectItem>)}
+                </SelectContent>
+              </Select>
+              <span className="text-sm font-medium">Tjänst</span>
+              <Select value={lservice} onValueChange={setLservice}>
+                <SelectTrigger className="w-56 bg-card"><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="alla">Alla tjänster</SelectItem>
+                  {SERVICES.map((s) => <SelectItem key={s} value={s}>{s}</SelectItem>)}
+                </SelectContent>
+              </Select>
+              <label className="flex cursor-pointer items-center gap-2 text-sm">
+                <input
+                  type="checkbox"
+                  checked={onlyRegnr}
+                  onChange={(e) => setOnlyRegnr(e.target.checked)}
+                  className="h-4 w-4 accent-primary"
+                />
+                Bara regnummer, inga dubbletter
+              </label>
+            </div>
+
+            <div className="flex flex-wrap items-center gap-3">
+              <Button onClick={copyList} disabled={!listCount} variant="outline" className="font-display uppercase">
+                {copied ? <ClipboardCheck className="mr-2 h-4 w-4" /> : <Copy className="mr-2 h-4 w-4" />}
+                {copied ? "Kopierad" : "Kopiera lista"}
+              </Button>
+              <Button onClick={downloadList} disabled={!listCount} className="font-display uppercase">
+                <Download className="mr-2 h-4 w-4" />
+                {onlyRegnr ? "Ladda ner txt" : "Ladda ner csv"}
+              </Button>
+              <span className="text-sm text-muted-foreground">
+                {listCount} {onlyRegnr ? "bilar" : "bokningar"}
+              </span>
+            </div>
+
+            {onlyRegnr ? (
+              <div className="max-h-[60vh] overflow-auto rounded-md border bg-card p-5">
+                {uniqueRegnrs(listFiltered).length ? (
+                  <div className="grid grid-cols-2 gap-x-8 gap-y-1.5 sm:grid-cols-4">
+                    {uniqueRegnrs(listFiltered).map((r) => (
+                      <div key={r} className="font-display text-lg font-semibold tracking-widest">{r}</div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="py-8 text-center text-muted-foreground">Inga bokningar att visa</div>
+                )}
+              </div>
+            ) : (
+              <Table list={listFiltered} showDate />
+            )}
           </TabsContent>
 
           <TabsContent value="sok" className="mt-6 space-y-4">

@@ -26,9 +26,10 @@ export function normalizeRegnr(s: string): string {
 export function parseSwedishDate(s: string): string {
   const m = (s || "").trim().match(/^(\d{1,2})\s+([a-zåäö]+),?\s+(\d{4})$/i);
   if (!m) return s;
-  const mon = MONTHS[m[2].toLowerCase()];
+  const [, d = "", monName = "", y = ""] = m;
+  const mon = MONTHS[monName.toLowerCase()];
   if (!mon) return s;
-  return `${m[3]}-${String(mon).padStart(2, "0")}-${m[1].padStart(2, "0")}`;
+  return `${y}-${String(mon).padStart(2, "0")}-${d.padStart(2, "0")}`;
 }
 
 export function parseCustomFields(text: string): Record<string, string> {
@@ -87,3 +88,27 @@ export function guessColumns(headers: string[]) {
   const plats = headers.find((h) => /plats|lager|hylla|fack|position/i.test(h)) ?? headers[1] ?? "";
   return { reg, plats };
 }
+
+/** Unika regnummer, sorterade, utan tomma. */
+export function uniqueRegnrs(list: Booking[]): string[] {
+  return [...new Set(list.map((b) => b.regnr).filter(Boolean))].sort();
+}
+
+/** Text att kopiera: antingen bara regnummer, eller dag/tid/regnr/tjänst. */
+export function listToText(list: Booking[], onlyRegnr: boolean): string {
+  if (onlyRegnr) return uniqueRegnrs(list).join("\n");
+  return list.map((b) => `${b.dateLabel} ${b.start}-${b.end}  ${b.regnr}  ${b.service}`).join("\n");
+}
+
+/** Excel-anpassad CSV (semikolumner + BOM). Lagerplats kolonn tillkommer om plats anges. */
+export function listToCsv(list: Booking[], plats?: (regnr: string) => string): string {
+  const esc = (v: string) => `"${(v ?? "").replace(/"/g, '""')}"`;
+  const head = ["Datum", "Tid", "Regnr", "Tjänst", "Kund", ...(plats ? ["Lagerplats"] : [])];
+  const rows = list.map((b) => {
+    const cells = [b.dateLabel, `${b.start}-${b.end}`, b.regnr, b.service, b.name];
+    if (plats) cells.push(plats(b.regnr));
+    return cells.map(esc).join(";");
+  });
+  return "\uFEFF" + [head.map(esc).join(";"), ...rows].join("\r\n");
+}
+
