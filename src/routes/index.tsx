@@ -70,7 +70,9 @@ function Index() {
     if (!f) return;
     const XLSX = await import("xlsx");
     const wb = XLSX.read(await f.arrayBuffer());
-    const data = XLSX.utils.sheet_to_json<Record<string, unknown>>(wb.Sheets[wb.SheetNames[0] ?? ""], { defval: "" });
+    const sheet = wb.Sheets[wb.SheetNames[0] ?? ""];
+    if (!sheet) return;
+    const data = XLSX.utils.sheet_to_json<Record<string, unknown>>(sheet, { defval: "" });
     const h = data[0] ? Object.keys(data[0]) : [];
     const g = guessColumns(h);
     setRows(data); setHeaders(h); setRegCol(g.reg); setPlatsCol(g.plats); setXlsName(f.name);
@@ -292,9 +294,17 @@ function Index() {
             </div>
 
             {onlyRegnr ? (
-              <pre className="max-h-[60vh] overflow-auto rounded-md border bg-card p-5 font-display text-lg leading-relaxed">
-                {listText || "Inga bokningar att visa"}
-              </pre>
+              <div className="max-h-[60vh] overflow-auto rounded-md border bg-card p-5">
+                {uniqueRegnrs(listFiltered).length ? (
+                  <div className="grid grid-cols-2 gap-x-8 gap-y-1.5 sm:grid-cols-4">
+                    {uniqueRegnrs(listFiltered).map((r) => (
+                      <div key={r} className="font-display text-lg font-semibold tracking-widest">{r}</div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="py-8 text-center text-muted-foreground">Inga bokningar att visa</div>
+                )}
+              </div>
             ) : (
               <Table list={listFiltered} showDate />
             )}
