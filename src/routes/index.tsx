@@ -64,7 +64,7 @@ function Index() {
     const XLSX = await import("xlsx");
     const wb = XLSX.read(await f.arrayBuffer());
     const data = XLSX.utils.sheet_to_json<Record<string, unknown>>(wb.Sheets[wb.SheetNames[0]], { defval: "" });
-    const h = data.length ? Object.keys(data[0]) : [];
+    const h = data[0] ? Object.keys(data[0]) : [];
     const g = guessColumns(h);
     setRows(data); setHeaders(h); setRegCol(g.reg); setPlatsCol(g.plats); setXlsName(f.name);
   }
