@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useMemo, useState, type ChangeEvent } from "react";
-import { ClipboardCheck, Copy, Download, FileSpreadsheet, FileText, Search, Upload } from "lucide-react";
+import { ClipboardCheck, Copy, Download, FileSpreadsheet, FileText, Printer, Search, Upload } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -20,6 +20,8 @@ export const Route = createFileRoute("/")({
       { name: "description", content: "Läs in bokningar (CSV) och billager (Excel) för att se regnummer, tider, tjänster och lagerplatser." },
       { property: "og:title", content: "Bokningsöversikt – bilar & lagerplatser" },
       { property: "og:description", content: "Bokade bilar, lagerplatser, sökning och statistik från CSV och Excel." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary" },
     ],
   }),
   component: Index,
@@ -181,7 +183,7 @@ function Index() {
 
   return (
     <main className="min-h-screen">
-      <header className="bg-primary text-primary-foreground">
+      <header className="screen-only bg-primary text-primary-foreground">
         <div className="mx-auto max-w-6xl px-6 py-8">
           <p className="font-display text-sm uppercase tracking-[0.3em] text-signal">Däckhotell</p>
           <h1 className="text-5xl font-bold uppercase">Bokningsöversikt</h1>
@@ -189,8 +191,8 @@ function Index() {
         <div className="h-2 bg-[repeating-linear-gradient(45deg,var(--signal)_0_16px,var(--primary)_16px_32px)]" />
       </header>
 
-      <div className="mx-auto max-w-6xl space-y-8 px-6 py-8">
-        <section className="grid gap-4 md:grid-cols-2">
+      <div className="booking-content mx-auto max-w-6xl space-y-8 px-6 py-8">
+        <section className="screen-only grid gap-4 md:grid-cols-2">
           <label className="group flex cursor-pointer items-center gap-4 rounded-md border-2 border-dashed bg-card p-5 transition hover:border-primary">
             <FileText className="h-9 w-9 shrink-0" />
             <div className="min-w-0 flex-1">
@@ -212,7 +214,7 @@ function Index() {
         </section>
 
         {headers.length > 0 && (
-          <section className="flex flex-wrap items-center gap-4 rounded-md bg-secondary p-4 text-sm">
+          <section className="screen-only flex flex-wrap items-center gap-4 rounded-md bg-secondary p-4 text-sm">
             <span className="font-medium">Kolumner i Excel:</span>
             <span>Regnummer</span>
             <Select value={regCol} onValueChange={setRegCol}>
@@ -228,15 +230,19 @@ function Index() {
         )}
 
         <Tabs defaultValue="bokade">
-          <TabsList className="h-auto">
+          <TabsList className="screen-only h-auto">
             <TabsTrigger value="bokade" className="px-5 py-2 font-display text-base uppercase">Bokade bilar</TabsTrigger>
             <TabsTrigger value="listor" className="px-5 py-2 font-display text-base uppercase">Listor</TabsTrigger>
             <TabsTrigger value="sok" className="px-5 py-2 font-display text-base uppercase">Sök regnr</TabsTrigger>
             <TabsTrigger value="statistik" className="px-5 py-2 font-display text-base uppercase">Statistik</TabsTrigger>
           </TabsList>
 
-          <TabsContent value="bokade" className="mt-6 space-y-4">
-            <div className="flex flex-wrap items-center gap-3">
+          <TabsContent value="bokade" className="print-list mt-6 space-y-4">
+            <div className="print-only print-heading">
+              <h2>Bokade bilar – {day === "alla" ? "Alla dagar" : labelFor(day)}</h2>
+              <p>{dayList.length} bokningar</p>
+            </div>
+            <div className="screen-only flex flex-wrap items-center gap-3">
               <span className="text-sm font-medium">Dag</span>
               <Select value={day} onValueChange={setDay}>
                 <SelectTrigger className="w-56 bg-card"><SelectValue /></SelectTrigger>
@@ -246,12 +252,19 @@ function Index() {
                 </SelectContent>
               </Select>
               <span className="text-sm text-muted-foreground">{dayList.length} bokningar</span>
+              <Button onClick={() => window.print()} disabled={!dayList.length} variant="outline" className="font-display uppercase">
+                <Printer className="mr-2 h-4 w-4" />Skriv ut
+              </Button>
             </div>
             <Table list={dayList} showDate={day === "alla"} />
           </TabsContent>
 
-          <TabsContent value="listor" className="mt-6 space-y-4">
-            <div className="flex flex-wrap items-center gap-3">
+          <TabsContent value="listor" className="print-list mt-6 space-y-4">
+            <div className="print-only print-heading">
+              <h2>Bokade bilar – {lday === "alla" ? "Alla dagar" : labelFor(lday)}</h2>
+              <p>{lservice === "alla" ? "Alla tjänster" : lservice} · {listCount} {onlyRegnr ? "bilar" : "bokningar"}</p>
+            </div>
+            <div className="screen-only flex flex-wrap items-center gap-3">
               <span className="text-sm font-medium">Dag</span>
               <Select value={lday} onValueChange={setLday}>
                 <SelectTrigger className="w-56 bg-card"><SelectValue /></SelectTrigger>
@@ -279,7 +292,7 @@ function Index() {
               </label>
             </div>
 
-            <div className="flex flex-wrap items-center gap-3">
+            <div className="screen-only flex flex-wrap items-center gap-3">
               <Button onClick={copyList} disabled={!listCount} variant="outline" className="font-display uppercase">
                 {copied ? <ClipboardCheck className="mr-2 h-4 w-4" /> : <Copy className="mr-2 h-4 w-4" />}
                 {copied ? "Kopierad" : "Kopiera lista"}
@@ -288,13 +301,16 @@ function Index() {
                 <Download className="mr-2 h-4 w-4" />
                 {onlyRegnr ? "Ladda ner txt" : "Ladda ner csv"}
               </Button>
+              <Button onClick={() => window.print()} disabled={!listCount} variant="outline" className="font-display uppercase">
+                <Printer className="mr-2 h-4 w-4" />Skriv ut
+              </Button>
               <span className="text-sm text-muted-foreground">
                 {listCount} {onlyRegnr ? "bilar" : "bokningar"}
               </span>
             </div>
 
             {onlyRegnr ? (
-              <div className="max-h-[60vh] overflow-auto rounded-md border bg-card p-5">
+              <div className="print-regnrs max-h-[60vh] overflow-auto rounded-md border bg-card p-5">
                 {uniqueRegnrs(listFiltered).length ? (
                   <div className="grid grid-cols-2 gap-x-8 gap-y-1.5 sm:grid-cols-4">
                     {uniqueRegnrs(listFiltered).map((r) => (
