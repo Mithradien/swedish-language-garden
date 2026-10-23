@@ -1,0 +1,7 @@
+services:
+  bokningar:
+    build: .
+    container_name: bokningar
+    ports:
+      - "3000:3000"
+    restart: unless-stopped

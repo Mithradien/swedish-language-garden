@@ -1,0 +1,13 @@
+node_modules
+dist
+.output
+.wrangler
+.git
+.gitignore
+.lovable
+.workspace
+tsconfig.tsbuildinfo
+*.log
+Dockerfile
+docker-compose.yml
+SELF-HOSTING.md
