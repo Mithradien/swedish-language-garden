@@ -12,6 +12,9 @@ function createWindow() {
     webPreferences: {
       contextIsolation: true,
       nodeIntegration: false,
+      // Appen laddas från lokala filer (file://); utan detta blockeras
+      // script och css av webbläsarens säkerhetsregler.
+      webSecurity: false,
     },
   });
 
