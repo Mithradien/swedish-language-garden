@@ -8,8 +8,8 @@ import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
 import {
-  SERVICES, guessColumns, listToCsv, listToText, normalizeRegnr, parseBookingsCsv, uniqueRegnrs,
-  type Booking, type Service,
+  SERVICES, guessColumns, listToCsv, listToText, normalizeRegnr, parseBookingsCsv, uniqueRegnrs, withEmptySlots,
+  type Booking, type Service, type ScheduleRow,
 } from "@/lib/bookings";
 import { deliverFile } from "@/lib/download";
 
@@ -99,7 +99,9 @@ function Index() {
     () => [...bookings].sort((a, b) => (a.date + a.start).localeCompare(b.date + b.start)),
     [bookings],
   );
-  const dayList = day === "alla" ? sorted : sorted.filter((b) => b.date === day);
+  const scheduleRows = useMemo(() => withEmptySlots(bookings), [bookings]);
+  const dayList = day === "alla" ? scheduleRows : scheduleRows.filter((b) => b.date === day);
+  const dayBooked = dayList.filter(b => b.service !== "").length;
   const q = normalizeRegnr(query);
   const hits = q ? sorted.filter((b) => b.regnr.includes(q)) : [];
 
@@ -114,14 +116,15 @@ function Index() {
   ).length;
 
   const listFiltered = useMemo(() => {
-    let l = sorted;
+    let l = scheduleRows;
     if (lday !== "alla") l = l.filter((b) => b.date === lday);
     if (lservice !== "alla") l = l.filter((b) => b.service === lservice);
     return l;
-  }, [sorted, lday, lservice]);
+  }, [scheduleRows, lday, lservice]);
 
   const listText = useMemo(() => listToText(listFiltered, onlyRegnr), [listFiltered, onlyRegnr]);
-  const listCount = onlyRegnr ? uniqueRegnrs(listFiltered).length : listFiltered.length;
+  const listCount = onlyRegnr ? uniqueRegnrs(listFiltered).length : listFiltered.filter(b => b.service !== "").length;
+  const listEmpty = onlyRegnr ? 0 : listFiltered.filter(b => b.service === "").length;
 
   async function copyList() {
     if (!listText) return;
@@ -149,7 +152,7 @@ function Index() {
     return p ? <span className="font-display text-lg font-semibold">{p}</span> : <span className="text-muted-foreground">—</span>;
   };
 
-  const Table = ({ list, showDate }: { list: Booking[]; showDate?: boolean }) => (
+  const Table = ({ list, showDate }: { list: ScheduleRow[]; showDate?: boolean }) => (
     <div className="overflow-x-auto rounded-md border bg-card">
       <table className="w-full text-left">
         <thead className="bg-primary text-primary-foreground font-display text-sm uppercase tracking-wider">
@@ -167,9 +170,9 @@ function Index() {
             <tr key={i} className="border-t">
               {showDate && <td className="px-4 py-2.5 whitespace-nowrap">{b.dateLabel}</td>}
               <td className="px-4 py-2.5 whitespace-nowrap tabular-nums">{b.start}–{b.end}</td>
-              <td className="px-4 py-2.5"><span className="rounded-sm border-2 border-primary px-2 py-0.5 font-display font-bold tracking-widest">{b.regnr || "?"}</span></td>
-              <td className="px-4 py-2.5"><ServiceTag s={b.service} /></td>
-              <td className="px-4 py-2.5"><Plats r={b.regnr} /></td>
+              <td className="px-4 py-2.5">{b.service && <span className="rounded-sm border-2 border-primary px-2 py-0.5 font-display font-bold tracking-widest">{b.regnr || "?"}</span>}</td>
+              <td className="px-4 py-2.5">{b.service && <ServiceTag s={b.service} />}</td>
+              <td className="px-4 py-2.5">{b.service && <Plats r={b.regnr} />}</td>
               <td className="px-4 py-2.5 text-sm text-muted-foreground">{b.name}</td>
             </tr>
           ))}
@@ -240,7 +243,7 @@ function Index() {
           <TabsContent value="bokade" className="print-list mt-6 space-y-4">
             <div className="print-only print-heading">
               <h2>Bokade bilar – {day === "alla" ? "Alla dagar" : labelFor(day)}</h2>
-              <p>{dayList.length} bokningar</p>
+              <p>{dayBooked} bokningar · {dayList.length - dayBooked} obokade tider</p>
             </div>
             <div className="screen-only flex flex-wrap items-center gap-3">
               <span className="text-sm font-medium">Dag</span>
@@ -251,7 +254,7 @@ function Index() {
                   {days.map((d) => <SelectItem key={d} value={d}>{labelFor(d)}</SelectItem>)}
                 </SelectContent>
               </Select>
-              <span className="text-sm text-muted-foreground">{dayList.length} bokningar</span>
+              <span className="text-sm text-muted-foreground">{dayBooked} bokningar · {dayList.length - dayBooked} obokade tider</span>
               <Button onClick={() => window.print()} disabled={!dayList.length} variant="outline" className="font-display uppercase">
                 <Printer className="mr-2 h-4 w-4" />Skriv ut
               </Button>
@@ -262,7 +265,7 @@ function Index() {
           <TabsContent value="listor" className="print-list mt-6 space-y-4">
             <div className="print-only print-heading">
               <h2>Bokade bilar – {lday === "alla" ? "Alla dagar" : labelFor(lday)}</h2>
-              <p>{lservice === "alla" ? "Alla tjänster" : lservice} · {listCount} {onlyRegnr ? "bilar" : "bokningar"}</p>
+              <p>{lservice === "alla" ? "Alla tjänster" : lservice} · {listCount} {onlyRegnr ? "bilar" : "bokningar"}{listEmpty > 0 && ` · ${listEmpty} obokade tider`}</p>
             </div>
             <div className="screen-only flex flex-wrap items-center gap-3">
               <span className="text-sm font-medium">Dag</span>
@@ -305,7 +308,7 @@ function Index() {
                 <Printer className="mr-2 h-4 w-4" />Skriv ut
               </Button>
               <span className="text-sm text-muted-foreground">
-                {listCount} {onlyRegnr ? "bilar" : "bokningar"}
+                {listCount} {onlyRegnr ? "bilar" : "bokningar"}{listEmpty > 0 && ` · ${listEmpty} obokade tider`}
               </span>
             </div>
 
