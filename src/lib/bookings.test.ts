@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { classifyService, parseSwedishDate, normalizeRegnr, uniqueRegnrs, listToText, listToCsv, type Booking } from "./bookings";
+import { classifyService, parseSwedishDate, normalizeRegnr, uniqueRegnrs, listToText, listToCsv, withEmptySlots, type Booking } from "./bookings";
 
 const STORED = "är förvarade hos Landvetter Däckservice/Daniels Bilservice";
 const OWN = "har jag med mig";
@@ -21,6 +21,40 @@ it("normalizes regnr", () => expect(normalizeRegnr("rcc 988")).toBe("RCC988"));
 const mk = (regnr: string, service: Booking["service"]): Booking => ({
   name: "Kund", regnr, date: "2026-10-24", dateLabel: "24 oktober, 2026",
   start: "09:00", end: "10:00", service, phone: "",
+});
+
+describe("obokade schematider", () => {
+  const booking = { ...mk("ABC123", "Skifte"), start: "7:00", end: "07:30" };
+  it("visar exakt 27 tider med raster och sista start 15:30", () => {
+    const rows = withEmptySlots([booking]);
+    expect(rows).toHaveLength(27);
+    expect(rows.map(r => r.start)).toEqual([
+      "7:00", "07:15", "07:30", "07:45", "08:00", "08:15",
+      "09:15", "09:30", "09:45", "10:00", "10:15", "10:30", "10:45", "11:00", "11:15",
+      "12:45", "13:00", "13:15", "13:30", "13:45", "14:00", "14:15", "14:30", "14:45", "15:00", "15:15", "15:30",
+    ]);
+    expect(rows.at(-1)?.end).toBe("16:00");
+  });
+  it("obokade tider är 30 minuter och har tomma uppgifter", () => {
+    const rows = withEmptySlots([booking]);
+    expect(rows[1]).toEqual({ date: booking.date, dateLabel: booking.dateLabel, start: "07:15", end: "07:45", regnr: "", name: "", service: "", phone: "" });
+    expect(rows.filter(r => r.service === "")).toHaveLength(26);
+    expect(listToCsv(rows)).toContain('"07:15-07:45";"";"";""');
+    expect(uniqueRegnrs(rows)).toEqual(["ABC123"]);
+  });
+  it("behåller dubbelbokningar och bokningar utanför schemat utan att ändra importen", () => {
+    const input = [booking, { ...booking, regnr: "XYZ789" }, { ...booking, start: "09:00", end: "09:30" }];
+    const rows = withEmptySlots(input);
+    expect(rows).toHaveLength(29);
+    expect(rows.filter(r => r.service !== "")).toEqual(input);
+    expect(input).toHaveLength(3);
+  });
+  it("kompletterar varje importerad dag separat och skapar inga dagar utan import", () => {
+    const rows = withEmptySlots([booking, { ...booking, date: "2026-10-26" }]);
+    expect(rows.filter(r => r.date === "2026-10-24")).toHaveLength(27);
+    expect(rows.filter(r => r.date === "2026-10-26")).toHaveLength(27);
+    expect(withEmptySlots([])).toEqual([]);
+  });
 });
 
 describe("listor", () => {

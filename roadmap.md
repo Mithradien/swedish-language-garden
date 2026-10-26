@@ -1,5 +1,7 @@
 # Kundbokning på egen server
 
+- [ ] Visa obokade schematider som tomma rader i bokningsöversikt och utskrift.
+
 - [ ] Fastställ och godkänn första versionens upplägg för egen drift.
 - [ ] Bygg säkra kundkonton och separata personalbehörigheter på egen server.
 - [ ] Lägg till kundprofiler, godkända bilkopplingar och privata däckuppgifter/bilder.
