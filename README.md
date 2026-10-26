@@ -1,16 +1,27 @@
-# Swedish Language Garden
+# Boknings- och Lagerhanterare
 
-svenska?
+Ett smidigt verktyg för att sammanställa bokningsdata och lagerinformation för verkstad och däckhotell.
 
-This project was built with [Lovable](https://lovable.dev).
+## 📌 Översikt
 
-## Build with Lovable
+Detta system förenklar den dagliga planeringen genom att automatiskt samköra bokningsuppgifter från en WordPress-webbplats med bilars lagerplatser i däckhotellet. 
 
-Continue developing this project in the [Lovable editor](https://lovable.dev/projects/1a5ed49f-c01a-5167-aef6-96f46a567111).
+Systemet tar emot en exporterad CSV-fil från WordPress, extraherar relevant bokningsinformation och matchar registreringsnumren mot ett Excel-register. Det ger personalen en snabb och komplett översikt över schema, lagerplatser och verkstadsstatistik.
 
-- **Ship faster**: describe what you want to build and Lovable handles the code.
-- **Stay in sync**: every change made in Lovable is committed straight to this repository.
-- **Full ownership**: this code is yours. Push to `main` on GitHub and your changes sync back into Lovable, ready for your next prompt.
+## ✨ Huvudfunktioner
+
+* **Bokningsimport:** Läser in CSV-filer genererade från WordPress-bokningssystemet.
+* **Datamatchning & Lagerkoppling:** Extraherar bokningstid, registreringsnummer och beställd tjänst samt kopplar automatiskt ihop registreringsnumret med däckhotellets Excel-register för att visa exakt **lagerplats**.
+* **Dagliga Listor:** Skapa och skriv ut klara arbets- och plocklistor per dag för smidig hantering i verkstaden.
+* **Sökning på Regnummer:** Sök snabbt på ett enskilt registreringsnummer för att se befintliga bokningar, vald tjänst och tillhörande lagerplacering.
+* **Statistik & Uppföljning:** Inbyggd statistikvy som ger överblick över antal bokningar, populära tjänster och beläggning över tid.
+
+## 🛠️ Arbetsflöde
+
+1. Exportera CSV-filen med bokningar från WordPress.
+2. Importera CSV-filen i programmet.
+3. Systemet matchar automatiskt alla bokningar mot däckhotellets Excel-databas.
+4. Sök fram enskilda bilar, ta ut dagliga arbetslistor eller följ upp verkstadens statistik.
 
 ## Development
 
