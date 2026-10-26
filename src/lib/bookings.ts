@@ -28,7 +28,7 @@ export function withEmptySlots(bookings: Booking[]): ScheduleRow[] {
   for (const date of dates) {
     const daily = bookings.filter(b => b.date === date);
     const occupied = new Set(daily.map(b => minutes(b.start)));
-    for (const [first, last] of [[420, 495], [555, 675], [765, 930]]) {
+    for (const [first, last] of [[420, 495], [555, 675], [765, 930]] as const) {
       for (let start = first; start <= last; start += 15) {
         if (occupied.has(start)) continue;
         rows.push({ date, dateLabel: daily[0]?.dateLabel ?? date, start: timeLabel(start), end: timeLabel(start + 30), regnr: "", name: "", phone: "", service: "" });
