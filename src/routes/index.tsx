@@ -168,7 +168,7 @@ function Index() {
         </thead>
         <tbody>
           {list.map((b, i) => {
-            const toMin = (t: string) => { const m = t.match(/^(\d{1,2}):(\d{2})/); return m ? +m[1] * 60 + +m[2] : -1; };
+            const toMin = (t: string) => { const m = t.match(/^(\d{1,2}):(\d{2})/); return m ? Number(m[1] ?? 0) * 60 + Number(m[2] ?? 0) : -1; };
             const prev = list[i - 1];
             const lunch = prev && prev.date === b.date && toMin(prev.start) <= 11 * 60 + 15 && toMin(b.start) >= 12 * 60 + 45;
             return (<Fragment key={i}>
