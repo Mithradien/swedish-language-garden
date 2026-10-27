@@ -39,7 +39,7 @@ describe("obokade schematider", () => {
     const rows = withEmptySlots([booking]);
     expect(rows[1]).toEqual({ date: booking.date, dateLabel: booking.dateLabel, start: "07:15", end: "07:45", regnr: "", name: "", service: "", phone: "" });
     expect(rows.filter(r => r.service === "")).toHaveLength(26);
-    expect(listToCsv(rows)).toContain('"07:15-07:45";"";"";""');
+    expect(listToCsv(rows)).toContain('"07:15";"";"";""');
     expect(uniqueRegnrs(rows)).toEqual(["ABC123"]);
   });
   it("behåller dubbelbokningar och bokningar utanför schemat utan att ändra importen", () => {
@@ -62,12 +62,12 @@ describe("listor", () => {
   it("tar bort dubbletter och tomma regnummer", () => expect(uniqueRegnrs(list)).toEqual(["ABC123", "XYZ789"]));
   it("bara regnummer ger en rad per bil", () => expect(listToText(list, true)).toBe("ABC123\nXYZ789"));
   it("full lista har dag, tid, regnr och tjänst", () =>
-    expect(listToText(list, false).split("\n")[0]).toBe("24 oktober, 2026 09:00-10:00  ABC123  Skifte"));
+    expect(listToText(list, false).split("\n")[0]).toBe("24 oktober, 2026 09:00  ABC123  Skifte"));
   it("csv har BOM, rubrik och semikolumner", () => {
     const csv = listToCsv(list);
     expect(csv.startsWith("\uFEFF")).toBe(true);
     expect(csv.replace(/^\uFEFF/, "").split("\r\n")[0]).toBe('"Datum";"Tid";"Regnr";"Tjänst";"Kund"');
-    expect(csv).toContain('"24 oktober, 2026";"09:00-10:00";"ABC123";"Skifte";"Kund"');
+    expect(csv).toContain('"24 oktober, 2026";"09:00";"ABC123";"Skifte";"Kund"');
   });
   it("csv får lagerplatskolonn när plats anges", () => {
     const csv = listToCsv(list, (r) => (r === "ABC123" ? "A3" : ""));
