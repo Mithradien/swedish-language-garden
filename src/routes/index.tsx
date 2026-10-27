@@ -1,9 +1,29 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { Fragment, useEffect, useMemo, useState, type ChangeEvent } from "react";
+import { Fragment, useEffect, useMemo, useRef, useState, type ChangeEvent } from "react";
 
 const CSV_KEY = "bokningar.csv.v1";
 const XLS_KEY = "bokningar.xls.v1";
 const STATUS_KEY = "bokningar.status.v1";
+const SETTINGS_KEY = "bokningar.settings.v1";
+
+type Settings = { logo: string; company: string; phone: string; email: string; address: string; signal: string };
+const DEFAULT_SETTINGS: Settings = { logo: "", company: "", phone: "", email: string, address: "", signal: "#f9cc21" };
+const PRESETS = [
+  { name: "Gult", hex: "#f9cc21" },
+  { name: "Orange", hex: "#e4572e" },
+  { name: "Blå", hex: "#2e86ab" },
+  { name: "Grön", hex: "#3f8f5f" },
+];
+
+/** Mörk eller ljus text beroende på den valda färgen. */
+function readableOn(hex: string) {
+  const m = /^#?([\da-f]{6})$/i.exec((hex || "").trim());
+  if (!m) return "#1a1a1a";
+  const n = parseInt(m[1] ?? "", 16);
+  const lum = (0.2126 * ((n >> 16) & 255) + 0.7152 * ((n >> 8) & 255) + 0.0722 * (n & 255)) / 255;
+  return lum > 0.45 ? "#1a1a1a" : "#f7f6f2";
+}
+
 
 type ArrivalStatus = "vantas" | "ankommen" | "ej" | "avbokad";
 const STATUS: Record<ArrivalStatus, { label: string; cls: string }> = {
@@ -118,6 +138,39 @@ function TireCard({ card }: { card: CarCard }) {
 }
 
 function Index() {
+  const [settings, setSettings] = useState<Settings>(DEFAULT_SETTINGS);
+  const settingsFirst = useRef(true);
+  useEffect(() => {
+    try {
+      const s = localStorage.getItem(SETTINGS_KEY);
+      if (s) setSettings({ ...DEFAULT_SETTINGS, ...(JSON.parse(s) as Partial<Settings>) });
+    } catch { /* trasig sparad data ignoreras */ }
+  }, []);
+  useEffect(() => {
+    if (settingsFirst.current) { settingsFirst.current = false; return; }
+    save(SETTINGS_KEY, settings);
+  }, [settings]);
+  useEffect(() => {
+    const root = document.documentElement;
+    root.style.setProperty("--signal", settings.signal);
+    root.style.setProperty("--accent", settings.signal);
+    root.style.setProperty("--signal-foreground", readableOn(settings.signal));
+  }, [settings.signal]);
+
+  async function onLogo(e: ChangeEvent<HTMLInputElement>) {
+    const f = e.target.files?.[0];
+    if (!f) return;
+    const dataUrl = await new Promise<string>((resolve, reject) => {
+      const fr = new FileReader();
+      fr.onload = () => resolve(String(fr.result));
+      fr.onerror = () => reject(fr.error);
+      fr.readAsDataURL(f);
+    });
+    setSettings((s) => ({ ...s, logo: dataUrl }));
+    e.target.value = "";
+  }
+
+
 
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [csvName, setCsvName] = useState("");
@@ -323,12 +376,18 @@ function Index() {
   return (
     <main className="min-h-screen">
       <header className="screen-only bg-primary text-primary-foreground">
-        <div className="mx-auto max-w-6xl px-6 py-8">
-          <p className="font-display text-sm uppercase tracking-[0.3em] text-signal">Däckhotell</p>
-          <h1 className="text-5xl font-bold uppercase">Bokningsöversikt</h1>
+        <div className="mx-auto flex max-w-6xl items-center gap-5 px-6 py-8">
+          {settings.logo && (
+            <img src={settings.logo} alt="" className="h-16 w-auto max-w-56 shrink-0 rounded-md bg-card p-2 object-contain" />
+          )}
+          <div className="min-w-0">
+            <p className="font-display text-sm uppercase tracking-[0.3em] text-signal">{settings.company || "Däckhotell"}</p>
+            <h1 className="text-5xl font-bold uppercase">Bokningsöversikt</h1>
+          </div>
         </div>
         <div className="h-2 bg-[repeating-linear-gradient(45deg,var(--signal)_0_16px,var(--primary)_16px_32px)]" />
       </header>
+
 
       <div className="booking-content mx-auto max-w-6xl space-y-8 px-6 py-8">
         <section className="screen-only grid gap-4 md:grid-cols-2">
@@ -379,6 +438,8 @@ function Index() {
             <TabsTrigger value="bokade" className="px-5 py-2 font-display text-base uppercase">Bokade bilar</TabsTrigger>
             <TabsTrigger value="sok" className="px-5 py-2 font-display text-base uppercase">Sök regnr</TabsTrigger>
             <TabsTrigger value="statistik" className="px-5 py-2 font-display text-base uppercase">Statistik</TabsTrigger>
+            <TabsTrigger value="installningar" className="px-5 py-2 font-display text-base uppercase">Inställningar</TabsTrigger>
+
           </TabsList>
 
           <TabsContent value="bokade" className="print-list mt-6 space-y-4">
@@ -472,7 +533,67 @@ function Index() {
               </div>
             </div>
           </TabsContent>
+
+          <TabsContent value="installningar" className="screen-only mt-6 space-y-4">
+            <div className="grid gap-4 md:grid-cols-2">
+              <section className="space-y-3 rounded-md border bg-card p-5">
+                <h2 className="font-display text-xl font-semibold uppercase">Logotyp</h2>
+                {settings.logo ? (
+                  <div className="space-y-3">
+                    <img src={settings.logo} alt="Er logotyp" className="h-24 w-auto max-w-full rounded-md border bg-background p-2 object-contain" />
+                    <Button variant="outline" size="sm" onClick={() => setSettings((s) => ({ ...s, logo: "" }))}>Ta bort logotyp</Button>
+                  </div>
+                ) : (
+                  <label className="group flex cursor-pointer items-center gap-4 rounded-md border-2 border-dashed bg-background p-4 transition hover:border-primary">
+                    <div className="min-w-0 flex-1 font-display uppercase">Välj bild</div>
+                    <Upload className="h-5 w-5 text-muted-foreground group-hover:text-foreground" />
+                    <input type="file" accept="image/*" className="sr-only" onChange={onLogo} />
+                  </label>
+                )}
+                <p className="text-sm text-muted-foreground">Logotypen visas överst på sidan och sparas i den här webbläsaren.</p>
+              </section>
+
+              <section className="space-y-3 rounded-md border bg-card p-5">
+                <h2 className="font-display text-xl font-semibold uppercase">Färger</h2>
+                <div className="flex flex-wrap items-center gap-2">
+                  {PRESETS.map((p) => (
+                    <button key={p.hex} type="button" title={p.name}
+                      onClick={() => setSettings((s) => ({ ...s, signal: p.hex }))}
+                      className={`h-10 w-10 rounded-md border-2 ${settings.signal.toLowerCase() === p.hex ? "border-foreground" : "border-border"}`}
+                      style={{ background: p.hex }} />
+                  ))}
+                  <label className="flex items-center gap-2 text-sm">
+                    Egen
+                    <input type="color" value={settings.signal}
+                      onChange={(e) => setSettings((s) => ({ ...s, signal: e.target.value }))}
+                      className="h-10 w-14 cursor-pointer rounded-md border bg-background" />
+                  </label>
+                </div>
+                <p className="text-sm text-muted-foreground">Färgen används för markeringar, rast-rader och lagerplats.</p>
+              </section>
+            </div>
+
+            <section className="space-y-4 rounded-md border bg-card p-5">
+              <h2 className="font-display text-xl font-semibold uppercase">Företagsuppgifter</h2>
+              <div className="grid gap-3 sm:grid-cols-2">
+                <label className="space-y-1 text-sm">Namn
+                  <Input value={settings.company} onChange={(e) => setSettings((s) => ({ ...s, company: e.target.value }))} placeholder="Din verkstad" />
+                </label>
+                <label className="space-y-1 text-sm">Telefon
+                  <Input value={settings.phone} onChange={(e) => setSettings((s) => ({ ...s, phone: e.target.value }))} placeholder="031-000 00" />
+                </label>
+                <label className="space-y-1 text-sm">E-post
+                  <Input value={settings.email} onChange={(e) => setSettings((s) => ({ ...s, email: e.target.value }))} placeholder="hej@verkstad.se" />
+                </label>
+                <label className="space-y-1 text-sm">Adress
+                  <Input value={settings.address} onChange={(e) => setSettings((s) => ({ ...s, address: e.target.value }))} placeholder="Gatan 1, Ort" />
+                </label>
+              </div>
+              <Button variant="outline" size="sm" onClick={() => setSettings(DEFAULT_SETTINGS)}>Återställ inställningar</Button>
+            </section>
+          </TabsContent>
         </Tabs>
+
       </div>
     </main>
   );
