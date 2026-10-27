@@ -118,10 +118,16 @@ describe("buildCarCards", () => {
     expect(card?.phone).toBe("0705371395");
   });
   it("rader sorteras per bil och tomma regnummer struntar man i", () => {
-    const cards = buildCarCards([...DETALJERAD("AAS31X", "H21", "4,0 mm"), BANTAD, { "Reg.nr": "", "Placering": "HF" }]);
+    const cards = buildCarCards([
+      ...DETALJERAD("AAS31X", "H21", "4,0 mm"),
+      ...DETALJERAD("ABH63R", "M07", "5,5 mm"),
+      { "Reg.nr": "", "Placering": "HF" },
+    ]);
     expect([...cards.keys()]).toEqual(["AAS31X", "ABH63R"]);
     expect(cards.get("AAS31X")?.tires.length).toBe(4);
+    expect(cards.get("ABH63R")?.minDepth).toBe(5.5);
   });
+
   it("tom fil ger inga kort", () => expect(buildCarCards([]).size).toBe(0));
 });
 
