@@ -362,7 +362,7 @@ function Question({ heading, sub, options, value, onPick, onNext }: {
 
 function Summary({ car, regnr, service, date, time, telefon, onEdit }: {
   car: DemoCar | null | undefined; regnr: string; service: Service; date: string; time: string;
-  telefon: string; epost: string; onEdit: (s: Stage) => void;
+  telefon: string; epost: string; onEdit: (s: Stage) => void; tireStage: Stage;
 }) {
   return (
     <aside className="space-y-3 self-start rounded-md border bg-card p-5 lg:sticky lg:top-6">
@@ -382,7 +382,7 @@ function Summary({ car, regnr, service, date, time, telefon, onEdit }: {
             <span className={`h-2.5 w-2.5 rounded-full ${SVC_DOT[service]}`} />
             {service === "Okänd" ? "Inte vald" : service}
           </span>
-          <Edit onClick={() => onEdit(tillOptions.length > 1 ? "till" : "fran")} />
+          <Edit onClick={() => onEdit(tireStage)} />
         </div>
         {service !== "Okänd" && <p className="mt-1 text-sm text-muted-foreground">{priceFor(service)} kr</p>}
       </div>
