@@ -1,5 +1,8 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { Fragment, useMemo, useState, type ChangeEvent } from "react";
+import { Fragment, useEffect, useMemo, useState, type ChangeEvent } from "react";
+
+const CSV_KEY = "bokningar.csv.v1";
+const XLS_KEY = "bokningar.xls.v1";
 import { ClipboardCheck, Copy, Download, FileSpreadsheet, FileText, Printer, Search, Tag, Upload } from "lucide-react";
 import { printLabel } from "@/lib/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -60,12 +63,48 @@ function Index() {
   const [onlyRegnr, setOnlyRegnr] = useState(false);
   const [copied, setCopied] = useState(false);
 
+  useEffect(() => {
+    try {
+      const c = localStorage.getItem(CSV_KEY);
+      if (c) {
+        const s = JSON.parse(c) as { name: string; text: string };
+        setBookings(parseBookingsCsv(s.text)); setCsvName(s.name);
+      }
+      const x = localStorage.getItem(XLS_KEY);
+      if (x) {
+        const s = JSON.parse(x) as { name: string; rows: Record<string, unknown>[]; reg: string; plats: string };
+        setRows(s.rows); setHeaders(s.rows[0] ? Object.keys(s.rows[0]) : []);
+        setRegCol(s.reg); setPlatsCol(s.plats); setXlsName(s.name);
+      }
+    } catch {
+      // trasig sparad data ignoreras
+    }
+  }, []);
+
+  useEffect(() => {
+    if (!xlsName) return;
+    save(XLS_KEY, { name: xlsName, rows, reg: regCol, plats: platsCol });
+  }, [xlsName, rows, regCol, platsCol]);
+
+  function save(key: string, value: unknown) {
+    try { localStorage.setItem(key, JSON.stringify(value)); }
+    catch { alert("Filen är för stor för att sparas i webbläsaren. Den visas ändå tills sidan stängs."); }
+  }
+
+  function clearSaved() {
+    localStorage.removeItem(CSV_KEY); localStorage.removeItem(XLS_KEY);
+    setBookings([]); setCsvName(""); setRows([]); setHeaders([]); setRegCol(""); setPlatsCol(""); setXlsName(""); setDay("alla");
+  }
+
   async function onCsv(e: ChangeEvent<HTMLInputElement>) {
     const f = e.target.files?.[0];
     if (!f) return;
-    setBookings(parseBookingsCsv(await f.text()));
+    const text = await f.text();
+    setBookings(parseBookingsCsv(text));
     setCsvName(f.name);
     setDay("alla");
+    save(CSV_KEY, { name: f.name, text });
+    e.target.value = "";
   }
 
   async function onXls(e: ChangeEvent<HTMLInputElement>) {
@@ -79,6 +118,7 @@ function Index() {
     const h = data[0] ? Object.keys(data[0]) : [];
     const g = guessColumns(h);
     setRows(data); setHeaders(h); setRegCol(g.reg); setPlatsCol(g.plats); setXlsName(f.name);
+    e.target.value = "";
   }
 
   const platsMap = useMemo(() => {
@@ -233,6 +273,12 @@ function Index() {
             <Upload className="h-5 w-5 text-muted-foreground group-hover:text-foreground" />
             <input type="file" accept=".xlsx,.xls,.csv" className="sr-only" onChange={onXls} />
           </label>
+          {(csvName || xlsName) && (
+            <div className="flex items-center justify-between gap-3 text-sm text-muted-foreground md:col-span-2">
+              <span>Filerna sparas i den här webbläsaren tills du laddar in nya.</span>
+              <Button variant="outline" size="sm" onClick={clearSaved}>Rensa sparad data</Button>
+            </div>
+          )}
         </section>
 
         {headers.length > 0 && (
