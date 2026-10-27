@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   BREAKS, LEAD_HOURS, PRICES, availableServices, earliestDate, findDemoCar, firstOpenDay,
-  franChoicesFor, isOpenDay, openDays, priceFor, scheduleTimes, serviceFor, slotsForDate,
+  franChoicesFor, hasBookableTime, isOpenDay, openDays, priceFor, scheduleTimes, serviceFor, slotsForDate,
   tillChoicesFor,
 } from "./booking-flow";
 
@@ -35,6 +35,11 @@ describe("48-timmarsregel", () => {
     expect(openDays(NOW, 5)).toEqual([
       "2026-10-29", "2026-10-30", "2026-11-02", "2026-11-03", "2026-11-04",
     ]);
+  });
+  it("dagar utan ledig tid hoppar dagslistan över", () => {
+    const sen = new Date("2026-10-27T21:00:00"); // gräns 29/10 kl. 21:00 – hela dagen låst
+    expect(hasBookableTime("2026-10-29", sen)).toBe(false);
+    expect(openDays(sen, 3)).toEqual(["2026-10-30", "2026-11-02", "2026-11-03"]);
   });
   it("tider före 48 h är låsta, senare tider är lediga", () => {
     const slots = slotsForDate("2026-10-29", NOW);

@@ -84,12 +84,17 @@ export function firstOpenDay(now: Date = new Date()): string {
   return d;
 }
 
-/** Bokningsbara dagar framåt, räknat från nu. */
+/** Finns det någon ledig tid den dagen, med 48-h-regeln beaktad? */
+export function hasBookableTime(date: string, now: Date = new Date()): boolean {
+  return slotsForDate(date, now).some((s) => s.state === "ledig");
+}
+
+/** Bokningsbara dagar framåt. Dagar utan ledig tid hoppas över. */
 export function openDays(now: Date = new Date(), count = 10): string[] {
   const out: string[] = [];
   let d = firstOpenDay(now);
   while (out.length < count) {
-    if (isOpenDay(d)) out.push(d);
+    if (isOpenDay(d) && hasBookableTime(d, now)) out.push(d);
     d = addDaysIso(d, 1);
   }
   return out;
