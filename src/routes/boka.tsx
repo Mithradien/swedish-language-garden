@@ -58,7 +58,7 @@ function Boka() {
   const [notering, setNotering] = useState("");
   const [error, setError] = useState("");
 
-  // Okänt regnummer: båda svaren är möjliga. Känd bil utan däck: fråga 1 är already given.
+  // Okänt regnummer: båda svaren är möjliga. Känd bil utan däck: fråga 1 är redan besvarad.
   const hasStored = car ? car.harDack : true;
   const tillOptions = tillChoicesFor(hasStored);
   const franOptions = franChoicesFor(hasStored);
