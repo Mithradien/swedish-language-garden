@@ -167,8 +167,17 @@ function Index() {
           </tr>
         </thead>
         <tbody>
-          {list.map((b, i) => (
-            <tr key={i} className="border-t">
+          {list.map((b, i) => {
+            const toMin = (t: string) => { const m = t.match(/^(\d{1,2}):(\d{2})/); return m ? +m[1] * 60 + +m[2] : -1; };
+            const prev = list[i - 1];
+            const lunch = prev && prev.date === b.date && toMin(prev.start) <= 11 * 60 + 15 && toMin(b.start) >= 12 * 60 + 45;
+            return (<Fragment key={i}>
+            {lunch && (
+              <tr className="lunch-row border-t bg-muted">
+                <td colSpan={showDate ? 6 : 5} className="px-4 py-2 text-center font-display font-semibold uppercase tracking-widest text-muted-foreground">Lunchrast</td>
+              </tr>
+            )}
+            <tr className="border-t">
               {showDate && <td className="px-4 py-2.5 whitespace-nowrap">{b.dateLabel}</td>}
               <td className="px-4 py-2.5 whitespace-nowrap tabular-nums">{b.start}–{b.end}</td>
               <td className="px-4 py-2.5">{b.service && (
@@ -184,7 +193,8 @@ function Index() {
               <td className="px-4 py-2.5">{b.service && <Plats r={b.regnr} />}</td>
               <td className="px-4 py-2.5 text-sm text-muted-foreground">{b.name}</td>
             </tr>
-          ))}
+            </Fragment>);
+          })}
           {!list.length && (
             <tr><td colSpan={6} className="px-4 py-10 text-center text-muted-foreground">Inga bokningar att visa</td></tr>
           )}
