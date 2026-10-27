@@ -3,11 +3,21 @@ import { Fragment, useEffect, useMemo, useState, type ChangeEvent } from "react"
 
 const CSV_KEY = "bokningar.csv.v1";
 const XLS_KEY = "bokningar.xls.v1";
+const STATUS_KEY = "bokningar.status.v1";
+
+type ArrivalStatus = "vantas" | "ankommen" | "ej" | "avbokad";
+const STATUS: Record<ArrivalStatus, { label: string; cls: string }> = {
+  vantas: { label: "Väntas", cls: "bg-card" },
+  ankommen: { label: "Ankommen", cls: "bg-st-arrived status-mark" },
+  ej: { label: "Ej ankommen", cls: "bg-st-noshow status-mark" },
+  avbokad: { label: "Avbokad under dagen", cls: "bg-st-cancelled status-mark" },
+};
 import { ClipboardCheck, Copy, Download, FileSpreadsheet, FileText, Printer, Search, Tag, Upload } from "lucide-react";
 import { printLabel } from "@/lib/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
@@ -92,8 +102,23 @@ function Index() {
   }
 
   function clearSaved() {
-    localStorage.removeItem(CSV_KEY); localStorage.removeItem(XLS_KEY);
-    setBookings([]); setCsvName(""); setRows([]); setHeaders([]); setRegCol(""); setPlatsCol(""); setXlsName(""); setDay("alla");
+    localStorage.removeItem(CSV_KEY); localStorage.removeItem(XLS_KEY); localStorage.removeItem(STATUS_KEY);
+    setBookings([]); setCsvName(""); setRows([]); setHeaders([]); setRegCol(""); setPlatsCol(""); setXlsName(""); setDay("alla"); setStatuses({});
+  }
+
+  const [statuses, setStatuses] = useState<Record<string, ArrivalStatus>>({});
+  useEffect(() => {
+    try { const s = localStorage.getItem(STATUS_KEY); if (s) setStatuses(JSON.parse(s)); } catch { /* ignoreras */ }
+  }, []);
+  const statusKey = (b: ScheduleRow) => `${b.date}|${b.start}|${b.regnr}`;
+  const statusOf = (b: ScheduleRow): ArrivalStatus => statuses[statusKey(b)] ?? "vantas";
+  function setStatus(b: ScheduleRow, s: ArrivalStatus) {
+    setStatuses((prev) => {
+      const next = { ...prev };
+      if (s === "vantas") delete next[statusKey(b)]; else next[statusKey(b)] = s;
+      save(STATUS_KEY, next);
+      return next;
+    });
   }
 
   async function onCsv(e: ChangeEvent<HTMLInputElement>) {
