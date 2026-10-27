@@ -132,7 +132,7 @@ function Boka() {
             <Summary
               car={car} regnr={regnr} service={service} date={activeDay} time={time}
               telefon={telefon} epost={epost}
-              onEdit={(s) => { setError(""); setStage(s); }}
+              onEdit={(s) => { setError(""); setStage(s); }} tireStage={tillOptions.length > 1 ? "till" : "fran"}
             />
           )}
 
