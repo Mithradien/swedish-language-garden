@@ -7,7 +7,7 @@ const STATUS_KEY = "bokningar.status.v1";
 const SETTINGS_KEY = "bokningar.settings.v1";
 
 type Settings = { logo: string; company: string; phone: string; email: string; address: string; signal: string };
-const DEFAULT_SETTINGS: Settings = { logo: "", company: "", phone: "", email: string, address: "", signal: "#f9cc21" };
+const DEFAULT_SETTINGS: Settings = { logo: "", company: "", phone: "", email: "", address: "", signal: "#f9cc21" };
 const PRESETS = [
   { name: "Gult", hex: "#f9cc21" },
   { name: "Orange", hex: "#e4572e" },
