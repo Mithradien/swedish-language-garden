@@ -67,7 +67,8 @@ function Boka() {
 
   const days = useMemo(() => (now ? openDays(now, 10) : []), [now]);
   useEffect(() => {
-    if (!date && days.length) setDate(days[0]);
+    const first = days[0];
+    if (!date && first) setDate(first);
   }, [days, date]);
   const activeDay = date || days[0] || "";
   const slots = useMemo(() => {
