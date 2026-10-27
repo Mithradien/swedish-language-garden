@@ -1,6 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useMemo, useState, type ChangeEvent } from "react";
-import { ClipboardCheck, Copy, Download, FileSpreadsheet, FileText, Printer, Search, Upload } from "lucide-react";
+import { ClipboardCheck, Copy, Download, FileSpreadsheet, FileText, Printer, Search, Tag, Upload } from "lucide-react";
+import { printLabel } from "@/lib/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -170,7 +171,15 @@ function Index() {
             <tr key={i} className="border-t">
               {showDate && <td className="px-4 py-2.5 whitespace-nowrap">{b.dateLabel}</td>}
               <td className="px-4 py-2.5 whitespace-nowrap tabular-nums">{b.start}–{b.end}</td>
-              <td className="px-4 py-2.5">{b.service && <span className="rounded-sm border-2 border-primary px-2 py-0.5 font-display font-bold tracking-widest">{b.regnr || "?"}</span>}</td>
+              <td className="px-4 py-2.5">{b.service && (
+                <span className="inline-flex items-center gap-2">
+                  <span className="rounded-sm border-2 border-primary px-2 py-0.5 font-display font-bold tracking-widest">{b.regnr || "?"}</span>
+                  <Button size="sm" variant="ghost" className="screen-only h-7 px-2" title="Skriv ut etikett"
+                    onClick={() => printLabel(b.regnr || "?", `${b.start} · ${b.dateLabel}`, b.service)}>
+                    <Tag className="h-4 w-4" />
+                  </Button>
+                </span>
+              )}</td>
               <td className="px-4 py-2.5">{b.service && <ServiceTag s={b.service} />}</td>
               <td className="px-4 py-2.5">{b.service && <Plats r={b.regnr} />}</td>
               <td className="px-4 py-2.5 text-sm text-muted-foreground">{b.name}</td>
