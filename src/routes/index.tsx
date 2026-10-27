@@ -3,11 +3,21 @@ import { Fragment, useEffect, useMemo, useState, type ChangeEvent } from "react"
 
 const CSV_KEY = "bokningar.csv.v1";
 const XLS_KEY = "bokningar.xls.v1";
+const STATUS_KEY = "bokningar.status.v1";
+
+type ArrivalStatus = "vantas" | "ankommen" | "ej" | "avbokad";
+const STATUS: Record<ArrivalStatus, { label: string; cls: string }> = {
+  vantas: { label: "Väntas", cls: "bg-card" },
+  ankommen: { label: "Ankommen", cls: "bg-st-arrived status-mark" },
+  ej: { label: "Ej ankommen", cls: "bg-st-noshow status-mark" },
+  avbokad: { label: "Avbokad under dagen", cls: "bg-st-cancelled status-mark" },
+};
 import { ClipboardCheck, Copy, Download, FileSpreadsheet, FileText, Printer, Search, Tag, Upload } from "lucide-react";
 import { printLabel } from "@/lib/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
@@ -92,8 +102,23 @@ function Index() {
   }
 
   function clearSaved() {
-    localStorage.removeItem(CSV_KEY); localStorage.removeItem(XLS_KEY);
-    setBookings([]); setCsvName(""); setRows([]); setHeaders([]); setRegCol(""); setPlatsCol(""); setXlsName(""); setDay("alla");
+    localStorage.removeItem(CSV_KEY); localStorage.removeItem(XLS_KEY); localStorage.removeItem(STATUS_KEY);
+    setBookings([]); setCsvName(""); setRows([]); setHeaders([]); setRegCol(""); setPlatsCol(""); setXlsName(""); setDay("alla"); setStatuses({});
+  }
+
+  const [statuses, setStatuses] = useState<Record<string, ArrivalStatus>>({});
+  useEffect(() => {
+    try { const s = localStorage.getItem(STATUS_KEY); if (s) setStatuses(JSON.parse(s)); } catch { /* ignoreras */ }
+  }, []);
+  const statusKey = (b: ScheduleRow) => `${b.date}|${b.start}|${b.regnr}`;
+  const statusOf = (b: ScheduleRow): ArrivalStatus => statuses[statusKey(b)] ?? "vantas";
+  function setStatus(b: ScheduleRow, s: ArrivalStatus) {
+    setStatuses((prev) => {
+      const next = { ...prev };
+      if (s === "vantas") delete next[statusKey(b)]; else next[statusKey(b)] = s;
+      save(STATUS_KEY, next);
+      return next;
+    });
   }
 
   async function onCsv(e: ChangeEvent<HTMLInputElement>) {
@@ -228,7 +253,22 @@ function Index() {
               <td className="px-4 py-2.5 whitespace-nowrap tabular-nums">{b.start}</td>
               <td className="px-4 py-2.5">{b.service && (
                 <span className="inline-flex items-center gap-2">
-                  <span className="rounded-sm border-2 border-primary px-2 py-0.5 font-display font-bold tracking-widest">{b.regnr || "?"}</span>
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <button type="button" title="Ändra status"
+                        className={`rounded-sm border-2 border-primary px-2 py-0.5 font-display font-bold tracking-widest ${STATUS[statusOf(b)].cls}`}>
+                        {b.regnr || "?"}
+                      </button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-48 p-1">
+                      {(Object.keys(STATUS) as ArrivalStatus[]).map((s) => (
+                        <button key={s} type="button" onClick={() => setStatus(b, s)}
+                          className={`flex w-full items-center gap-2 rounded-sm px-3 py-2 text-left text-sm hover:bg-muted ${statusOf(b) === s ? "font-semibold" : ""}`}>
+                          <span className={`h-3 w-3 rounded-full border border-primary ${STATUS[s].cls}`} />{STATUS[s].label}
+                        </button>
+                      ))}
+                    </PopoverContent>
+                  </Popover>
                   <Button size="sm" variant="ghost" className="screen-only h-7 px-2" title="Skriv ut etikett"
                     onClick={() => printLabel(b.regnr || "?", `${b.start} · ${b.dateLabel}`, b.service)}>
                     <Tag className="h-4 w-4" />
@@ -326,6 +366,13 @@ function Index() {
                 </SelectContent>
               </Select>
               <span className="text-sm text-muted-foreground">{dayBooked} bokningar · {dayList.length - dayBooked} obokade tider</span>
+              <span className="flex flex-wrap gap-2 text-sm">
+                {(Object.keys(STATUS) as ArrivalStatus[]).map((s) => (
+                  <span key={s} className={`rounded-sm border px-2 py-0.5 ${STATUS[s].cls}`}>
+                    {STATUS[s].label}: {dayList.filter((b) => b.service && statusOf(b) === s).length}
+                  </span>
+                ))}
+              </span>
               <Button onClick={() => window.print()} disabled={!dayList.length} variant="outline" className="font-display uppercase">
                 <Printer className="mr-2 h-4 w-4" />Skriv ut
               </Button>

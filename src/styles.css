@@ -27,6 +27,9 @@
   --color-svc-forvaring: var(--svc-forvaring);
   --color-svc-ny: var(--svc-ny);
   --color-svc-avsluta: var(--svc-avsluta);
+  --color-st-arrived: var(--st-arrived);
+  --color-st-noshow: var(--st-noshow);
+  --color-st-cancelled: var(--st-cancelled);
   --radius-sm: calc(var(--radius) - 4px);
   --radius-md: calc(var(--radius) - 2px);
   --radius-lg: var(--radius);
@@ -91,6 +94,9 @@
   --svc-forvaring: oklch(0.62 0.14 150);
   --svc-ny: oklch(0.75 0.15 75);
   --svc-avsluta: oklch(0.6 0.18 28);
+  --st-arrived: oklch(0.85 0.13 150);
+  --st-noshow: oklch(0.78 0.14 25);
+  --st-cancelled: oklch(0.88 0.13 80);
   --destructive: oklch(0.577 0.245 27.325);
   --destructive-foreground: oklch(0.984 0.003 247.858);
   --border: oklch(0.88 0.008 90);
@@ -189,6 +195,7 @@
   .print-list tr { break-inside: avoid; }
   .print-list th, .print-list td { padding: 1.35mm 1.2mm; font-size: 11pt; }
   .print-list td { overflow-wrap: anywhere; }
+  .print-list .status-mark { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
   .print-list .lunch-row td { background: #d9d9d9 !important; color: #000 !important; text-align: center; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
   .print-list td span { font-size: inherit; }
   .print-list td .border-2 { border: none; padding: 0; letter-spacing: 0; }
