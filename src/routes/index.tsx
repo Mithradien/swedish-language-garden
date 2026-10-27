@@ -340,7 +340,7 @@ function Index() {
                   <Popover>
                     <PopoverTrigger asChild>
                       <button type="button" title="Ändra status"
-                        className={`rounded-sm border-2 border-primary px-2 py-0.5 font-display font-bold tracking-widest ${STATUS[statusOf(b)].cls}`}>
+                        className={`inline-block w-28 rounded-sm border-2 border-primary px-2 py-0.5 text-center font-display font-bold tracking-widest whitespace-nowrap ${STATUS[statusOf(b)].cls}`}>
                         {b.regnr || "?"}
                       </button>
                     </PopoverTrigger>
