@@ -228,7 +228,22 @@ function Index() {
               <td className="px-4 py-2.5 whitespace-nowrap tabular-nums">{b.start}</td>
               <td className="px-4 py-2.5">{b.service && (
                 <span className="inline-flex items-center gap-2">
-                  <span className="rounded-sm border-2 border-primary px-2 py-0.5 font-display font-bold tracking-widest">{b.regnr || "?"}</span>
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <button type="button" title="Ändra status"
+                        className={`rounded-sm border-2 border-primary px-2 py-0.5 font-display font-bold tracking-widest ${STATUS[statusOf(b)].cls}`}>
+                        {b.regnr || "?"}
+                      </button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-48 p-1">
+                      {(Object.keys(STATUS) as ArrivalStatus[]).map((s) => (
+                        <button key={s} type="button" onClick={() => setStatus(b, s)}
+                          className={`flex w-full items-center gap-2 rounded-sm px-3 py-2 text-left text-sm hover:bg-muted ${statusOf(b) === s ? "font-semibold" : ""}`}>
+                          <span className={`h-3 w-3 rounded-full border border-primary ${STATUS[s].cls}`} />{STATUS[s].label}
+                        </button>
+                      ))}
+                    </PopoverContent>
+                  </Popover>
                   <Button size="sm" variant="ghost" className="screen-only h-7 px-2" title="Skriv ut etikett"
                     onClick={() => printLabel(b.regnr || "?", `${b.start} · ${b.dateLabel}`, b.service)}>
                     <Tag className="h-4 w-4" />
