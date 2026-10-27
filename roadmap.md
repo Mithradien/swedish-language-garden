@@ -17,5 +17,5 @@ Förutsättning: ingen Lovable Cloud eller extern lagring; verkliga inloggningar
 - [x] Rast-rader: Frukostrast 09:00–09:15 och Lunchrast 12:00–12:45.
 - [x] Statusmarkering per bil: grön Ankommen, röd Ej ankommen, orange Avbokad, neutral Väntas.
 - [x] Ta bort fliken "Listor".
-- [ ] Excel-stöd för både bantad och 4-raders detaljerad AutoAssist-fil, med däckkort (mönsterdjup, dimension) i "Sök regnr".
+- [x] Excel-stöd för både bantad och 4-raders detaljerad AutoAssist-fil, med däckkort (mönsterdjup, dimension) i "Sök regnr".
 - [ ] Fliken "Inställningar" (logotyp, färger/tema, företagsuppgifter).

@@ -22,9 +22,10 @@ import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
 import {
-  SERVICES, guessColumns, normalizeRegnr, parseBookingsCsv, withEmptySlots,
-  type Booking, type Service, type ScheduleRow,
+  SERVICES, buildCarCards, guessColumns, normalizeRegnr, parseBookingsCsv, withEmptySlots,
+  type Booking, type CarCard, type ScheduleRow, type Service, type Tire,
 } from "@/lib/bookings";
+
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -57,7 +58,67 @@ function ServiceTag({ s }: { s: Service }) {
   );
 }
 
+const depthTone = (d: number | null) =>
+  d == null ? "text-muted-foreground" : d < 3 ? "text-st-noshow" : d < 4 ? "text-st-cancelled" : "text-st-arrived";
+
+function TireCard({ card }: { card: CarCard }) {
+  const groups = new Map<string, Tire[]>();
+  for (const t of card.tires) {
+    const k = t.typ || "Däck";
+    groups.set(k, [...(groups.get(k) ?? []), t]);
+  }
+  return (
+    <div className="space-y-4 rounded-md border bg-card p-5">
+      <div className="flex flex-wrap items-baseline gap-x-6 gap-y-1">
+        <span className="font-display text-3xl font-bold uppercase tracking-widest">{card.regnr}</span>
+        {card.modell && <span className="font-display text-lg uppercase text-muted-foreground">{card.modell}</span>}
+        {card.lagerplats && (
+          <span className="font-display text-lg uppercase">Lagerplats <span className="text-signal">{card.lagerplats}</span></span>
+        )}
+        {card.minDepth != null && (
+          <span className={`font-display text-lg uppercase ${depthTone(card.minDepth)}`}>
+            Minsta mönsterdjup {card.minDepth.toFixed(1)} mm
+          </span>
+        )}
+      </div>
+      {(card.owner || card.kundnr || card.phone || card.email) && (
+        <div className="flex flex-wrap gap-x-6 gap-y-1 text-sm text-muted-foreground">
+          {card.owner && <span>{card.owner}</span>}
+          {card.kundnr && <span>Kundnr {card.kundnr}</span>}
+          {card.phone && <span>{card.phone}</span>}
+          {card.email && <span>{card.email}</span>}
+        </div>
+      )}
+      {groups.size ? (
+        [...groups.entries()].map(([typ, tires]) => (
+          <div key={typ} className="space-y-2">
+            <div className="font-display text-sm uppercase tracking-widest text-muted-foreground">{typ}</div>
+            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+              {tires.map((t, i) => (
+                <div key={i} className="rounded-md border bg-background p-3">
+                  <div className="font-display text-xl font-bold">{t.position}</div>
+                  <div className="text-sm tabular-nums">{t.dimension || "—"}</div>
+                  <div className="truncate text-sm text-muted-foreground">{t.marke || "—"}</div>
+                  <div className={`font-display text-2xl font-bold tabular-nums ${depthTone(t.depth)}`}>
+                    {t.depth == null ? "—" : `${t.depth.toFixed(1)} mm`}
+                  </div>
+                  {t.inland && <div className="text-xs text-muted-foreground">Inlämnad {t.inland}</div>}
+                </div>
+              ))}
+            </div>
+          </div>
+        ))
+      ) : (
+        <p className="text-sm text-muted-foreground">
+          Den här filen har inga hjuluppgifter – bara lagerplats{card.minDepth == null ? "" : " och minsta mönsterdjup"}.
+        </p>
+      )}
+    </div>
+  );
+}
+
 function Index() {
+
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [csvName, setCsvName] = useState("");
   const [rows, setRows] = useState<Record<string, unknown>[]>([]);
@@ -150,6 +211,10 @@ function Index() {
     return m;
   }, [rows, regCol, platsCol]);
 
+  const cards = useMemo(() => buildCarCards(rows), [rows]);
+
+
+
   const days = useMemo(
     () => [...new Set(bookings.map((b) => b.date))].sort(),
     [bookings],
@@ -165,6 +230,8 @@ function Index() {
   const dayBooked = dayList.filter(b => b.service !== "").length;
   const q = normalizeRegnr(query);
   const hits = q ? sorted.filter((b) => b.regnr.includes(q)) : [];
+  const card = q ? cards.get(q) : undefined;
+
 
   const stats = useMemo(() => {
     const c = Object.fromEntries(SERVICES.map((s) => [s, 0])) as Record<Service, number>;
@@ -278,7 +345,7 @@ function Index() {
             <FileSpreadsheet className="h-9 w-9 shrink-0" />
             <div className="min-w-0 flex-1">
               <div className="font-display text-xl font-semibold uppercase">2. Billager (Excel)</div>
-              <div className="truncate text-sm text-muted-foreground">{xlsName ? `${xlsName} · ${rows.length} bilar` : "Valfritt – välj Excel-filen med lagerplatser"}</div>
+              <div className="truncate text-sm text-muted-foreground">{xlsName ? `${xlsName} · ${cards.size} bilar` : "Valfritt – välj Excel-filen med lagerplatser"}</div>
             </div>
             <Upload className="h-5 w-5 text-muted-foreground group-hover:text-foreground" />
             <input type="file" accept=".xlsx,.xls,.csv" className="sr-only" onChange={onXls} />
@@ -356,12 +423,15 @@ function Index() {
             </div>
             {q && (
               <>
-                {platsMap.has(q) && (
+                {card ? (
+                  <TireCard card={card} />
+                ) : platsMap.has(q) ? (
                   <p className="text-sm">Lagerplats för <b>{q}</b>: <Plats r={q} /></p>
-                )}
+                ) : null}
                 <Table list={hits} showDate />
               </>
             )}
+
           </TabsContent>
 
           <TabsContent value="statistik" className="mt-6 space-y-6">
