@@ -268,7 +268,7 @@ function Index() {
                 <Printer className="mr-2 h-4 w-4" />Skriv ut
               </Button>
             </div>
-            <Table list={dayList} showDate={day === "alla"} />
+            <Table list={dayList} />
           </TabsContent>
 
           <TabsContent value="listor" className="print-list mt-6 space-y-4">
