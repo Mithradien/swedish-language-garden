@@ -382,7 +382,7 @@ function Summary({ car, regnr, service, date, time, telefon, onEdit }: {
             <span className={`h-2.5 w-2.5 rounded-full ${SVC_DOT[service]}`} />
             {service === "Okänd" ? "Inte vald" : service}
           </span>
-          <Edit onClick={() => onEdit("till")} />
+          <Edit onClick={() => onEdit(tillOptions.length > 1 ? "till" : "fran")} />
         </div>
         {service !== "Okänd" && <p className="mt-1 text-sm text-muted-foreground">{priceFor(service)} kr</p>}
       </div>
