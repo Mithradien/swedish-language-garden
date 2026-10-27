@@ -66,6 +66,9 @@ function Boka() {
   const canBook = service !== "Okänd" && !!date && !!time;
 
   const days = useMemo(() => (now ? openDays(now, 10) : []), [now]);
+  useEffect(() => {
+    if (!date && days.length) setDate(days[0]);
+  }, [days, date]);
   const activeDay = date || days[0] || "";
   const slots = useMemo(() => {
     if (!now || !activeDay) return [];
