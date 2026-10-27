@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { classifyService, parseSwedishDate, normalizeRegnr, uniqueRegnrs, listToText, listToCsv, withEmptySlots, type Booking } from "./bookings";
+import { buildCarCards, classifyService, guessColumns, listToCsv, listToText, normalizeRegnr, parseDepth, parseSwedishDate, uniqueRegnrs, withEmptySlots, type Booking } from "./bookings";
 
 const STORED = "är förvarade hos Landvetter Däckservice/Daniels Bilservice";
 const OWN = "har jag med mig";
@@ -76,3 +76,70 @@ describe("listor", () => {
   });
 });
 
+
+const DETALJERAD = (regnr: string, plat: string, djup: string) =>
+  ["HF", "VF", "HB", "VB"].map((p) => ({
+    "Reg.nr": regnr, "Däcktyp": "Sommar", "Lagerplats": plat, "Placering": p,
+    "Dimension": "235", "Profil": "50", "Radie": "19", "Märke": "MICHELIN",
+    "Mönsterdjup": djup, "Inlämnad": "2026-10-26", "Fabrikat / Modell": "SPORTAGE",
+    "Kundnr": "OJY442", "Namn ägare": "KJELLBERG, ULF GREGER",
+    "Telefon ägare": "0705450243", "E-post ägare": "",
+  }));
+
+const BANTAD = {
+  "Regnr": "ABH63R", "Fabrikat": "MODEL Y", "Minsta mönsterdjup": "5,5", "Lagerplats": "M07",
+  "Kundnr": "ABH63R", "Namn ägare": "ROHDIN, LARS NIKLAS",
+  "Telefon ägare": "0705371395", "Startdatum": "2022-11-24",
+};
+
+describe("buildCarCards", () => {
+  it("slår ihop 4 hjulrader till ett däckkort", () => {
+    const card = buildCarCards(DETALJERAD("AAS31X", "H21", "4,0 mm")).get("AAS31X");
+    expect(card?.tires.map((t) => t.position)).toEqual(["VF", "HF", "VB", "HB"]);
+    expect(card?.tires[0]?.dimension).toBe("235/50 R19");
+    expect(card?.tires[0]?.depth).toBe(4);
+    expect(card?.tires[0]?.marke).toBe("MICHELIN");
+    expect(card?.lagerplats).toBe("H21");
+    expect(card?.modell).toBe("SPORTAGE");
+    expect(card?.owner).toBe("KJELLBERG, ULF GREGER");
+    expect(card?.minDepth).toBe(4);
+  });
+  it(" Detaljerad: minsta djupet är det lägsta hjulet", () => {
+    const rows = [...DETALJERAD("AAS31X", "H21", "4,0 mm")];
+    rows[0] = { ...rows[0]!, "Mönsterdjup": "2,5 mm" };
+    expect(buildCarCards(rows).get("AAS31X")?.minDepth).toBe(2.5);
+  });
+  it("bantad lista ger kort utan hjul men med minsta mönsterdjup", () => {
+    const card = buildCarCards([BANTAD]).get("ABH63R");
+    expect(card?.tires).toEqual([]);
+    expect(card?.minDepth).toBe(5.5);
+    expect(card?.lagerplats).toBe("M07");
+    expect(card?.modell).toBe("MODEL Y");
+    expect(card?.phone).toBe("0705371395");
+  });
+  it("rader sorteras per bil och tomma regnummer struntar man i", () => {
+    const cards = buildCarCards([...DETALJERAD("AAS31X", "H21", "4,0 mm"), BANTAD, { "Reg.nr": "", "Placering": "HF" }]);
+    expect([...cards.keys()]).toEqual(["AAS31X", "ABH63R"]);
+    expect(cards.get("AAS31X")?.tires.length).toBe(4);
+  });
+  it("tom fil ger inga kort", () => expect(buildCarCards([]).size).toBe(0));
+});
+
+describe("guessColumns", () => {
+  it("väljer Reg.nr och Lagerplats i detaljerad export", () => {
+    const h = Object.keys(DETALJERAD("A", "H1", "4,0 mm")[0]!);
+    expect(guessColumns(h)).toEqual({ reg: "Reg.nr", plats: "Lagerplats" });
+  });
+  it("väljer Regnr och Lagerplats i bantad export", () =>
+    expect(guessColumns(Object.keys(BANTAD))).toEqual({ reg: "Regnr", plats: "Lagerplats" }));
+});
+
+describe("parseDepth", () => {
+  it("läser svenska decimaler och mm-suffix", () => {
+    expect(parseDepth("4,0 mm")).toBe(4);
+    expect(parseDepth("5,5")).toBe(5.5);
+    expect(parseDepth(7)).toBe(7);
+    expect(parseDepth("")).toBeNull();
+    expect(parseDepth(undefined)).toBeNull();
+  });
+});
