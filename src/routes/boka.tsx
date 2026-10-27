@@ -30,7 +30,7 @@ type Stage = "regnr" | "till" | "fran" | "tid" | "uppgifter" | "bekrafta" | "kla
 
 const GROUPS = ["Regnummer", "Dina däck", "Tid", "Uppgifter", "Klart"];
 const GROUP_OF: Record<Stage, number> = {
-  regnr: 0, till: 1, fran: 1, tid: 2, uppgifter: 3, bekräfta: 3, klar: 4,
+  regnr: 0, till: 1, fran: 1, tid: 2, uppgifter: 3, bekrafta: 3, klar: 4,
 };
 
 const SVC_DOT: Record<Service, string> = {
