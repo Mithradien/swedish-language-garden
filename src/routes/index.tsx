@@ -210,16 +210,22 @@ function Index() {
           {list.map((b, i) => {
             const toMin = (t: string) => { const m = t.match(/^(\d{1,2}):(\d{2})/); return m ? Number(m[1] ?? 0) * 60 + Number(m[2] ?? 0) : -1; };
             const prev = list[i - 1];
-            const lunch = prev && prev.date === b.date && toMin(prev.start) <= 11 * 60 + 15 && toMin(b.start) >= 12 * 60 + 45;
+            const between = (a: number, z: number) => prev && prev.date === b.date && toMin(prev.start) <= a && toMin(b.start) >= z;
+            const breaks = [
+              between(8 * 60 + 15, 9 * 60 + 15) && { label: "Frukostrast", time: "09:00–09:15" },
+              between(11 * 60 + 15, 12 * 60 + 45) && { label: "Lunchrast", time: "12:00–12:45" },
+            ].filter(Boolean) as { label: string; time: string }[];
             return (<Fragment key={i}>
-            {lunch && (
-              <tr className="lunch-row border-t bg-muted">
-                <td colSpan={showDate ? 6 : 5} className="px-4 py-2 text-center font-display font-semibold uppercase tracking-widest text-muted-foreground">Lunchrast</td>
+            {breaks.map((br) => (
+              <tr key={br.label} className="lunch-row border-t bg-muted">
+                {showDate && <td className="px-4 py-2" />}
+                <td className="px-4 py-2 whitespace-nowrap tabular-nums font-semibold text-muted-foreground">{br.time}</td>
+                <td colSpan={4} className="px-4 py-2 text-center font-display font-semibold uppercase tracking-widest text-muted-foreground">{br.label}</td>
               </tr>
-            )}
+            ))}
             <tr className="border-t">
               {showDate && <td className="px-4 py-2.5 whitespace-nowrap">{b.dateLabel}</td>}
-              <td className="px-4 py-2.5 whitespace-nowrap tabular-nums">{b.start}–{b.end}</td>
+              <td className="px-4 py-2.5 whitespace-nowrap tabular-nums">{b.start}</td>
               <td className="px-4 py-2.5">{b.service && (
                 <span className="inline-flex items-center gap-2">
                   <span className="rounded-sm border-2 border-primary px-2 py-0.5 font-display font-bold tracking-widest">{b.regnr || "?"}</span>
