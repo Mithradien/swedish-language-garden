@@ -13,7 +13,7 @@ import workshop from "@/assets/customer-tires.jpg";
 export function PortalHeader({ staff = false }: { staff?: boolean }) {
   return <header className="border-b bg-primary text-primary-foreground"><div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-4 px-5 py-5 sm:px-8">
     <Link to="/kund" className="flex items-center gap-3"><span className="flex h-10 w-10 items-center justify-center rounded-md bg-signal text-signal-foreground"><CarFront /></span><span className="font-display text-2xl font-bold uppercase">Däckhotell<span className="ml-2 text-sm font-medium text-signal">{staff ? "Personal" : "Mina sidor"}</span></span></Link>
-    <nav className="flex items-center gap-1" aria-label="Sidmeny"><Button variant="ghost" asChild><Link to="/">CSV & Excel</Link></Button><Button variant="ghost" asChild><Link to={staff ? "/kund" : "/personal"}>{staff ? "Kundsida" : "Personal"}<ArrowRight /></Link></Button></nav>
+    <nav className="flex items-center gap-1" aria-label="Sidmeny"><Button variant="ghost" asChild><Link to="/boka">Boka tid</Link></Button><Button variant="ghost" asChild><Link to="/">CSV & Excel</Link></Button><Button variant="ghost" asChild><Link to={staff ? "/kund" : "/personal"}>{staff ? "Kundsida" : "Personal"}<ArrowRight /></Link></Button></nav>
   </div></header>;
 }
 export function PreviewNotice() {

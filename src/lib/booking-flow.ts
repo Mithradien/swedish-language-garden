@@ -136,6 +136,11 @@ export function tillChoicesFor(hasStoredTires: boolean): Choice[] {
   return hasStoredTires ? TILL_CHOICES : TILL_CHOICES.filter((c) => c.id === "med");
 }
 
+/** Fråga 2 har alltid båda svaren: du kan alltid lämna in däck eller ta med dig dem. */
+export function franChoicesFor(_hasStoredTires: boolean): Choice[] {
+  return FRAN_CHOICES;
+}
+
 /** Tjänster en kund med den här bilens läge faktiskt kan välja. */
 export function availableServices(hasStoredTires: boolean): Service[] {
   const out = new Set<Service>();
