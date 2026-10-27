@@ -136,7 +136,7 @@ function Boka() {
             />
           )}
 
-          <section className="min-w-0">
+          <section className="order-1 min-w-0 lg:order-2">
             {stage !== "regnr" && stage !== "klar" && (
               <button type="button" onClick={goBack} className="mb-4 inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground">
                 <ArrowLeft className="h-4 w-4" /> Tillbaka
@@ -365,7 +365,7 @@ function Summary({ car, regnr, service, date, time, telefon, onEdit, tireStage }
   telefon: string; epost: string; onEdit: (s: Stage) => void; tireStage: Stage;
 }) {
   return (
-    <aside className="space-y-3 self-start rounded-md border bg-card p-5 lg:sticky lg:top-6">
+    <aside className="order-2 space-y-3 self-start rounded-md border bg-card p-5 lg:order-1 lg:sticky lg:top-6">
       <h2 className="font-display text-sm uppercase tracking-[0.2em] text-muted-foreground">Din bokning</h2>
       <div className="flex items-center justify-between gap-3">
         <span className="font-display text-2xl font-bold uppercase tracking-widest">{regnr || "—"}</span>
