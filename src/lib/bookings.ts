@@ -190,8 +190,10 @@ const POS_ORDER = ["VF", "HF", "VB", "HB"];
  */
 export function buildCarCards(rows: Record<string, unknown>[]): Map<string, CarCard> {
   const cards = new Map<string, CarCard>();
-  if (!rows.length) return cards;
-  const headers = Object.keys(rows[0]);
+  const first = rows[0];
+  if (!first) return cards;
+  const headers = Object.keys(first);
+
   const reg = pickColumn(headers, ["regnr"], ["reg"]);
   if (!reg) return cards;
   const c = {

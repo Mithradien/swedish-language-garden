@@ -212,7 +212,7 @@ function Index() {
   }, [rows, regCol, platsCol]);
 
   const cards = useMemo(() => buildCarCards(rows), [rows]);
-  const card = q ? cards.get(q) : undefined;
+
 
 
   const days = useMemo(
@@ -230,6 +230,8 @@ function Index() {
   const dayBooked = dayList.filter(b => b.service !== "").length;
   const q = normalizeRegnr(query);
   const hits = q ? sorted.filter((b) => b.regnr.includes(q)) : [];
+  const card = q ? cards.get(q) : undefined;
+
 
   const stats = useMemo(() => {
     const c = Object.fromEntries(SERVICES.map((s) => [s, 0])) as Record<Service, number>;
