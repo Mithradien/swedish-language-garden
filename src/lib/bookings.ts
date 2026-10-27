@@ -108,10 +108,12 @@ export function parseBookingsCsv(csv: string): Booking[] {
 
 /** Hitta kolumner för regnummer och lagerplats i Excel-raderna. */
 export function guessColumns(headers: string[]) {
-  const reg = headers.find((h) => /reg/i.test(h)) ?? headers[0] ?? "";
-  const plats = headers.find((h) => /plats|lager|hylla|fack|position/i.test(h)) ?? headers[1] ?? "";
+  const n = (h: string) => (h || "").toLowerCase().replace(/[^a-zåäö]/g, "");
+  const reg = headers.find((h) => n(h) === "regnr") ?? headers.find((h) => /reg/i.test(h)) ?? headers[0] ?? "";
+  const plats = headers.find((h) => n(h) === "lagerplats") ?? headers.find((h) => /plats|lager|hylla|fack|position/i.test(h)) ?? headers[1] ?? "";
   return { reg, plats };
 }
+
 
 /** Unika regnummer, sorterade, utan tomma. */
 export function uniqueRegnrs(list: ScheduleRow[]): string[] {
@@ -136,3 +138,120 @@ export function listToCsv(list: ScheduleRow[], plats?: (regnr: string) => string
   return "\uFEFF" + [head.map(esc).join(";"), ...rows].join("\r\n");
 }
 
+
+// ---------------- Däckkort från ABS AutoAssist ----------------
+
+const normHdr = (h: string) => (h || "").toLowerCase().replace(/[^a-zåäö]/g, "");
+
+function pickColumn(headers: string[], exact: string[], loose: string[] = []): string {
+  for (const e of exact) {
+    const h = headers.find((x) => normHdr(x) === e);
+    if (h) return h;
+  }
+  for (const l of loose) {
+    const h = headers.find((x) => normHdr(x).includes(l));
+    if (h) return h;
+  }
+  return "";
+}
+
+/** "4,0 mm", 5, "5,5", "" -> 4, 5, 5.5, null */
+export function parseDepth(v: unknown): number | null {
+  const m = String(v ?? "").replace(",", ".").match(/(\d+(?:\.\d+)?)/);
+  return m ? Number(m[1] ?? "") : null;
+}
+
+export interface Tire {
+  position: string;
+  dimension: string;
+  marke: string;
+  typ: string;
+  depth: number | null;
+  inland: string;
+}
+
+export interface CarCard {
+  regnr: string;
+  modell: string;
+  lagerplats: string;
+  kundnr: string;
+  owner: string;
+  phone: string;
+  email: string;
+  minDepth: number | null;
+  tires: Tire[];
+}
+
+const POS_ORDER = ["VF", "HF", "VB", "HB"];
+
+/**
+ * Grupperar Excel-rader per bil. Fungerar på både bantad export (1 rad/bil)
+ * och detaljerad export (1 rad per hjul med Placering VF/HF/VB/HB).
+ */
+export function buildCarCards(rows: Record<string, unknown>[]): Map<string, CarCard> {
+  const cards = new Map<string, CarCard>();
+  if (!rows.length) return cards;
+  const headers = Object.keys(rows[0]);
+  const reg = pickColumn(headers, ["regnr"], ["reg"]);
+  if (!reg) return cards;
+  const c = {
+    plats: pickColumn(headers, ["lagerplats"], ["plats", "hylla", "fack"]),
+    pos: pickColumn(headers, ["placering"]),
+    dim: pickColumn(headers, ["dimension"]),
+    prof: pickColumn(headers, ["profil"]),
+    rad: pickColumn(headers, ["radie"]),
+    marke: pickColumn(headers, ["märke"]),
+    typ: pickColumn(headers, ["däcktyp"], ["typ"]),
+    depth: pickColumn(headers, ["mönsterdjup"], ["mönsterdjup"]),
+    inland: pickColumn(headers, ["inlämnad"], ["inläm"]),
+    modell: pickColumn(headers, ["fabrikatmodell"], ["fabrikat", "modell"]),
+    kundnr: pickColumn(headers, ["kundnr"]),
+    owner: pickColumn(headers, ["namnägare"], ["namn"]),
+    phone: pickColumn(headers, ["telefonägare"], ["telefon"]),
+    email: pickColumn(headers, ["epostägare"], ["epost"]),
+    min: pickColumn(headers, ["ministamönsterdjup"], ["minsta"]),
+  };
+
+  for (const r of rows) {
+    const key = normalizeRegnr(String(r[reg] ?? ""));
+    if (!key) continue;
+    let card = cards.get(key);
+    if (!card) {
+      card = { regnr: key, modell: "", lagerplats: "", kundnr: "", owner: "", phone: "", email: "", minDepth: null, tires: [] };
+      cards.set(key, card);
+    }
+    const s = (col: string) => (col ? String(r[col] ?? "").trim() : "");
+    card.modell ||= s(c.modell);
+    card.lagerplats ||= s(c.plats);
+    card.kundnr ||= s(c.kundnr);
+    card.owner ||= s(c.owner);
+    card.phone ||= s(c.phone);
+    card.email ||= s(c.email);
+    if (c.min) card.minDepth ??= parseDepth(r[c.min]);
+
+    const d = s(c.dim);
+    const prof = s(c.prof);
+    const rad = s(c.rad);
+    const dimension = d ? (prof ? `${d}/${prof}${rad ? ` R${rad}` : ""}` : d) : "";
+    if (c.pos && s(c.pos)) {
+      card.tires.push({
+        position: s(c.pos).toUpperCase(),
+        dimension,
+        marke: s(c.marke),
+        typ: s(c.typ),
+        depth: parseDepth(r[c.depth]),
+        inland: s(c.inland),
+      });
+    }
+  }
+
+  const rank = (p: string) => { const i = POS_ORDER.indexOf(p) + 1; return i || 99; };
+  for (const card of cards.values()) {
+    card.tires.sort((a, b) => rank(a.position) - rank(b.position));
+    if (card.minDepth == null) {
+      const ds = card.tires.map((t) => t.depth).filter((d): d is number => d != null);
+      card.minDepth = ds.length ? Math.min(...ds) : null;
+    }
+  }
+  return cards;
+}
