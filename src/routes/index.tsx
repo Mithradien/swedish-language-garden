@@ -366,6 +366,13 @@ function Index() {
                 </SelectContent>
               </Select>
               <span className="text-sm text-muted-foreground">{dayBooked} bokningar · {dayList.length - dayBooked} obokade tider</span>
+              <span className="flex flex-wrap gap-2 text-sm">
+                {(Object.keys(STATUS) as ArrivalStatus[]).map((s) => (
+                  <span key={s} className={`rounded-sm border px-2 py-0.5 ${STATUS[s].cls}`}>
+                    {STATUS[s].label}: {dayList.filter((b) => b.service && statusOf(b) === s).length}
+                  </span>
+                ))}
+              </span>
               <Button onClick={() => window.print()} disabled={!dayList.length} variant="outline" className="font-display uppercase">
                 <Printer className="mr-2 h-4 w-4" />Skriv ut
               </Button>
