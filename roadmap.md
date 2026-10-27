@@ -18,4 +18,4 @@ Förutsättning: ingen Lovable Cloud eller extern lagring; verkliga inloggningar
 - [x] Statusmarkering per bil: grön Ankommen, röd Ej ankommen, orange Avbokad, neutral Väntas.
 - [x] Ta bort fliken "Listor".
 - [x] Excel-stöd för både bantad och 4-raders detaljerad AutoAssist-fil, med däckkort (mönsterdjup, dimension) i "Sök regnr".
-- [ ] Fliken "Inställningar" (logotyp, färger/tema, företagsuppgifter).
+- [x] Fliken "Inställningar" (logotyp, färger/tema, företagsuppgifter).
