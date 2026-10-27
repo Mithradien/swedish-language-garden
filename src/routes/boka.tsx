@@ -360,7 +360,7 @@ function Question({ heading, sub, options, value, onPick, onNext }: {
   );
 }
 
-function Summary({ car, regnr, service, date, time, telefon, onEdit }: {
+function Summary({ car, regnr, service, date, time, telefon, onEdit, tireStage }: {
   car: DemoCar | null | undefined; regnr: string; service: Service; date: string; time: string;
   telefon: string; epost: string; onEdit: (s: Stage) => void; tireStage: Stage;
 }) {
