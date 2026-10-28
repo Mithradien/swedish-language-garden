@@ -25,3 +25,25 @@ export async function fetchBookingsForDate(date: string): Promise<Booking[]> {
     start: r.start_time, end: r.end_time ?? "", service: (r.service ?? "Okänd") as Service, phone: r.phone ?? "",
   }));
 }
+
+/** Staff-only: all bookings from the shared database, paged past the 1000-row limit. Null when unavailable. */
+export async function fetchAllBookings(): Promise<Booking[] | null> {
+  const { data: u } = await supabase.auth.getUser();
+  if (!u.user) return null;
+  const out: Booking[] = [];
+  for (let from = 0; ; from += 1000) {
+    const { data, error } = await supabase.from("bookings").select("*").order("booking_date").order("start_time").range(from, from + 999);
+    if (error) return null;
+    out.push(...(data ?? []).map(r => ({
+      name: r.name ?? "", regnr: r.regnr, date: r.booking_date, dateLabel: dateLabel(r.booking_date),
+      start: r.start_time, end: r.end_time ?? "", service: (r.service ?? "Okänd") as Service, phone: r.phone ?? "",
+    })));
+    if (!data || data.length < 1000) break;
+  }
+  return out;
+}
+
+function dateLabel(iso: string) {
+  const d = new Date(iso + "T12:00:00");
+  return d.toLocaleDateString("sv-SE", { weekday: "long", day: "numeric", month: "long", year: "numeric" });
+}

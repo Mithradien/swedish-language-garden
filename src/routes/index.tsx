@@ -1,5 +1,5 @@
 import { toast } from "sonner";
-import { syncBookingsToDb } from "@/lib/booking-sync";
+import { fetchAllBookings, syncBookingsToDb } from "@/lib/booking-sync";
 import { fetchDbStatuses, saveDbStatus } from "@/lib/status-sync";
 import { createFileRoute } from "@tanstack/react-router";
 import { TopNav } from "@/components/top-nav";
@@ -184,6 +184,10 @@ function Index() {
   const [platsCol, setPlatsCol] = useState("");
   const [day, setDay] = useState("alla");
   const [query, setQuery] = useState("");
+
+  useEffect(() => {
+    fetchAllBookings().then(db => { if (db && db.length) { setBookings(db); setCsvName("Databasen"); } });
+  }, []);
 
   useEffect(() => {
     try {
