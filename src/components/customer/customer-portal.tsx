@@ -9,6 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { SERVICES } from "@/lib/bookings";
 import { EXAMPLE_CUSTOMER, EXAMPLE_SCHEDULE, displayDate, exampleDate, exampleVehicles, previewSlots, requestPreviewVehicle, updatePreviewAppointment, visiblePreviewVehicles, type PreviewAppointment, type PreviewVehicle } from "@/lib/customer-preview";
 import workshop from "@/assets/customer-tires.jpg";
+import { CustomerAddressForm, type CustomerAddress } from "./customer-address";
 
 export function PortalHeader({ staff = false }: { staff?: boolean }) {
   return <header className="border-b bg-primary text-primary-foreground"><div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-4 px-5 py-5 sm:px-8">
@@ -40,6 +41,7 @@ export function CustomerPortal() {
   const [details, setDetails] = useState<PreviewVehicle | null>(null);
   const [photoOpen, setPhotoOpen] = useState(false);
   const [tab, setTab] = useState("overview");
+  const [address, setAddress] = useState<CustomerAddress | null>(null);
   const approved = visiblePreviewVehicles(vehicles, EXAMPLE_CUSTOMER);
   const mine = vehicles.filter(v => v.ownerId === EXAMPLE_CUSTOMER);
   const upcoming = appointments.filter(a => a.customerId === EXAMPLE_CUSTOMER && a.status === "Bokad").sort((a,b) => (a.date + a.time).localeCompare(b.date + b.time));
@@ -62,7 +64,7 @@ export function CustomerPortal() {
     catch(error) { setMessage(error instanceof Error ? error.message : "Kontrollera regnumret."); }
   }
   function authSubmit(e: FormEvent) { e.preventDefault(); setAuthMessage("Kundkonton är inte aktiverade. Inga uppgifter har skickats eller sparats. Du kan öppna exempelvyn nedan."); }
-  function exitPreview() { setPreview(false); setVehicles(exampleVehicles()); setAppointments([{ id: "example-appointment", customerId: EXAMPLE_CUSTOMER, vehicleId: "car-1", date: exampleDate(), time: "09:00", service: "Skifte och förvaring", status: "Bokad" }]); setMessage(""); setAuthMessage(""); }
+  function exitPreview() { setAddress(null); setPreview(false); setVehicles(exampleVehicles()); setAppointments([{ id: "example-appointment", customerId: EXAMPLE_CUSTOMER, vehicleId: "car-1", date: exampleDate(), time: "09:00", service: "Skifte och förvaring", status: "Bokad" }]); setMessage(""); setAuthMessage(""); }
 
   return <main className="min-h-screen"><PortalHeader /><PreviewNotice />
     {!preview ? <div className="mx-auto grid max-w-6xl gap-10 px-5 py-10 sm:px-8 lg:grid-cols-[1.1fr_1fr] lg:gap-16 lg:py-16">
@@ -83,7 +85,7 @@ export function CustomerPortal() {
         </TabsContent>
         <TabsContent value="vehicles" className="mt-8"><div className="mb-5 flex flex-wrap items-center justify-between gap-3"><h2 className="text-3xl font-semibold">Mina bilar</h2><Button variant="outline" onClick={() => {setMessage("");setClaimOpen(true);}}><Plus/>Lägg till bil</Button></div><div className="grid gap-5 md:grid-cols-2">{mine.map(v => <VehicleCard key={v.id} vehicle={v} onDetails={() => setDetails(v)} onBook={() => {openBooking();setVehicleId(v.id);}}/>)}</div></TabsContent>
         <TabsContent value="bookings" className="mt-8 space-y-4"><h2 className="mb-5 text-3xl font-semibold">Mina bokningar</h2>{upcoming.length ? upcoming.map(a => <AppointmentCard key={a.id} appointment={a} vehicles={vehicles} onEdit={() => openBooking(a)}/>) : <Empty icon="calendar" text="Ingen kommande bokning"/>}</TabsContent>
-        <TabsContent value="profile" className="mt-8 max-w-xl"><h2 className="mb-6 text-3xl font-semibold">Mitt konto</h2><dl className="divide-y border-y"><div className="flex justify-between py-4"><dt className="text-muted-foreground">Namn</dt><dd>Exempelkund</dd></div><div className="flex justify-between py-4"><dt className="text-muted-foreground">E-post</dt><dd>kund@example.com</dd></div><div className="flex justify-between py-4"><dt className="text-muted-foreground">Telefon</dt><dd>Ej angivet</dd></div></dl><Button variant="outline" className="mt-6" onClick={exitPreview}><LogOut/>Lämna exempelvyn</Button></TabsContent>
+        <TabsContent value="profile" className="mt-8 max-w-xl"><h2 className="mb-6 text-3xl font-semibold">Mitt konto</h2><dl className="divide-y border-y"><div className="flex justify-between py-4"><dt className="text-muted-foreground">Namn</dt><dd>Exempelkund</dd></div><div className="flex justify-between py-4"><dt className="text-muted-foreground">E-post</dt><dd>kund@example.com</dd></div><div className="flex justify-between py-4"><dt className="text-muted-foreground">Telefon</dt><dd>Ej angivet</dd></div></dl><CustomerAddressForm initialAddress={address} onSave={setAddress}/><Button variant="outline" className="mt-6" onClick={exitPreview}><LogOut/>Lämna exempelvyn</Button></TabsContent>
       </Tabs>
       <footer className="mt-12 flex flex-wrap items-center justify-between gap-4 border-t py-6 text-sm text-muted-foreground"><span className="flex items-center gap-2"><ShieldCheck className="h-4 w-4"/>Exempeluppgifter – inget sparas</span><span>Däckhotell · Mina sidor</span></footer>
     </div>}
