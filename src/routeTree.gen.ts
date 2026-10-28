@@ -13,6 +13,7 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as AnkomstRouteImport } from './routes/ankomst'
 import { Route as BokaRouteImport } from './routes/boka'
 import { Route as KundRouteImport } from './routes/kund'
+import { Route as LoggaInRouteImport } from './routes/logga-in'
 import { Route as PersonalRouteImport } from './routes/personal'
 
 const IndexRoute = IndexRouteImport.update({
@@ -35,6 +36,11 @@ const KundRoute = KundRouteImport.update({
   path: '/kund',
   getParentRoute: () => rootRouteImport,
 } as any)
+const LoggaInRoute = LoggaInRouteImport.update({
+  id: '/logga-in',
+  path: '/logga-in',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const PersonalRoute = PersonalRouteImport.update({
   id: '/personal',
   path: '/personal',
@@ -46,6 +52,7 @@ export interface FileRoutesByFullPath {
   '/ankomst': typeof AnkomstRoute
   '/boka': typeof BokaRoute
   '/kund': typeof KundRoute
+  '/logga-in': typeof LoggaInRoute
   '/personal': typeof PersonalRoute
 }
 export interface FileRoutesByTo {
@@ -53,6 +60,7 @@ export interface FileRoutesByTo {
   '/ankomst': typeof AnkomstRoute
   '/boka': typeof BokaRoute
   '/kund': typeof KundRoute
+  '/logga-in': typeof LoggaInRoute
   '/personal': typeof PersonalRoute
 }
 export interface FileRoutesById {
@@ -61,14 +69,22 @@ export interface FileRoutesById {
   '/ankomst': typeof AnkomstRoute
   '/boka': typeof BokaRoute
   '/kund': typeof KundRoute
+  '/logga-in': typeof LoggaInRoute
   '/personal': typeof PersonalRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/ankomst' | '/boka' | '/kund' | '/personal'
+  fullPaths: '/' | '/ankomst' | '/boka' | '/kund' | '/logga-in' | '/personal'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/ankomst' | '/boka' | '/kund' | '/personal'
-  id: '__root__' | '/' | '/ankomst' | '/boka' | '/kund' | '/personal'
+  to: '/' | '/ankomst' | '/boka' | '/kund' | '/logga-in' | '/personal'
+  id:
+    | '__root__'
+    | '/'
+    | '/ankomst'
+    | '/boka'
+    | '/kund'
+    | '/logga-in'
+    | '/personal'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -76,6 +92,7 @@ export interface RootRouteChildren {
   AnkomstRoute: typeof AnkomstRoute
   BokaRoute: typeof BokaRoute
   KundRoute: typeof KundRoute
+  LoggaInRoute: typeof LoggaInRoute
   PersonalRoute: typeof PersonalRoute
 }
 
@@ -109,6 +126,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof KundRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/logga-in': {
+      id: '/logga-in'
+      path: '/logga-in'
+      fullPath: '/logga-in'
+      preLoaderRoute: typeof LoggaInRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/personal': {
       id: '/personal'
       path: '/personal'
@@ -124,6 +148,7 @@ const rootRouteChildren: RootRouteChildren = {
   AnkomstRoute: AnkomstRoute,
   BokaRoute: BokaRoute,
   KundRoute: KundRoute,
+  LoggaInRoute: LoggaInRoute,
   PersonalRoute: PersonalRoute,
 }
 export const routeTree = rootRouteImport
