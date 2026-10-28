@@ -1,4 +1,4 @@
-import { tireSeason, treadColor, type TreadColor } from "@/lib/tread";
+import { TREAD_GUIDE, TREAD_SHORT, TREAD_TITLES, tireSeason, treadColor, type TreadColor } from "@/lib/tread";
 
 export const TREAD_STYLES: Record<TreadColor, string> = {
   red: "border-tread-red bg-tread-red/10 text-tread-red",
@@ -11,10 +11,15 @@ const TREAD_DOTS: Record<TreadColor, string> = {
   red: "bg-tread-red", orange: "bg-tread-orange", yellow: "bg-tread-yellow",
   green: "bg-tread-green", unknown: "bg-muted-foreground",
 };
-const TREAD_LABELS: Record<TreadColor, string> = {
-  red: "Röd", orange: "Orange", yellow: "Gul", green: "Grön", unknown: "Ej bedömt",
-};
 export function TreadReading({ depth, tire }: { depth: number | null | undefined; tire: string }) {
-  const color = treadColor(depth, tireSeason(tire));
-  return <div className="mt-1"><p className="font-display text-2xl font-semibold">{depth?.toLocaleString("sv-SE") ?? "—"} <span className="text-base font-normal">mm</span></p><p className="mt-1 flex items-center gap-2 text-xs font-medium"><span aria-hidden="true" className={`h-2.5 w-2.5 shrink-0 rounded-full ${TREAD_DOTS[color]}`}/>{TREAD_LABELS[color]}</p></div>;
+  const season = tireSeason(tire);
+  const color = treadColor(depth, season);
+  const label = color === "unknown" || !season ? "Ej bedömt" : `${TREAD_TITLES[color]} · ${TREAD_SHORT[season][color]}`;
+  return <div className="mt-1"><p className="font-display text-2xl font-semibold">{depth?.toLocaleString("sv-SE") ?? "—"} <span className="text-base font-normal">mm</span></p><p className="mt-1 flex items-center gap-2 text-xs font-medium"><span aria-hidden="true" className={`h-2.5 w-2.5 shrink-0 rounded-full ${TREAD_DOTS[color]}`}/>{label}</p></div>;
+}
+
+export function TreadGuide({ tire }: { tire: string }) {
+  const season = tireSeason(tire);
+  if (!season) return null;
+  return <section className="rounded-md border p-4"><h4 className="mb-3 font-semibold">{season === "summer" ? "Sommardäck" : "Vinterdäck (friktion & dubb)"} – vad färgerna betyder</h4><ul className="space-y-3">{TREAD_GUIDE[season].map(g => <li key={g.color} className="flex gap-3 text-sm"><span aria-hidden="true" className={`mt-1 h-3 w-3 shrink-0 rounded-full ${TREAD_DOTS[g.color]}`}/><span><b>{TREAD_TITLES[g.color]}</b> <span className="text-muted-foreground">({g.range})</span><br/>{g.text}</span></li>)}</ul></section>;
 }
