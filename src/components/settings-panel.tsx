@@ -3,7 +3,7 @@ import { Upload } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { UserAdmin } from "@/components/staff/user-admin";
-import { SIGNAL_PRESETS, useSettings } from "@/lib/settings";
+import { DEFAULT_SETTINGS, SIGNAL_PRESETS, useSettings } from "@/lib/settings";
 
 /** Samma inställningspanel oavsett var den visas: användare, logotyp, färger och företagsuppgifter. */
 export function SettingsPanel() {

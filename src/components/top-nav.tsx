@@ -6,6 +6,7 @@ const ITEMS = [
   { to: "/kund", label: "Kundsida" },
   { to: "/personal", label: "Personal" },
   { to: "/ankomst", label: "Ankomst" },
+  { to: "/installningar", label: "Inställningar" },
 ] as const;
 
 // En enda meny, used on every page, so it always sits in the same spot.
