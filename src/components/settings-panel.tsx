@@ -81,7 +81,7 @@ export function SettingsPanel() {
             <Input value={settings.address} onChange={(e) => setSettings((s) => ({ ...s, address: e.target.value }))} placeholder="Gatan 1, Ort" />
           </label>
         </div>
-        <Button variant="outline" size="sm" onClick={() => setSettings(DEFAULT_SETTINGS)}>Återställ inställningar</Button>
+        <Button variant="outline" size="sm" onClick={() => setSettings(() => DEFAULT_SETTINGS)}>Återställ inställningar</Button>
       </section>
     </div>
   );
