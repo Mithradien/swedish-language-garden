@@ -14,6 +14,51 @@ export type Database = {
   }
   public: {
     Tables: {
+      bookings: {
+        Row: {
+          booking_date: string
+          booking_key: string
+          created_at: string
+          end_time: string | null
+          id: string
+          name: string | null
+          phone: string | null
+          regnr: string
+          service: string | null
+          source: string
+          start_time: string
+          updated_at: string
+        }
+        Insert: {
+          booking_date: string
+          booking_key: string
+          created_at?: string
+          end_time?: string | null
+          id?: string
+          name?: string | null
+          phone?: string | null
+          regnr: string
+          service?: string | null
+          source?: string
+          start_time: string
+          updated_at?: string
+        }
+        Update: {
+          booking_date?: string
+          booking_key?: string
+          created_at?: string
+          end_time?: string | null
+          id?: string
+          name?: string | null
+          phone?: string | null
+          regnr?: string
+          service?: string | null
+          source?: string
+          start_time?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           created_at: string
