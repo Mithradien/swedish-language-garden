@@ -1,3 +1,4 @@
+import { RequireRole } from "@/components/staff/require-role";
 import { createFileRoute } from "@tanstack/react-router";
 import { TopNav } from "@/components/top-nav";
 import { SettingsPanel } from "@/components/settings-panel";
@@ -16,8 +17,12 @@ export const Route = createFileRoute("/installningar")({
       { name: "twitter:card", content: "summary" },
     ],
   }),
-  component: SettingsPage,
+  component: GuardedSettings,
 });
+
+function GuardedSettings() {
+  return <RequireRole roles={["superadmin"]}><SettingsPage /></RequireRole>;
+}
 
 function SettingsPage() {
   return (
