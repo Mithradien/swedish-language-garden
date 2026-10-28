@@ -3,6 +3,7 @@ import { fetchAllBookings, syncBookingsToDb } from "@/lib/booking-sync";
 import { fetchDbStatuses, saveDbStatus } from "@/lib/status-sync";
 import { createFileRoute } from "@tanstack/react-router";
 import { TopNav } from "@/components/top-nav";
+import { UserAdmin } from "@/components/staff/user-admin";
 import { Fragment, useEffect, useMemo, useRef, useState, type ChangeEvent } from "react";
 import { ARRIVAL_HISTORY_KEY, STATUS_KEY, readStatuses, resetArrival, statusKey, type ArrivalStatus } from "@/lib/arrival";
 
@@ -570,6 +571,7 @@ function Index() {
           </TabsContent>
 
           <TabsContent value="installningar" className="screen-only mt-6 space-y-4">
+            <UserAdmin />
             <div className="grid gap-4 md:grid-cols-2">
               <section className="space-y-3 rounded-md border bg-card p-5">
                 <h2 className="font-display text-xl font-semibold uppercase">Logotyp</h2>

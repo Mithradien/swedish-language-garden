@@ -29,7 +29,7 @@ export function StaffArea() {
 
 type Row = { id: string; email: string | null; display_name: string | null; roles: AppRole[] };
 
-function UserRoles({ selfId }: { selfId: string }) {
+export function UserRoles({ selfId }: { selfId: string }) {
   const [rows, setRows] = useState<Row[]>([]);
   async function load() {
     const [{ data: profiles }, { data: roles }] = await Promise.all([
