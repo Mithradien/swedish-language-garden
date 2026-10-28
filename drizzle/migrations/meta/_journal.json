@@ -8,6 +8,13 @@
       "when": 1793172076693,
       "tag": "0000_roles_and_profiles",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1793172184590,
+      "tag": "0001_work_orders",
+      "breakpoints": true
     }
   ]
 }
