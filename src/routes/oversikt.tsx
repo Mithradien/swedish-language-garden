@@ -154,11 +154,11 @@ function Index() {
   }, []);
   const statusOf = (b: ScheduleRow): ArrivalStatus => statuses[statusKey(b)] ?? "vantas";
   function setStatus(b: ScheduleRow, s: ArrivalStatus) {
-    void saveDbStatus(statusKey(b), b.regnr, s);
+    const saved = saveDbStatus(statusKey(b), b.regnr, s);
     if (s === "vantas") {
       try { resetArrival(localStorage, statusKey(b)); } catch { /* ignoreras */ }
       setStatuses((prev) => { const next = { ...prev }; delete next[statusKey(b)]; return next; });
-      window.dispatchEvent(new Event("arrival-status-changed"));
+      void saved.then(() => window.dispatchEvent(new Event("arrival-status-changed")));
       return;
     }
     setStatuses((prev) => {
