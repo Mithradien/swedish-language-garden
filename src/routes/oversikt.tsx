@@ -162,9 +162,11 @@ function Index() {
       return;
     }
     setStatuses((prev) => {
-      let next = { ...prev };
-      try { next = readStatuses(localStorage); } catch { /* use displayed statuses */ }
-      next[statusKey(b)] = s;
+      // Bygg alltid vidare på det som visas (inkl. statusar från databasen),
+      // så att andra bilars status aldrig skrivs över.
+      let local: Record<string, ArrivalStatus> = {};
+      try { local = readStatuses(localStorage); } catch { /* ignoreras */ }
+      const next = { ...local, ...prev, [statusKey(b)]: s };
       save(STATUS_KEY, next);
       return next;
     });
