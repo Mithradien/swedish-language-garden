@@ -7,7 +7,7 @@ describe("inställningar", () => {
   });
 
   it("väljer ljus text på mörk signalfärg", () => {
-    expect(readableOn("#2e86ab")).toBe("#f7f6f2");
+    expect(readableOn("#1a1a2e")).toBe("#f7f6f2");
   });
 
   it("klarar tom eller felformulerad färg utan att krascha", () => {
