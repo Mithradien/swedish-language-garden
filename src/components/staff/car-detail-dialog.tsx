@@ -13,7 +13,7 @@ const POSITIONS: Record<string, string> = { VF: "Fram vänster", HF: "Fram höge
 function stamp(value: string) { return new Date(value).toLocaleString("sv-SE", { dateStyle: "short", timeStyle: "short" }); }
 
 export function CarDetailDialog({ regnr, card, storage, bookings, statuses, onClose }: {
-  regnr: string; card?: CarCard; storage?: string; bookings: Booking[];
+  regnr: string; card: CarCard | undefined; storage: string | undefined; bookings: Booking[];
   statuses: Record<string, ArrivalStatus>; onClose: () => void;
 }) {
   const own = carBookings(regnr, bookings);
