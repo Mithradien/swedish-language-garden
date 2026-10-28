@@ -22,6 +22,13 @@
       "when": 1793172313741,
       "tag": "0002_bookings",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1793172396588,
+      "tag": "0003_arrivals_and_statuses",
+      "breakpoints": true
     }
   ]
 }

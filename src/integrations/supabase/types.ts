@@ -14,6 +14,27 @@ export type Database = {
   }
   public: {
     Tables: {
+      booking_statuses: {
+        Row: {
+          booking_key: string
+          status: string
+          updated_at: string
+          updated_by: string | null
+        }
+        Insert: {
+          booking_key: string
+          status: string
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Update: {
+          booking_key?: string
+          status?: string
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Relationships: []
+      }
       bookings: {
         Row: {
           booking_date: string
@@ -77,6 +98,36 @@ export type Database = {
           display_name?: string | null
           email?: string | null
           id?: string
+        }
+        Relationships: []
+      }
+      status_events: {
+        Row: {
+          actor_id: string | null
+          booking_key: string
+          created_at: string
+          id: string
+          regnr: string
+          source: string
+          status: string
+        }
+        Insert: {
+          actor_id?: string | null
+          booking_key: string
+          created_at?: string
+          id?: string
+          regnr: string
+          source?: string
+          status: string
+        }
+        Update: {
+          actor_id?: string | null
+          booking_key?: string
+          created_at?: string
+          id?: string
+          regnr?: string
+          source?: string
+          status?: string
         }
         Relationships: []
       }
