@@ -23,3 +23,4 @@
 - Branding values (logo, colours, company fields) are read and written only through useSettings in src/lib/settings.ts and edited on the /installningar page, so every page shares one source instead of duplicating storage code.
 - The settings page separates branding in Allmänt from the existing UserAdmin in Konto, so account management is reused without duplicating access logic.
 - Excel car storage is upserted into car_storage via src/lib/car-storage-sync.ts (mergeCard keeps stored values when the new file has blanks; cars absent from a file are never deleted) so import history survives.
+- Menu visibility per role lives in src/lib/nav-access.ts (tested) and staff pages wrap their content in RequireRole, so "/" stays the public booking page and staff tools sit behind login at /oversikt.
