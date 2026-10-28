@@ -7,7 +7,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { PortalHeader } from "@/components/customer/customer-portal";
 import { normalizeRegnr, type Service } from "@/lib/bookings";
 import {
-  DEMO_CARS, FRAN_CHOICES, TILL_CHOICES, availableServices, dayLabel, findDemoCar,
+  FRAN_CHOICES, TILL_CHOICES, availableServices, dayLabel,
   franChoicesFor, longDayLabel, openDays, priceFor, serviceFor, slotsForDate, tillChoicesFor,
   type Choice, type DemoCar,
 } from "@/lib/booking-flow";
