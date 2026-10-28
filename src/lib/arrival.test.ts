@@ -3,7 +3,7 @@ import { ARRIVAL_HISTORY_KEY, CSV_KEY, STATUS_KEY, findArrivalBookings, localDat
 import { parseBookingsCsv, type Booking } from "./bookings";
 
 const now = new Date("2026-10-28T10:00:00");
-const csv = 'First Name,Last Name,Date,Time,Custom Field Data\nTest,Kund,"28 oktober, 2026",10:00,"REG nr\nABC123"';
+const csv = 'First Name,Last Name,Date,Start Time,Custom Field Data\nTest,Kund,"28 oktober, 2026",10:00,"REG nr\nABC123"';
 function setup() {
   const data = new Map<string, string>([[CSV_KEY, JSON.stringify({ text: csv })]]);
   const store = { getItem: (key: string) => data.get(key) ?? null, setItem: (key: string, value: string) => { data.set(key, value); }, removeItem: (key: string) => { data.delete(key); } };
