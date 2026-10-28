@@ -188,7 +188,7 @@ export function stockholmNow(now: Date = new Date()): Date {
   const p = Object.fromEntries(new Intl.DateTimeFormat("sv-SE", {
     timeZone: "Europe/Stockholm", year: "numeric", month: "2-digit", day: "2-digit", hour: "2-digit", minute: "2-digit", hourCycle: "h23",
   }).formatToParts(now).map((x) => [x.type, x.value]));
-  return new Date(Number(p.year), Number(p.month) - 1, Number(p.day), Number(p.hour), Number(p.minute));
+  return new Date(Number(p["year"]), Number(p["month"]) - 1, Number(p["day"]), Number(p["hour"]), Number(p["minute"]));
 }
 
 /** Sluttid för en kundbokning (30 min). */
