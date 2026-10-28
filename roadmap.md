@@ -28,6 +28,7 @@ Förutsättning: ingen Lovable Cloud eller extern lagring; verkliga inloggningar
 - [x] Excel-stöd för både bantad och 4-raders detaljerad AutoAssist-fil, med däckkort (mönsterdjup, dimension) i "Sök regnr".
 - [x] Fliken "Inställningar" (logotyp, färger/tema, företagsuppgifter).
 - [x] Inställningar som egen sida i toppmenyn (/installningar) med samma meny på alla sidor.
+- [x] Konto under Inställningar kopplat till befintlig användar- och rollhantering.
 
 # Kundens bokningssida (skiss, ingen databas ännu)
 

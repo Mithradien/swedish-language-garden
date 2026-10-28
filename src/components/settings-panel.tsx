@@ -2,10 +2,9 @@ import { useRef, type ChangeEvent } from "react";
 import { Upload } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { UserAdmin } from "@/components/staff/user-admin";
 import { DEFAULT_SETTINGS, SIGNAL_PRESETS, useSettings } from "@/lib/settings";
 
-/** Samma inställningspanel oavsett var den visas: användare, logotyp, färger och företagsuppgifter. */
+/** Gemensam panel för logotyp, färger och företagsuppgifter. */
 export function SettingsPanel() {
   const { settings, setSettings } = useSettings();
   const logoInput = useRef<HTMLInputElement>(null);
@@ -25,8 +24,6 @@ export function SettingsPanel() {
 
   return (
     <div className="space-y-4">
-      <UserAdmin />
-
       <div className="grid gap-4 md:grid-cols-2">
         <section className="space-y-3 rounded-md border bg-card p-5">
           <h2 className="font-display text-xl font-semibold uppercase">Logotyp</h2>

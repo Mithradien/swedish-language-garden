@@ -1,6 +1,9 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { TopNav } from "@/components/top-nav";
 import { SettingsPanel } from "@/components/settings-panel";
+import { UserAdmin } from "@/components/staff/user-admin";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Settings, Users } from "lucide-react";
 
 export const Route = createFileRoute("/installningar")({
   head: () => ({
@@ -28,7 +31,14 @@ function SettingsPage() {
         <div className="h-2 bg-[repeating-linear-gradient(45deg,var(--signal)_0_16px,var(--primary)_16px_32px)]" />
       </header>
       <div className="mx-auto max-w-6xl px-6 py-8">
-        <SettingsPanel />
+        <Tabs defaultValue="allmant" className="space-y-6">
+          <TabsList aria-label="Inställningsområden">
+            <TabsTrigger value="allmant" className="gap-2"><Settings className="h-4 w-4" />Allmänt</TabsTrigger>
+            <TabsTrigger value="konto" className="gap-2"><Users className="h-4 w-4" />Konto</TabsTrigger>
+          </TabsList>
+          <TabsContent value="allmant"><SettingsPanel /></TabsContent>
+          <TabsContent value="konto"><UserAdmin /></TabsContent>
+        </Tabs>
       </div>
     </main>
   );

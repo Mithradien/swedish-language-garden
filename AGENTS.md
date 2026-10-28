@@ -20,3 +20,4 @@
 - The app must keep running on the user's own server: Dockerfile and docker-compose.yml build with NITRO_PRESET=node-server and run .output/server/index.mjs, so avoid adding Lovable-only backend services or required env vars without telling the user first (see SELF-HOSTING.md).
 - Staff roles (superadmin/mekaniker/kund) live in the user_roles table checked via has_role(); the first signed-up account becomes superadmin by trigger. Never read roles from local storage. Data sits in Lovable Cloud (plain PostgreSQL) during development so it can be moved to the user's own server later.
 - Branding values (logo, colours, company fields) are read and written only through useSettings in src/lib/settings.ts and edited on the /installningar page, so every page shares one source instead of duplicating storage code.
+- The settings page separates branding in Allmänt from the existing UserAdmin in Konto, so account management is reused without duplicating access logic.
