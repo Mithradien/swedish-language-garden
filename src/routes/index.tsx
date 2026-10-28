@@ -1,10 +1,10 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { TopNav } from "@/components/top-nav";
 import { Fragment, useEffect, useMemo, useRef, useState, type ChangeEvent } from "react";
+import { ARRIVAL_HISTORY_KEY, STATUS_KEY, readStatuses, statusKey, type ArrivalStatus } from "@/lib/arrival";
 
 const CSV_KEY = "bokningar.csv.v1";
 const XLS_KEY = "bokningar.xls.v1";
-const STATUS_KEY = "bokningar.status.v1";
 const SETTINGS_KEY = "bokningar.settings.v1";
 
 type Settings = { logo: string; company: string; phone: string; email: string; address: string; signal: string };
@@ -26,7 +26,6 @@ function readableOn(hex: string) {
 }
 
 
-type ArrivalStatus = "vantas" | "ankommen" | "ej" | "avbokad";
 const STATUS: Record<ArrivalStatus, { label: string; cls: string }> = {
   vantas: { label: "Väntas", cls: "bg-card" },
   ankommen: { label: "Ankommen", cls: "bg-st-arrived status-mark" },
@@ -213,18 +212,28 @@ function Index() {
 
   function clearSaved() {
     localStorage.removeItem(CSV_KEY); localStorage.removeItem(XLS_KEY); localStorage.removeItem(STATUS_KEY);
+    localStorage.removeItem(ARRIVAL_HISTORY_KEY);
     setBookings([]); setCsvName(""); setRows([]); setHeaders([]); setRegCol(""); setPlatsCol(""); setXlsName(""); setDay("alla"); setStatuses({});
   }
 
   const [statuses, setStatuses] = useState<Record<string, ArrivalStatus>>({});
   useEffect(() => {
-    try { const s = localStorage.getItem(STATUS_KEY); if (s) setStatuses(JSON.parse(s)); } catch { /* ignoreras */ }
+    const refresh = () => { try { setStatuses(readStatuses(localStorage)); } catch { /* ignoreras */ } };
+    refresh();
+    window.addEventListener("storage", refresh);
+    window.addEventListener("arrival-status-changed", refresh);
+    window.addEventListener("focus", refresh);
+    return () => {
+      window.removeEventListener("storage", refresh);
+      window.removeEventListener("arrival-status-changed", refresh);
+      window.removeEventListener("focus", refresh);
+    };
   }, []);
-  const statusKey = (b: ScheduleRow) => `${b.date}|${b.start}|${b.regnr}`;
   const statusOf = (b: ScheduleRow): ArrivalStatus => statuses[statusKey(b)] ?? "vantas";
   function setStatus(b: ScheduleRow, s: ArrivalStatus) {
     setStatuses((prev) => {
-      const next = { ...prev };
+      let next = { ...prev };
+      try { next = readStatuses(localStorage); } catch { /* use displayed statuses */ }
       if (s === "vantas") delete next[statusKey(b)]; else next[statusKey(b)] = s;
       save(STATUS_KEY, next);
       return next;

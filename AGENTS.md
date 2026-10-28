@@ -10,6 +10,7 @@
 <!-- LOVABLE:END -->
 
 ## Rules
+- Arrival lookup, local status keys and timestamped arrival writes live in src/lib/arrival.ts; the kiosk and overview share these to prevent inconsistent status identities until self-hosted persistence is connected.
 - Customer address editing stays in the customer profile's preview form until self-hosted accounts are connected; this avoids implying persistent customer storage.
 - Booking/Excel parsing and service classification live in src/lib/bookings.ts (tested in bookings.test.ts); keep UI free of parsing logic so rules stay testable.
 - Overview schedule rows are derived in src/lib/bookings.ts without adding synthetic bookings to imported data, so search and statistics only count actual bookings.
