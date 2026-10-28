@@ -156,8 +156,8 @@ function Index() {
   function setStatus(b: ScheduleRow, s: ArrivalStatus) {
     void saveDbStatus(statusKey(b), b.regnr, s);
     if (s === "vantas") {
-      try { setStatuses(resetArrival(localStorage, statusKey(b))); }
-      catch { setStatuses((prev) => { const next = { ...prev }; delete next[statusKey(b)]; return next; }); }
+      try { resetArrival(localStorage, statusKey(b)); } catch { /* ignoreras */ }
+      setStatuses((prev) => { const next = { ...prev }; delete next[statusKey(b)]; return next; });
       window.dispatchEvent(new Event("arrival-status-changed"));
       return;
     }
