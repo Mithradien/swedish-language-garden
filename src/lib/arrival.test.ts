@@ -45,4 +45,12 @@ describe("ankomstregistrering", () => {
     store.removeItem(CSV_KEY);
     expect(() => registerArrival(store, booking, now)).toThrow("inte längre");
   });
+  it("återställning till Väntas tar bort ankomsten så bilen kan registreras igen", () => {
+    const { store, booking } = setup();
+    registerArrival(store, booking, now);
+    resetArrival(store, statusKey(booking));
+    expect(JSON.parse(store.getItem(STATUS_KEY) ?? "{}")[statusKey(booking)]).toBeUndefined();
+    expect(JSON.parse(store.getItem(ARRIVAL_HISTORY_KEY) ?? "[]")).toEqual([]);
+    expect(registerArrival(store, booking, now)).toBe("registered");
+  });
 });
