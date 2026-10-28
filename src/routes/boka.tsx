@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { Fragment, useEffect, useMemo, useState, type FormEvent } from "react";
+import { useEffect, useMemo, useState, type FormEvent } from "react";
 import { ArrowLeft, ArrowRight, Check, Pencil, ShieldCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -7,7 +7,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { PortalHeader } from "@/components/customer/customer-portal";
 import { normalizeRegnr, type Service } from "@/lib/bookings";
 import {
-  BREAKS, DEMO_CARS, FRAN_CHOICES, TILL_CHOICES, availableServices, dayLabel, findDemoCar,
+  DEMO_CARS, FRAN_CHOICES, TILL_CHOICES, availableServices, dayLabel, findDemoCar,
   franChoicesFor, longDayLabel, openDays, priceFor, serviceFor, slotsForDate, tillChoicesFor,
   type Choice, type DemoCar,
 } from "@/lib/booking-flow";
@@ -207,29 +207,23 @@ function Boka() {
 
                     <div className="grid grid-cols-3 gap-2 sm:grid-cols-4 lg:grid-cols-5">
                       {slots.map((s) => (
-                        <Fragment key={s.time}>
-                          <button
-                            type="button"
-                            disabled={s.state !== "ledig"}
-                            aria-pressed={time === s.time}
-                            onClick={() => setTime(s.time)}
-                            title={s.state === "upptagen" ? "Redan bokad" : s.state === "last" ? "Kan inte bokas" : "Ledig tid"}
-                            className={`h-12 rounded-md border font-display text-lg tabular-nums ${
-                              time === s.time
-                                ? "border-primary bg-primary text-primary-foreground"
-                                : s.state === "ledig"
-                                  ? "bg-card hover:border-primary"
-                                  : "border-dashed bg-muted text-muted-foreground line-through"
-                            }`}
-                          >
-                            {s.time}
-                          </button>
-                          {BREAKS.filter((b) => b.after === s.time).map((b) => (
-                            <div key={b.label} className="col-span-full flex items-center justify-center gap-3 rounded-md bg-muted px-3 py-2 font-display text-sm uppercase tracking-widest text-muted-foreground">
-                              {b.label} <span className="tabular-nums normal-case tracking-normal">{b.time}</span>
-                            </div>
-                          ))}
-                        </Fragment>
+                        <button
+                          key={s.time}
+                          type="button"
+                          disabled={s.state !== "ledig"}
+                          aria-pressed={time === s.time}
+                          onClick={() => setTime(s.time)}
+                          title={s.state === "upptagen" ? "Redan bokad" : s.state === "last" ? "Kan inte bokas" : "Ledig tid"}
+                          className={`h-12 rounded-md border font-display text-lg tabular-nums ${
+                            time === s.time
+                              ? "border-primary bg-primary text-primary-foreground"
+                              : s.state === "ledig"
+                                ? "bg-card hover:border-primary"
+                                : "border-dashed bg-muted text-muted-foreground line-through"
+                          }`}
+                        >
+                          {s.time}
+                        </button>
                       ))}
                     </div>
                     <p className="text-sm text-muted-foreground">
