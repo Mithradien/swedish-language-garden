@@ -160,7 +160,7 @@ export function Boka() {
                   placeholder="T.ex. ABC123"
                   maxLength={12}
                   autoComplete="off"
-                  className="h-16 w-full bg-card text-center font-display text-4xl font-bold uppercase tracking-[0.2em]"
+                  className="h-20 w-full border-2 border-foreground bg-card text-center font-display text-4xl font-bold uppercase tracking-[0.2em] placeholder:text-2xl placeholder:font-normal placeholder:tracking-normal md:text-5xl"
                 />
                 {error && <p role="alert" className="text-sm text-destructive">{error}</p>}
                 <Button type="submit" className="h-12 w-full font-display text-lg uppercase">
