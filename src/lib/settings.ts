@@ -49,18 +49,26 @@ function applySignal(signal: string) {
  */
 export function useSettings() {
   const [settings, setSettings] = useState<Settings>(DEFAULT_SETTINGS);
-  const first = useRef(true);
+  const saved = useRef("");
 
   useEffect(() => {
-    try {
-      const s = localStorage.getItem(SETTINGS_KEY);
-      if (s) setSettings({ ...DEFAULT_SETTINGS, ...(JSON.parse(s) as Partial<Settings>) });
-    } catch { /* trasig sparad data ignoreras */ }
-    const sync = () => {
+    const read = (): Settings => {
       try {
-        const s = localStorage.getItem(SETTINGS_KEY);
-        if (s) setSettings({ ...DEFAULT_SETTINGS, ...(JSON.parse(s) as Partial<Settings>) });
-      } catch { /* ignoreras */ }
+        const raw = localStorage.getItem(SETTINGS_KEY);
+        return raw ? { ...DEFAULT_SETTINGS, ...(JSON.parse(raw) as Partial<Settings>) } : DEFAULT_SETTINGS;
+      } catch {
+        return DEFAULT_SETTINGS;
+      }
+    };
+    saved.current = JSON.stringify(read());
+    setSettings(read());
+    // Håller färg/logga korrekt även i andra fönster som har samma sida öppen.
+    const sync = () => {
+      const next = read();
+      const json = JSON.stringify(next);
+      if (json === saved.current) return;
+      saved.current = json;
+      setSettings(next);
     };
     window.addEventListener("storage", sync);
     window.addEventListener("settings-changed", sync);
@@ -71,9 +79,11 @@ export function useSettings() {
   }, []);
 
   useEffect(() => {
-    if (first.current) { first.current = false; return; }
+    const json = JSON.stringify(settings);
+    if (json === saved.current) return;
+    saved.current = json;
     try {
-      localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings));
+      localStorage.setItem(SETTINGS_KEY, json);
       window.dispatchEvent(new Event("settings-changed"));
     } catch { /* för stor logotyp ignoreras */ }
   }, [settings]);
