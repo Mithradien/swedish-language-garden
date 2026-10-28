@@ -15,7 +15,7 @@ Förutsättning: ingen Lovable Cloud eller extern lagring; verkliga inloggningar
 
 # Nuvarande att-göra (en punkt i taget, avstämning inför varje)
 
-- [ ] Färgmarkering av mönsterdjup på kundsidan med separata sommar- och vintergränser.
+- [x] Färgmarkering av mönsterdjup på kundsidan med separata sommar- och vintergränser.
 - [ ] Superadmin kan justera mönsterdjupsgränser i inställningar (väntar på riktiga personalbehörigheter på egen server).
 
 - [x] Spara inläst CSV/Excel lokalt i webbläsaren, plus knapp för att rensa.
