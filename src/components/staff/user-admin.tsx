@@ -1,18 +1,17 @@
 import { useState } from "react";
+import { Link } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useAuth, type AppRole } from "@/hooks/use-auth";
 import { createUserWithRole } from "@/lib/users.functions";
-import { UserRoles } from "./role-gate";
 
 export function UserAdmin() {
   const { user, loading, hasRole } = useAuth();
   const create = useServerFn(createUserWithRole);
   const [form, setForm] = useState({ name: "", email: "", password: "", role: "mekaniker" as AppRole });
   const [busy, setBusy] = useState(false);
-  const [reload, setReload] = useState(0);
 
   if (loading) return null;
   if (!user || !hasRole("superadmin")) {
@@ -27,7 +26,6 @@ export function UserAdmin() {
       await create({ data: form });
       toast.success(`${form.email} skapad – kan logga in direkt`);
       setForm({ name: "", email: "", password: "", role: "mekaniker" });
-      setReload((n) => n + 1);
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Kunde inte skapa användaren");
     } finally { setBusy(false); }
@@ -36,6 +34,7 @@ export function UserAdmin() {
   return (
     <section className="space-y-4 rounded-md border bg-card p-5">
       <h2 className="font-display text-xl font-semibold uppercase">Skapa användare</h2>
+      <p className="text-sm text-muted-foreground">Alla användare, roller och lösenord hanteras under <Link to="/personal" className="underline">Personal</Link>.</p>
       <form onSubmit={submit} className="grid gap-3 sm:grid-cols-2">
         <label className="space-y-1 text-sm">Namn<Input required value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} /></label>
         <label className="space-y-1 text-sm">E-post<Input required type="email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} /></label>
@@ -49,7 +48,6 @@ export function UserAdmin() {
         </label>
         <div className="sm:col-span-2"><Button type="submit" disabled={busy}>{busy ? "Skapar…" : "Skapa användare"}</Button></div>
       </form>
-      <UserRoles key={reload} selfId={user.id} />
     </section>
   );
 }

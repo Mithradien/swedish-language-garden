@@ -5,7 +5,6 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth, type AppRole } from "@/hooks/use-auth";
 import { StaffPreview } from "@/components/customer/staff-preview";
 import { TopNav } from "@/components/top-nav";
-import { MechanicView } from "./mechanic-view";
 import { useServerFn } from "@tanstack/react-start";
 import { toast } from "sonner";
 import { setUserPassword } from "@/lib/users.functions";
@@ -25,14 +24,14 @@ export function StaffArea() {
 
   const bar = <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-3 border-b px-5 py-3 text-sm"><span>Inloggad som <b>{user.email}</b> · {roles.map(r => LABEL[r]).join(", ") || "ingen roll"}</span><Button variant="outline" size="sm" onClick={signOut}>Logga ut</Button></div>;
 
-  if (hasRole("superadmin")) return <><div className="bg-primary text-primary-foreground"><TopNav/></div>{bar}<div className="mx-auto max-w-6xl px-5 pt-8"><UserRoles selfId={user.id}/></div><MechanicView userId={user.id}/><StaffPreview embedded/></>;
-  if (hasRole("mekaniker")) return <><div className="bg-primary text-primary-foreground"><TopNav/></div>{bar}<MechanicView userId={user.id}/></>;
+  const readOnly = !hasRole("superadmin");
+  if (hasRole("superadmin") || hasRole("mekaniker")) return <><div className="bg-primary text-primary-foreground"><TopNav/></div>{bar}<div className="mx-auto max-w-6xl px-5 pt-8"><UserRoles selfId={user.id} readOnly={readOnly}/></div>{hasRole("superadmin") && <StaffPreview embedded/>}</>;
   return <><div className="bg-primary text-primary-foreground"><TopNav/></div>{bar}<div className="mx-auto max-w-4xl px-5 py-10"><h1 className="mb-3 text-3xl font-bold">Ingen personalbehörighet</h1><p className="text-muted-foreground">Ditt konto är ett kundkonto. Be en superadmin ge dig en personalroll.</p></div></>;
 }
 
 type Row = { id: string; email: string | null; display_name: string | null; roles: AppRole[] };
 
-export function UserRoles({ selfId }: { selfId: string }) {
+export function UserRoles({ selfId, readOnly = false }: { selfId: string; readOnly?: boolean }) {
   const [rows, setRows] = useState<Row[]>([]);
   async function load() {
     const [{ data: profiles }, { data: roles }] = await Promise.all([
@@ -49,9 +48,10 @@ export function UserRoles({ selfId }: { selfId: string }) {
     load();
   }
 
-  return <section className="mb-10"><h2 className="mb-4 text-2xl font-semibold">Användare och roller</h2><div className="divide-y border-y">
+  return <section className="mb-10"><h2 className="mb-4 text-2xl font-semibold">Användare och roller</h2>{readOnly && <p className="mb-4 text-sm text-muted-foreground">Endast superadmin kan ändra roller och lösenord.</p>}<div className="divide-y border-y">
     {rows.map(r => <div key={r.id} className="flex flex-wrap items-center justify-between gap-3 py-3"><div><p className="font-medium">{r.display_name || r.email}</p><p className="text-sm text-muted-foreground">{r.email}</p></div>
-      {r.id === selfId ? <div className="flex flex-wrap items-center gap-2"><PasswordButton userId={r.id} email={r.email ?? ""}/><span className="text-sm">{r.roles.map(x => LABEL[x]).join(", ")} (du)</span></div> :
+      {r.id === selfId ? <div className="flex flex-wrap items-center gap-2">{!readOnly && <PasswordButton userId={r.id} email={r.email ?? ""}/>}<span className="text-sm">{r.roles.map(x => LABEL[x]).join(", ")} (du)</span></div> :
+        readOnly ? <span className="text-sm">{r.roles.map(x => LABEL[x]).join(", ") || "kund"}</span> :
         <div className="flex flex-wrap items-center gap-2"><PasswordButton userId={r.id} email={r.email ?? ""}/><select aria-label={`Roll för ${r.email}`} className="rounded-md border bg-background px-3 py-2 text-sm" value={r.roles[0] ?? "kund"} onChange={e => setRole(r.id, e.target.value as AppRole)}>
           {(Object.keys(LABEL) as AppRole[]).map(k => <option key={k} value={k}>{LABEL[k]}</option>)}
         </select></div>}
