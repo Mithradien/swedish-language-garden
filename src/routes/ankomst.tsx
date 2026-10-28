@@ -4,6 +4,7 @@ import { ArrowLeft, ArrowRight, CarFront, Check, Clock3, Delete, Maximize, Minim
 import { TopNav } from "@/components/top-nav";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { kioskLookup, kioskRegister } from "@/lib/kiosk.functions";
 import { findArrivalBookings, localDate, readBookings, readStatuses, registerArrival } from "@/lib/arrival";
 import { normalizeRegnr, type Booking } from "@/lib/bookings";
 
@@ -32,6 +33,7 @@ function ArrivalPage() {
   const [today, setToday] = useState("");
   const [company, setCompany] = useState("Däckhotell");
   const busy = useRef(false);
+  const remote = useRef(new WeakMap<Booking, string>());
   const input = useRef<HTMLInputElement>(null);
 
   function reset() {
@@ -50,19 +52,30 @@ function ArrivalPage() {
     return () => window.clearTimeout(timeout);
   }, [regnr, stage, selected]);
 
-  function lookup(e: FormEvent) {
+  async function lookup(e: FormEvent) {
     e.preventDefault(); setError("");
     try {
-      const found = findArrivalBookings(readBookings(localStorage), regnr, localDate(), readStatuses(localStorage));
+      let found: Booking[] = [];
+      try {
+        const rows = await kioskLookup({ data: { regnr } });
+        found = rows.map(r => { const b = { name: "", regnr: r.regnr, date: r.date, dateLabel: r.date, start: r.start, end: r.end, service: r.service as Booking["service"], phone: "" }; remote.current.set(b, r.key); return b; });
+      } catch { /* fall back to this device's file */ }
+      if (!found.length) found = findArrivalBookings(readBookings(localStorage), regnr, localDate(), readStatuses(localStorage));
       if (!found.length) { setError("Vi hittar ingen bokning för bilen idag. Kontrollera regnumret eller kontakta personalen."); return; }
       setMatches(found); setSelected(found.length === 1 ? found[0] ?? null : null); setStage("confirm");
     } catch { setError("Dagens bokningar kunde inte läsas. Kontakta personalen så hjälper vi dig."); }
   }
-  function confirm() {
+  async function confirm() {
     if (!selected || busy.current) return;
     busy.current = true; setError("");
     try {
-      setAlready(registerArrival(localStorage, selected) === "already");
+      const key = remote.current.get(selected);
+      if (key) {
+        const r = await kioskRegister({ data: { key } });
+        setAlready(r.result === "already");
+      } else {
+        setAlready(registerArrival(localStorage, selected) === "already");
+      }
       window.dispatchEvent(new Event("arrival-status-changed"));
       setStage("done");
     } catch (err) {
