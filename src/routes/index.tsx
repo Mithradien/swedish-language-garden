@@ -3,31 +3,12 @@ import { fetchAllBookings, syncBookingsToDb } from "@/lib/booking-sync";
 import { fetchDbStatuses, saveDbStatus } from "@/lib/status-sync";
 import { createFileRoute } from "@tanstack/react-router";
 import { TopNav } from "@/components/top-nav";
-import { UserAdmin } from "@/components/staff/user-admin";
-import { Fragment, useEffect, useMemo, useRef, useState, type ChangeEvent } from "react";
+import { Fragment, useEffect, useMemo, useState, type ChangeEvent } from "react";
 import { ARRIVAL_HISTORY_KEY, STATUS_KEY, readStatuses, resetArrival, statusKey, type ArrivalStatus } from "@/lib/arrival";
+import { useSettings } from "@/lib/settings";
 
 const CSV_KEY = "bokningar.csv.v1";
 const XLS_KEY = "bokningar.xls.v1";
-const SETTINGS_KEY = "bokningar.settings.v1";
-
-type Settings = { logo: string; company: string; phone: string; email: string; address: string; signal: string };
-const DEFAULT_SETTINGS: Settings = { logo: "", company: "", phone: "", email: "", address: "", signal: "#f9cc21" };
-const PRESETS = [
-  { name: "Gult", hex: "#f9cc21" },
-  { name: "Orange", hex: "#e4572e" },
-  { name: "Blå", hex: "#2e86ab" },
-  { name: "Grön", hex: "#3f8f5f" },
-];
-
-/** Mörk eller ljus text beroende på den valda färgen. */
-function readableOn(hex: string) {
-  const m = /^#?([\da-f]{6})$/i.exec((hex || "").trim());
-  if (!m) return "#1a1a1a";
-  const n = parseInt(m[1] ?? "", 16);
-  const lum = (0.2126 * ((n >> 16) & 255) + 0.7152 * ((n >> 8) & 255) + 0.0722 * (n & 255)) / 255;
-  return lum > 0.45 ? "#1a1a1a" : "#f7f6f2";
-}
 
 
 const STATUS: Record<ArrivalStatus, { label: string; cls: string }> = {
@@ -142,37 +123,7 @@ function TireCard({ card }: { card: CarCard }) {
 }
 
 function Index() {
-  const [settings, setSettings] = useState<Settings>(DEFAULT_SETTINGS);
-  const settingsFirst = useRef(true);
-  useEffect(() => {
-    try {
-      const s = localStorage.getItem(SETTINGS_KEY);
-      if (s) setSettings({ ...DEFAULT_SETTINGS, ...(JSON.parse(s) as Partial<Settings>) });
-    } catch { /* trasig sparad data ignoreras */ }
-  }, []);
-  useEffect(() => {
-    if (settingsFirst.current) { settingsFirst.current = false; return; }
-    save(SETTINGS_KEY, settings);
-  }, [settings]);
-  useEffect(() => {
-    const root = document.documentElement;
-    root.style.setProperty("--signal", settings.signal);
-    root.style.setProperty("--accent", settings.signal);
-    root.style.setProperty("--signal-foreground", readableOn(settings.signal));
-  }, [settings.signal]);
-
-  async function onLogo(e: ChangeEvent<HTMLInputElement>) {
-    const f = e.target.files?.[0];
-    if (!f) return;
-    const dataUrl = await new Promise<string>((resolve, reject) => {
-      const fr = new FileReader();
-      fr.onload = () => resolve(String(fr.result));
-      fr.onerror = () => reject(fr.error);
-      fr.readAsDataURL(f);
-    });
-    setSettings((s) => ({ ...s, logo: dataUrl }));
-    e.target.value = "";
-  }
+  const { settings } = useSettings();
 
 
 
@@ -474,7 +425,6 @@ function Index() {
             <TabsTrigger value="bokade" className="px-5 py-2 font-display text-base uppercase">Bokade bilar</TabsTrigger>
             <TabsTrigger value="sok" className="px-5 py-2 font-display text-base uppercase">Sök regnr</TabsTrigger>
             <TabsTrigger value="statistik" className="px-5 py-2 font-display text-base uppercase">Statistik</TabsTrigger>
-            <TabsTrigger value="installningar" className="px-5 py-2 font-display text-base uppercase">Inställningar</TabsTrigger>
 
           </TabsList>
 
