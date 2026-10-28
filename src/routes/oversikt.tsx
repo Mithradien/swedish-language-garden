@@ -154,17 +154,19 @@ function Index() {
   }, []);
   const statusOf = (b: ScheduleRow): ArrivalStatus => statuses[statusKey(b)] ?? "vantas";
   function setStatus(b: ScheduleRow, s: ArrivalStatus) {
-    void saveDbStatus(statusKey(b), b.regnr, s);
+    const saved = saveDbStatus(statusKey(b), b.regnr, s);
     if (s === "vantas") {
-      try { setStatuses(resetArrival(localStorage, statusKey(b))); }
-      catch { setStatuses((prev) => { const next = { ...prev }; delete next[statusKey(b)]; return next; }); }
-      window.dispatchEvent(new Event("arrival-status-changed"));
+      try { resetArrival(localStorage, statusKey(b)); } catch { /* ignoreras */ }
+      setStatuses((prev) => { const next = { ...prev }; delete next[statusKey(b)]; return next; });
+      void saved.then(() => window.dispatchEvent(new Event("arrival-status-changed")));
       return;
     }
     setStatuses((prev) => {
-      let next = { ...prev };
-      try { next = readStatuses(localStorage); } catch { /* use displayed statuses */ }
-      next[statusKey(b)] = s;
+      // Bygg alltid vidare på det som visas (inkl. statusar från databasen),
+      // så att andra bilars status aldrig skrivs över.
+      let local: Record<string, ArrivalStatus> = {};
+      try { local = readStatuses(localStorage); } catch { /* ignoreras */ }
+      const next = { ...local, ...prev, [statusKey(b)]: s };
       save(STATUS_KEY, next);
       return next;
     });
