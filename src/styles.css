@@ -215,7 +215,7 @@
   .print-list td button { font-size: inherit; line-height: inherit; }
   .print-list td button.border-2 { width: 100% !important; min-width: 0 !important; }
   .print-list td { overflow-wrap: anywhere; }
-  .print-list .status-mark { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  .print-list .status-mark { background: transparent !important; color: var(--foreground) !important; box-shadow: none !important; }
   .print-list .lunch-row td { background: var(--border) !important; color: var(--foreground) !important; text-align: center; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
   .print-list td span { font-size: inherit; }
   .print-list td .border-2 { border: none; padding: 0; letter-spacing: 0; }
