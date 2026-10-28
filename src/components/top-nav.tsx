@@ -1,30 +1,46 @@
-import { Link } from "@tanstack/react-router";
+import { Link, useNavigate } from "@tanstack/react-router";
+import { LogIn, LogOut } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth, type AppRole } from "@/hooks/use-auth";
+import { navItemsFor } from "@/lib/nav-access";
 
-const ITEMS = [
-  { to: "/", label: "Bokningsöversikt" },
-  { to: "/boka", label: "Boka tid" },
-  { to: "/kund", label: "Kundsida" },
-  { to: "/personal", label: "Personal" },
-  { to: "/ankomst", label: "Ankomst" },
-  { to: "/installningar", label: "Inställningar" },
-] as const;
+const LABEL: Record<AppRole, string> = { superadmin: "Superadmin", mekaniker: "Mekaniker", kund: "Kund" };
 
-// En enda meny, used on every page, so it always sits in the same spot.
+// En enda meny, used on every page, so it always sits in the same spot. Items follow the user's roles.
 export function TopNav() {
+  const { user, roles, loading } = useAuth();
+  const navigate = useNavigate();
+  const items = navItemsFor(user ? roles : []);
+  async function signOut() {
+    await supabase.auth.signOut();
+    navigate({ to: "/", replace: true });
+  }
+  const link = "rounded-sm px-3 py-2.5 opacity-80 transition hover:bg-primary-foreground/10 hover:opacity-100";
   return (
     <nav aria-label="Huvudmeny" className="border-b border-primary-foreground/20">
       <div className="mx-auto flex max-w-6xl flex-wrap items-center gap-1 px-6 py-2 font-display text-sm uppercase tracking-wider">
-        {ITEMS.map((item) => (
-          <Link
-            key={item.to}
-            to={item.to}
-            activeOptions={{ exact: true }}
-            className="rounded-sm px-3 py-2.5 opacity-80 transition hover:bg-primary-foreground/10 hover:opacity-100"
-            activeProps={{ className: "bg-primary-foreground/15 opacity-100" }}
-          >
+        {items.map((item) => (
+          <Link key={item.to} to={item.to} activeOptions={{ exact: true }} className={link}
+            activeProps={{ className: "bg-primary-foreground/15 opacity-100" }}>
             {item.label}
           </Link>
         ))}
+        <div className="ml-auto flex items-center gap-2">
+          {loading ? null : user ? (
+            <>
+              <span className="hidden normal-case tracking-normal opacity-80 sm:inline">
+                {user.email}{roles[0] ? ` · ${LABEL[roles[0]]}` : ""}
+              </span>
+              <button type="button" onClick={signOut} className={`${link} inline-flex items-center gap-2 uppercase`}>
+                <LogOut className="h-4 w-4" />Logga ut
+              </button>
+            </>
+          ) : (
+            <Link to="/logga-in" className={`${link} inline-flex items-center gap-2`}>
+              <LogIn className="h-4 w-4" />Logga in
+            </Link>
+          )}
+        </div>
       </div>
     </nav>
   );

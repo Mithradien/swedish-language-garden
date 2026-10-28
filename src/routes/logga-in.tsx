@@ -28,10 +28,12 @@ function LoginPage() {
   async function submit(e: React.FormEvent) {
     e.preventDefault(); setBusy(true); setMsg("");
     if (mode === "in") {
-      const { error } = await supabase.auth.signInWithPassword({ email, password });
+      const { data, error } = await supabase.auth.signInWithPassword({ email, password });
       setBusy(false);
       if (error) return setMsg("Fel e-post eller lösenord, eller kontot är inte bekräftat än.");
-      navigate({ to: "/personal" });
+      const { data: r } = await supabase.from("user_roles").select("role").eq("user_id", data.user.id);
+      const staff = (r ?? []).some(x => x.role === "superadmin" || x.role === "mekaniker");
+      navigate({ to: staff ? "/oversikt" : "/kund" });
     } else {
       const { error } = await supabase.auth.signUp({ email, password, options: { emailRedirectTo: window.location.origin + "/personal", data: { display_name: name } } });
       setBusy(false);
