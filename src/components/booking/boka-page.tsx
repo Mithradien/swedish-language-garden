@@ -11,14 +11,15 @@ import {
   type Choice, type DemoCar,
 } from "@/lib/booking-flow";
 import { createPublicBooking, publicCarLookup, publicTakenTimes } from "@/lib/public-booking.functions";
+import { Link } from "@tanstack/react-router";
+import { useAuth } from "@/hooks/use-auth";
+import { supabase } from "@/integrations/supabase/client";
 
-
-
-type Stage = "regnr" | "till" | "fran" | "tid" | "uppgifter" | "bekrafta" | "klar";
+type Stage = "regnr" | "konto" | "till" | "fran" | "tid" | "uppgifter" | "bekrafta" | "klar";
 
 const GROUPS = ["Regnummer", "Dina däck", "Tid", "Uppgifter", "Klart"];
 const GROUP_OF: Record<Stage, number> = {
-  regnr: 0, till: 1, fran: 1, tid: 2, uppgifter: 3, bekrafta: 3, klar: 4,
+  regnr: 0, konto: 0, till: 1, fran: 1, tid: 2, uppgifter: 3, bekrafta: 3, klar: 4,
 };
 
 const SVC_DOT: Record<Service, string> = {
@@ -45,6 +46,20 @@ export function Boka() {
   const [epost, setEpost] = useState("");
   const [notering, setNotering] = useState("");
   const [error, setError] = useState("");
+  const { user } = useAuth();
+
+  // Inloggad kund: fyll i sparade kontaktuppgifter.
+  useEffect(() => {
+    if (!user) return;
+    let live = true;
+    supabase.from("profiles").select("display_name,phone,email").eq("id", user.id).maybeSingle().then(({ data }) => {
+      if (!live) return;
+      setNamn((v) => v || data?.display_name || "");
+      setTelefon((v) => v || data?.phone || "");
+      setEpost((v) => v || data?.email || user.email || "");
+    });
+    return () => { live = false; };
+  }, [user]);
 
   // Okänt regnummer: båda svaren är möjliga. Känd bil utan däck: fråga 1 är redan besvarad.
   const hasStored = car ? car.harDack : true;
@@ -86,6 +101,15 @@ export function Boka() {
     } finally { setSaving(false); }
   }
 
+  function continueAfterRegnr(found: DemoCar | null | undefined) {
+    if (found && !found.harDack) {
+      setTillId("med");
+      setStage("fran");
+    } else {
+      setStage("till");
+    }
+  }
+
   async function submitRegnr(e: FormEvent) {
     e.preventDefault();
     const key = normalizeRegnr(regnr);
@@ -98,17 +122,14 @@ export function Boka() {
     setRegnr(found ? found.regnr : key);
     setCar(found ?? null);
     setError("");
-    if (found && !found.harDack) {
-      setTillId("med");
-      setStage("fran");
-    } else {
-      setStage("till");
-    }
+    if (user) continueAfterRegnr(found);
+    else setStage("konto");
   }
 
   function goBack() {
     setError("");
-    if (stage === "till") setStage("regnr");
+    if (stage === "konto") setStage("regnr");
+    else if (stage === "till") setStage(user ? "regnr" : "konto");
     else if (stage === "fran") setStage(tillOptions.length > 1 ? "till" : "regnr");
     else if (stage === "tid") setStage("fran");
     else if (stage === "uppgifter") setStage("tid");
@@ -170,6 +191,36 @@ export function Boka() {
                   Hittar vi inte regnumret kan du boka ändå.
                 </p>
               </form>
+            )}
+
+            {stage === "konto" && (
+              <div className="space-y-6">
+                {car ? (
+                  <>
+                    <h2 className="text-3xl font-semibold">Bilen finns registrerad hos oss!</h2>
+                    <p className="text-muted-foreground">
+                      {car.modell ? `${car.modell} · ` : ""}Logga in för att se dina däck och sparade uppgifter. Har du inget konto kan du skapa ett.
+                    </p>
+                  </>
+                ) : (
+                  <>
+                    <h2 className="text-3xl font-semibold">Vill du skapa ett konto?</h2>
+                    <p className="text-muted-foreground">
+                      Med ett konto kan du följa dina bokningar, se dina däck och boka om själv.
+                    </p>
+                  </>
+                )}
+                <div className="grid gap-3 sm:grid-cols-2">
+                  <Button asChild className="h-12 font-display text-lg uppercase"><Link to="/kund">Logga in</Link></Button>
+                  <Button asChild variant="outline" className="h-12 font-display text-lg uppercase"><Link to="/kund">Skapa konto</Link></Button>
+                </div>
+                <Button type="button" variant="ghost" className="h-12 w-full font-display text-lg uppercase" onClick={() => continueAfterRegnr(car)}>
+                  Fortsätt som gäst <ArrowRight className="ml-2 h-5 w-5" />
+                </Button>
+                <p className="text-sm text-muted-foreground">
+                  Bokar du som gäst sparas bokningen ändå på ditt regnummer. Skapar du konto senare med samma e-post eller telefon kopplas den till dig.
+                </p>
+              </div>
             )}
 
             {stage === "till" && (
