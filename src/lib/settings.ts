@@ -8,6 +8,13 @@ export type Settings = {
   phone: string;
   email: string;
   address: string;
+  postalCode: string;
+  city: string;
+  swish: string;
+  vatNr: string;
+  bic: string;
+  iban: string;
+  bankgiro: string;
   signal: string;
 };
 
@@ -17,6 +24,13 @@ export const DEFAULT_SETTINGS: Settings = {
   phone: "",
   email: "",
   address: "",
+  postalCode: "",
+  city: "",
+  swish: "",
+  vatNr: "",
+  bic: "",
+  iban: "",
+  bankgiro: "",
   signal: "#f9cc21",
 };
 

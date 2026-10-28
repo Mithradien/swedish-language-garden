@@ -74,9 +74,22 @@ export function SettingsPanel() {
           <label className="space-y-1 text-sm">E-post
             <Input value={settings.email} onChange={(e) => setSettings((s) => ({ ...s, email: e.target.value }))} placeholder="hej@verkstad.se" />
           </label>
-          <label className="space-y-1 text-sm">Adress
-            <Input value={settings.address} onChange={(e) => setSettings((s) => ({ ...s, address: e.target.value }))} placeholder="Gatan 1, Ort" />
+          <label className="space-y-1 text-sm">Gatuadress
+            <Input value={settings.address} onChange={(e) => setSettings((s) => ({ ...s, address: e.target.value }))} placeholder="Gatan 1" />
           </label>
+          {([
+            ["postalCode", "Postnummer", "123 45"],
+            ["city", "Postort", "Ort"],
+            ["swish", "Swish", "123 456 78 90"],
+            ["vatNr", "VAT-nr (momsreg.nr)", "SE556677889901"],
+            ["bic", "BIC (SWIFT)", "ESSESESS"],
+            ["iban", "IBAN", "SE00 0000 0000 0000 0000 0000"],
+            ["bankgiro", "Bankgiro", "123-4567"],
+          ] as const).map(([key, label, ph]) => (
+            <label key={key} className="space-y-1 text-sm">{label}
+              <Input value={settings[key]} onChange={(e) => setSettings((s) => ({ ...s, [key]: e.target.value }))} placeholder={ph} />
+            </label>
+          ))}
         </div>
         <Button variant="outline" size="sm" onClick={() => setSettings(() => DEFAULT_SETTINGS)}>Återställ inställningar</Button>
       </section>
