@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { ARRIVAL_HISTORY_KEY, CSV_KEY, STATUS_KEY, findArrivalBookings, localDate, registerArrival, statusKey } from "./arrival";
+import { ARRIVAL_HISTORY_KEY, CSV_KEY, STATUS_KEY, findArrivalBookings, localDate, registerArrival, resetArrival, statusKey } from "./arrival";
 import { parseBookingsCsv, type Booking } from "./bookings";
 
 const now = new Date("2026-10-28T10:00:00");
