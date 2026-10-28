@@ -10,6 +10,7 @@ import { useSettings } from "@/lib/settings";
 import { useAuth } from "@/hooks/use-auth";
 import { searchCars } from "@/lib/admin-car";
 import { CarDetailDialog } from "@/components/staff/car-detail-dialog";
+import { MoveBookingDialog } from "@/components/staff/move-booking-dialog";
 
 const CSV_KEY = "bokningar.csv.v1";
 const XLS_KEY = "bokningar.xls.v1";
@@ -76,6 +77,9 @@ function Index() {
   const { settings } = useSettings();
   const { hasRole } = useAuth();
   const isStaff = hasRole("superadmin") || hasRole("mekaniker");
+  const isAdmin = hasRole("superadmin");
+  const [moving, setMoving] = useState<ScheduleRow | null>(null);
+  const reloadBookings = () => fetchAllBookings().then(db => { if (db) setBookings(db); });
   const [selectedRegnr, setSelectedRegnr] = useState<string | null>(null);
 
 
@@ -301,6 +305,11 @@ function Index() {
                           <span className={`h-3 w-3 shrink-0 rounded-full border border-primary ${STATUS[s].cls}`} />{STATUS[s].label}
                         </Button>
                       ))}
+                      {isAdmin && <div className="mt-1 border-t pt-1">
+                        <Button type="button" variant="ghost" className="flex w-full justify-start rounded-sm px-3 py-2 text-sm" onClick={() => setMoving(b)}>Flytta bokning…</Button>
+                        <Button type="button" variant="ghost" className="flex w-full justify-start rounded-sm px-3 py-2 text-sm text-destructive"
+                          onClick={() => { if (window.confirm(`Avboka ${b.regnr} ${b.start}? Bokningen ligger kvar i historiken och tiden blir ledig.`)) setStatus(b, "avbokad"); }}>Avboka</Button>
+                      </div>}
                     </PopoverContent>
                   </Popover>
                   <Button size="sm" variant="ghost" className="screen-only h-7 px-2" title="Skriv ut etikett"
@@ -488,6 +497,7 @@ function Index() {
 
       </div>
       {isStaff && selectedRegnr && <CarDetailDialog regnr={selectedRegnr} card={cards.get(selectedRegnr)} storage={platsMap.get(selectedRegnr)} bookings={bookings} statuses={statuses} onClose={() => setSelectedRegnr(null)}/> }
+      {isAdmin && moving && <MoveBookingDialog booking={moving} onClose={() => setMoving(null)} onMoved={reloadBookings}/>}
     </main>
   );
 }
