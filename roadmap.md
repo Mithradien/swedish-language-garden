@@ -1,5 +1,8 @@
 # Kundbokning på egen server
 
+- [x] Surfplattans ankomstsida: regnummer, dagens bokning, bekräftelse och lokal ankomstmarkering med tidpunkt, helskärm och automatisk återställning.
+- [ ] Koppla ankomst och besökshistorik mellan surfplatta och personalens dator (kräver egen server/databas).
+
 - [x] Visa obokade schematider som tomma rader i bokningsöversikt och utskrift.
 
 - [ ] Fastställ och godkänn första versionens upplägg för egen drift.

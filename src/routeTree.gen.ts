@@ -10,6 +10,7 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as AnkomstRouteImport } from './routes/ankomst'
 import { Route as BokaRouteImport } from './routes/boka'
 import { Route as KundRouteImport } from './routes/kund'
 import { Route as PersonalRouteImport } from './routes/personal'
@@ -17,6 +18,11 @@ import { Route as PersonalRouteImport } from './routes/personal'
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AnkomstRoute = AnkomstRouteImport.update({
+  id: '/ankomst',
+  path: '/ankomst',
   getParentRoute: () => rootRouteImport,
 } as any)
 const BokaRoute = BokaRouteImport.update({
@@ -37,12 +43,14 @@ const PersonalRoute = PersonalRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/ankomst': typeof AnkomstRoute
   '/boka': typeof BokaRoute
   '/kund': typeof KundRoute
   '/personal': typeof PersonalRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/ankomst': typeof AnkomstRoute
   '/boka': typeof BokaRoute
   '/kund': typeof KundRoute
   '/personal': typeof PersonalRoute
@@ -50,20 +58,22 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/ankomst': typeof AnkomstRoute
   '/boka': typeof BokaRoute
   '/kund': typeof KundRoute
   '/personal': typeof PersonalRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/boka' | '/kund' | '/personal'
+  fullPaths: '/' | '/ankomst' | '/boka' | '/kund' | '/personal'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/boka' | '/kund' | '/personal'
-  id: '__root__' | '/' | '/boka' | '/kund' | '/personal'
+  to: '/' | '/ankomst' | '/boka' | '/kund' | '/personal'
+  id: '__root__' | '/' | '/ankomst' | '/boka' | '/kund' | '/personal'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AnkomstRoute: typeof AnkomstRoute
   BokaRoute: typeof BokaRoute
   KundRoute: typeof KundRoute
   PersonalRoute: typeof PersonalRoute
@@ -76,6 +86,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/ankomst': {
+      id: '/ankomst'
+      path: '/ankomst'
+      fullPath: '/ankomst'
+      preLoaderRoute: typeof AnkomstRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/boka': {
@@ -104,6 +121,7 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AnkomstRoute: AnkomstRoute,
   BokaRoute: BokaRoute,
   KundRoute: KundRoute,
   PersonalRoute: PersonalRoute,
