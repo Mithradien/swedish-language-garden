@@ -7,10 +7,11 @@ import { Textarea } from "@/components/ui/textarea";
 import { PortalHeader } from "@/components/customer/customer-portal";
 import { normalizeRegnr, type Service } from "@/lib/bookings";
 import {
-  DEMO_CARS, FRAN_CHOICES, TILL_CHOICES, availableServices, dayLabel, findDemoCar,
+  FRAN_CHOICES, TILL_CHOICES, availableServices, dayLabel,
   franChoicesFor, longDayLabel, openDays, priceFor, serviceFor, slotsForDate, tillChoicesFor,
   type Choice, type DemoCar,
 } from "@/lib/booking-flow";
+import { createPublicBooking, publicCarLookup, publicTakenTimes } from "@/lib/public-booking.functions";
 
 export const Route = createFileRoute("/boka")({
   head: () => ({
@@ -71,25 +72,45 @@ function Boka() {
     if (!date && first) setDate(first);
   }, [days, date]);
   const activeDay = date || days[0] || "";
+  const [taken, setTaken] = useState<string[] | null>(null);
+  const [saving, setSaving] = useState(false);
+  useEffect(() => {
+    if (!activeDay || stage !== "tid") return;
+    let live = true;
+    setTaken(null);
+    publicTakenTimes({ data: { date: activeDay } })
+      .then((r) => { if (live) setTaken(r.taken); })
+      .catch(() => { if (live) setTaken([]); });
+    return () => { live = false; };
+  }, [activeDay, stage]);
   const slots = useMemo(() => {
-    if (!now || !activeDay) return [];
-    const all = slotsForDate(activeDay, now).map((s) => s.time);
-    const offset = Number(activeDay.slice(-2)) % all.length;
-    const taken = all.filter((_, i) => (i + offset) % 5 === 2);
+    if (!now || !activeDay || !taken) return [];
     return slotsForDate(activeDay, now, taken);
-  }, [now, activeDay]);
+  }, [now, activeDay, taken]);
 
-  function submitRegnr(e: FormEvent) {
+  async function book() {
+    setSaving(true); setError("");
+    try {
+      const r = await createPublicBooking({ data: { regnr, tillId, franId, date: activeDay, time, name: namn, phone: telefon, email: epost, note: notering } });
+      if (r.ok) setStage("klar");
+      else { setError(r.error); if (r.error.includes("ledig")) { setTime(""); setStage("tid"); } }
+    } catch {
+      setError("Bokningen kunde inte sparas. Kontrollera uppgifterna och försök igen.");
+    } finally { setSaving(false); }
+  }
+
+  async function submitRegnr(e: FormEvent) {
     e.preventDefault();
     const key = normalizeRegnr(regnr);
     if (key.length < 3) { setError("Ange ett regnummer med minst tre tecken."); return; }
-    const found = findDemoCar(key);
+    let found: DemoCar | undefined;
+    try {
+      const c = await publicCarLookup({ data: { regnr: key } });
+      if (c) found = { regnr: c.regnr, modell: c.modell, lagerplats: "", harDack: c.harDack, namn: "", telefon: "", epost: "" };
+    } catch { /* okänd bil går ändå att boka */ }
     setRegnr(found ? found.regnr : key);
     setCar(found ?? null);
     setError("");
-    if (found) {
-      setNamn(found.namn); setTelefon(found.telefon); setEpost(found.epost);
-    }
     if (found && !found.harDack) {
       setTillId("med");
       setStage("fran");
@@ -159,8 +180,7 @@ function Boka() {
                   Nästa <ArrowRight className="ml-2 h-5 w-5" />
                 </Button>
                 <p className="text-sm text-muted-foreground">
-                  Hittar vi inte regnumret kan du boka ändå. I den här skissen finns
-                  {" "}{DEMO_CARS.map((c) => c.regnr).join(", ")} och en bil som inte finns med.
+                  Hittar vi inte regnumret kan du boka ändå.
                 </p>
               </form>
             )}
@@ -190,7 +210,8 @@ function Boka() {
             {stage === "tid" && (
               <div className="space-y-6">
                 <h2 className="text-3xl font-semibold">Välj dag och tid</h2>
-                {!now ? <p className="text-muted-foreground">Laddar schemat…</p> : (
+                {error && <p role="alert" className="text-sm text-destructive">{error}</p>}
+                {!now || !taken ? <p className="text-muted-foreground">Laddar lediga tider…</p> : (
                   <>
                     <div className="-mx-1 flex gap-2 overflow-x-auto px-1 pb-1">
                       {days.map((d) => (
@@ -275,12 +296,13 @@ function Boka() {
                   <Row label="E-post" value={epost} />
                   {notering && <Row label="Notering" value={notering} />}
                 </dl>
+                {error && <p role="alert" className="text-sm text-destructive">{error}</p>}
                 <Button
                   className="h-12 w-full font-display text-lg uppercase"
-                  disabled={!canBook}
-                  onClick={() => setStage("klar")}
+                  disabled={!canBook || saving}
+                  onClick={book}
                 >
-                  Boka tid <Check className="ml-2 h-5 w-5" />
+                  {saving ? "Bokar…" : "Boka tid"} <Check className="ml-2 h-5 w-5" />
                 </Button>
               </div>
             )}
@@ -303,7 +325,7 @@ function Boka() {
                 </dl>
                 <p role="status" className="flex items-start gap-2 rounded-md border bg-secondary px-4 py-3 text-sm">
                   <ShieldCheck className="mt-0.5 h-4 w-4 shrink-0" />
-                  Detta är en layoutskiss. Ingen bokning har sparats och verkstaden har inte kontaktats.
+                  Bokningen är sparad och syns nu hos verkstaden.
                 </p>
                 <Button
                   variant="outline"

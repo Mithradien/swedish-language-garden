@@ -182,3 +182,22 @@ export function dayLabel(date: string): string {
 export function longDayLabel(date: string): string {
   return new Date(`${date}T12:00:00`).toLocaleDateString("sv-SE", { weekday: "long", day: "numeric", month: "long", year: "numeric" });
 }
+
+/** Nuvarande väggklocka i Stockholm som ett Date-objekt (lokala getters = svensk tid), så servern räknar 48 h som kunden. */
+export function stockholmNow(now: Date = new Date()): Date {
+  const p = Object.fromEntries(new Intl.DateTimeFormat("sv-SE", {
+    timeZone: "Europe/Stockholm", year: "numeric", month: "2-digit", day: "2-digit", hour: "2-digit", minute: "2-digit", hourCycle: "h23",
+  }).formatToParts(now).map((x) => [x.type, x.value]));
+  return new Date(Number(p["year"]), Number(p["month"]) - 1, Number(p["day"]), Number(p["hour"]), Number(p["minute"]));
+}
+
+/** Sluttid för en kundbokning (30 min). */
+export function endTimeFor(start: string): string {
+  return toLabel(toMin(start) + 30);
+}
+
+/** Kan just denna tid bokas av en kund? Samma regel som tidsrutnätet visar. */
+export function isBookable(date: string, time: string, now: Date, taken: string[]): boolean {
+  if (!isOpenDay(date)) return false;
+  return slotsForDate(date, now, taken).some((s) => s.time === time && s.state === "ledig");
+}

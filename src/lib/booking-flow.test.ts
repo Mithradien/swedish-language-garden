@@ -94,3 +94,23 @@ describe("register", () => {
     expect(findDemoCar("XYZ999")).toBeUndefined();
   });
 });
+
+import { isBookable as _isBookable, endTimeFor as _endTimeFor } from "./booking-flow";
+describe("kundbokning på servern", () => {
+  const now = new Date(2026, 9, 26, 10, 0); // måndag 26 okt 10:00
+  it("tid inom 48 timmar kan inte bokas", () => {
+    expect(_isBookable("2026-10-28", "09:30", now, [])).toBe(false);
+  });
+  it("tid efter 48 timmar kan bokas", () => {
+    expect(_isBookable("2026-10-28", "10:30", now, [])).toBe(true);
+  });
+  it("redan bokad tid kan inte bokas", () => {
+    expect(_isBookable("2026-10-29", "10:30", now, ["10:30"])).toBe(false);
+  });
+  it("helgdag kan inte bokas", () => {
+    expect(_isBookable("2026-10-31", "10:30", now, [])).toBe(false);
+  });
+  it("bokningen är 30 minuter", () => {
+    expect(_endTimeFor("07:15")).toBe("07:45");
+  });
+});

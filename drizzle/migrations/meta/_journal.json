@@ -36,6 +36,13 @@
       "when": 1793178100109,
       "tag": "0004_car_storage",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1793179655112,
+      "tag": "0005_booking_contact_fields",
+      "breakpoints": true
     }
   ]
 }
