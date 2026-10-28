@@ -237,7 +237,7 @@ function Index() {
   }, [bookings]);
   const max = Math.max(1, ...Object.values(stats));
   const missingPlats = bookings.filter(
-    (b) => rows.length && (b.service === "Skifte och förvaring" || b.service === "Avsluta förvaring") && !platsMap.get(b.regnr),
+    (b) => (rows.length || dbCards.size) && (b.service === "Skifte och förvaring" || b.service === "Avsluta förvaring") && !platsMap.get(b.regnr),
   ).length;
 
 
@@ -475,7 +475,7 @@ function Index() {
               </div>
               <div className="rounded-md bg-primary p-5 text-primary-foreground">
                 <div className="text-sm opacity-80">Från förvaring utan lagerplats</div>
-                <div className="font-display text-4xl font-bold">{rows.length ? missingPlats : "–"}</div>
+                <div className="font-display text-4xl font-bold">{rows.length || dbCards.size ? missingPlats : "–"}</div>
               </div>
             </div>
           </TabsContent>
