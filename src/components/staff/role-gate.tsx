@@ -51,7 +51,7 @@ export function UserRoles({ selfId }: { selfId: string }) {
 
   return <section className="mb-10"><h2 className="mb-4 text-2xl font-semibold">Användare och roller</h2><div className="divide-y border-y">
     {rows.map(r => <div key={r.id} className="flex flex-wrap items-center justify-between gap-3 py-3"><div><p className="font-medium">{r.display_name || r.email}</p><p className="text-sm text-muted-foreground">{r.email}</p></div>
-      {r.id === selfId ? <span className="text-sm">{r.roles.map(x => LABEL[x]).join(", ")} (du)</span> :
+      {r.id === selfId ? <div className="flex flex-wrap items-center gap-2"><PasswordButton userId={r.id} email={r.email ?? ""}/><span className="text-sm">{r.roles.map(x => LABEL[x]).join(", ")} (du)</span></div> :
         <div className="flex flex-wrap items-center gap-2"><PasswordButton userId={r.id} email={r.email ?? ""}/><select aria-label={`Roll för ${r.email}`} className="rounded-md border bg-background px-3 py-2 text-sm" value={r.roles[0] ?? "kund"} onChange={e => setRole(r.id, e.target.value as AppRole)}>
           {(Object.keys(LABEL) as AppRole[]).map(k => <option key={k} value={k}>{LABEL[k]}</option>)}
         </select></div>}
