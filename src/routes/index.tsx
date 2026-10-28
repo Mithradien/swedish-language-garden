@@ -1,4 +1,5 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute } from "@tanstack/react-router";
+import { TopNav } from "@/components/top-nav";
 import { Fragment, useEffect, useMemo, useRef, useState, type ChangeEvent } from "react";
 
 const CSV_KEY = "bokningar.csv.v1";
@@ -377,17 +378,7 @@ function Index() {
   return (
     <main className="min-h-screen">
       <header className="screen-only bg-primary text-primary-foreground">
-        <nav aria-label="Huvudmeny" className="border-b border-primary-foreground/20">
-          <div className="mx-auto flex max-w-6xl flex-wrap items-center gap-1 px-6 py-2 font-display text-sm uppercase tracking-wider">
-            {([["/", "Översikt"], ["/boka", "Boka tid"], ["/kund", "Kundsida"], ["/personal", "Personal"]] as const).map(([to, label]) => (
-              <Link key={to} to={to} activeOptions={{ exact: true }}
-                className="rounded-sm px-3 py-2 opacity-80 transition hover:bg-primary-foreground/10 hover:opacity-100"
-                activeProps={{ className: "bg-primary-foreground/15 opacity-100" }}>
-                {label}
-              </Link>
-            ))}
-          </div>
-        </nav>
+        <TopNav />
         <div className="mx-auto flex max-w-6xl items-center gap-5 px-6 py-8">
           {settings.logo && (
             <img src={settings.logo} alt="" className="h-16 w-auto max-w-56 shrink-0 rounded-md bg-card p-2 object-contain" />
