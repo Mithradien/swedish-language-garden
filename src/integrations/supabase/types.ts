@@ -56,6 +56,60 @@ export type Database = {
         }
         Relationships: []
       }
+      work_orders: {
+        Row: {
+          booking_date: string
+          booking_key: string
+          depth_hb: number | null
+          depth_hf: number | null
+          depth_vb: number | null
+          depth_vf: number | null
+          finished_at: string | null
+          id: string
+          mechanic_id: string | null
+          note: string | null
+          regnr: string
+          service: string | null
+          started_at: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          booking_date: string
+          booking_key: string
+          depth_hb?: number | null
+          depth_hf?: number | null
+          depth_vb?: number | null
+          depth_vf?: number | null
+          finished_at?: string | null
+          id?: string
+          mechanic_id?: string | null
+          note?: string | null
+          regnr: string
+          service?: string | null
+          started_at?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          booking_date?: string
+          booking_key?: string
+          depth_hb?: number | null
+          depth_hf?: number | null
+          depth_vb?: number | null
+          depth_vf?: number | null
+          finished_at?: string | null
+          id?: string
+          mechanic_id?: string | null
+          note?: string | null
+          regnr?: string
+          service?: string | null
+          started_at?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
