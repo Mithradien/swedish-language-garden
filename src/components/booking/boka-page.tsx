@@ -11,14 +11,15 @@ import {
   type Choice, type DemoCar,
 } from "@/lib/booking-flow";
 import { createPublicBooking, publicCarLookup, publicTakenTimes } from "@/lib/public-booking.functions";
+import { Link } from "@tanstack/react-router";
+import { useAuth } from "@/hooks/use-auth";
+import { supabase } from "@/integrations/supabase/client";
 
-
-
-type Stage = "regnr" | "till" | "fran" | "tid" | "uppgifter" | "bekrafta" | "klar";
+type Stage = "regnr" | "konto" | "till" | "fran" | "tid" | "uppgifter" | "bekrafta" | "klar";
 
 const GROUPS = ["Regnummer", "Dina däck", "Tid", "Uppgifter", "Klart"];
 const GROUP_OF: Record<Stage, number> = {
-  regnr: 0, till: 1, fran: 1, tid: 2, uppgifter: 3, bekrafta: 3, klar: 4,
+  regnr: 0, konto: 0, till: 1, fran: 1, tid: 2, uppgifter: 3, bekrafta: 3, klar: 4,
 };
 
 const SVC_DOT: Record<Service, string> = {
@@ -45,6 +46,20 @@ export function Boka() {
   const [epost, setEpost] = useState("");
   const [notering, setNotering] = useState("");
   const [error, setError] = useState("");
+  const { user } = useAuth();
+
+  // Inloggad kund: fyll i sparade kontaktuppgifter.
+  useEffect(() => {
+    if (!user) return;
+    let live = true;
+    supabase.from("profiles").select("display_name,phone,email").eq("id", user.id).maybeSingle().then(({ data }) => {
+      if (!live) return;
+      setNamn((v) => v || data?.display_name || "");
+      setTelefon((v) => v || data?.phone || "");
+      setEpost((v) => v || data?.email || user.email || "");
+    });
+    return () => { live = false; };
+  }, [user]);
 
   // Okänt regnummer: båda svaren är möjliga. Känd bil utan däck: fråga 1 är redan besvarad.
   const hasStored = car ? car.harDack : true;
