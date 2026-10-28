@@ -41,7 +41,7 @@ export function CustomerPortal() {
   const [details, setDetails] = useState<PreviewVehicle | null>(null);
   const [photoOpen, setPhotoOpen] = useState(false);
   const [tab, setTab] = useState("overview");
-  const [, setAddress] = useState<CustomerAddress | null>(null);
+  const [address, setAddress] = useState<CustomerAddress | null>(null);
   const approved = visiblePreviewVehicles(vehicles, EXAMPLE_CUSTOMER);
   const mine = vehicles.filter(v => v.ownerId === EXAMPLE_CUSTOMER);
   const upcoming = appointments.filter(a => a.customerId === EXAMPLE_CUSTOMER && a.status === "Bokad").sort((a,b) => (a.date + a.time).localeCompare(b.date + b.time));

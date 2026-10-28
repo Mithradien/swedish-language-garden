@@ -5,8 +5,8 @@ import { Input } from "@/components/ui/input";
 
 export type CustomerAddress = { street: string; postalCode: string; city: string };
 
-export function CustomerAddressForm({ onSave }: { onSave: (address: CustomerAddress) => void }) {
-  const [address, setAddress] = useState<CustomerAddress>({ street: "", postalCode: "", city: "" });
+export function CustomerAddressForm({ initialAddress, onSave }: { initialAddress?: CustomerAddress | null; onSave: (address: CustomerAddress) => void }) {
+  const [address, setAddress] = useState<CustomerAddress>(initialAddress ?? { street: "", postalCode: "", city: "" });
   const [saved, setSaved] = useState(false);
   function submit(event: FormEvent) {
     event.preventDefault();
