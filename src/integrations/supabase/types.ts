@@ -80,6 +80,48 @@ export type Database = {
         }
         Relationships: []
       }
+      car_storage: {
+        Row: {
+          created_at: string
+          email: string
+          kundnr: string
+          lagerplats: string
+          min_depth: number | null
+          modell: string
+          owner: string
+          phone: string
+          regnr: string
+          tires: Json
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          email?: string
+          kundnr?: string
+          lagerplats?: string
+          min_depth?: number | null
+          modell?: string
+          owner?: string
+          phone?: string
+          regnr: string
+          tires?: Json
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          email?: string
+          kundnr?: string
+          lagerplats?: string
+          min_depth?: number | null
+          modell?: string
+          owner?: string
+          phone?: string
+          regnr?: string
+          tires?: Json
+          updated_at?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           created_at: string
