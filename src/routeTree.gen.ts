@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AnkomstRouteImport } from './routes/ankomst'
 import { Route as BokaRouteImport } from './routes/boka'
+import { Route as InstallningarRouteImport } from './routes/installningar'
 import { Route as KundRouteImport } from './routes/kund'
 import { Route as LoggaInRouteImport } from './routes/logga-in'
 import { Route as PersonalRouteImport } from './routes/personal'
@@ -29,6 +30,11 @@ const AnkomstRoute = AnkomstRouteImport.update({
 const BokaRoute = BokaRouteImport.update({
   id: '/boka',
   path: '/boka',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const InstallningarRoute = InstallningarRouteImport.update({
+  id: '/installningar',
+  path: '/installningar',
   getParentRoute: () => rootRouteImport,
 } as any)
 const KundRoute = KundRouteImport.update({
@@ -51,6 +57,7 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/ankomst': typeof AnkomstRoute
   '/boka': typeof BokaRoute
+  '/installningar': typeof InstallningarRoute
   '/kund': typeof KundRoute
   '/logga-in': typeof LoggaInRoute
   '/personal': typeof PersonalRoute
@@ -59,6 +66,7 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/ankomst': typeof AnkomstRoute
   '/boka': typeof BokaRoute
+  '/installningar': typeof InstallningarRoute
   '/kund': typeof KundRoute
   '/logga-in': typeof LoggaInRoute
   '/personal': typeof PersonalRoute
@@ -68,20 +76,36 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/ankomst': typeof AnkomstRoute
   '/boka': typeof BokaRoute
+  '/installningar': typeof InstallningarRoute
   '/kund': typeof KundRoute
   '/logga-in': typeof LoggaInRoute
   '/personal': typeof PersonalRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/ankomst' | '/boka' | '/kund' | '/logga-in' | '/personal'
+  fullPaths:
+    | '/'
+    | '/ankomst'
+    | '/boka'
+    | '/installningar'
+    | '/kund'
+    | '/logga-in'
+    | '/personal'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/ankomst' | '/boka' | '/kund' | '/logga-in' | '/personal'
+  to:
+    | '/'
+    | '/ankomst'
+    | '/boka'
+    | '/installningar'
+    | '/kund'
+    | '/logga-in'
+    | '/personal'
   id:
     | '__root__'
     | '/'
     | '/ankomst'
     | '/boka'
+    | '/installningar'
     | '/kund'
     | '/logga-in'
     | '/personal'
@@ -91,6 +115,7 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AnkomstRoute: typeof AnkomstRoute
   BokaRoute: typeof BokaRoute
+  InstallningarRoute: typeof InstallningarRoute
   KundRoute: typeof KundRoute
   LoggaInRoute: typeof LoggaInRoute
   PersonalRoute: typeof PersonalRoute
@@ -117,6 +142,13 @@ declare module '@tanstack/react-router' {
       path: '/boka'
       fullPath: '/boka'
       preLoaderRoute: typeof BokaRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/installningar': {
+      id: '/installningar'
+      path: '/installningar'
+      fullPath: '/installningar'
+      preLoaderRoute: typeof InstallningarRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/kund': {
@@ -147,6 +179,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AnkomstRoute: AnkomstRoute,
   BokaRoute: BokaRoute,
+  InstallningarRoute: InstallningarRoute,
   KundRoute: KundRoute,
   LoggaInRoute: LoggaInRoute,
   PersonalRoute: PersonalRoute,
