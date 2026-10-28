@@ -15,6 +15,9 @@ Förutsättning: ingen Lovable Cloud eller extern lagring; verkliga inloggningar
 
 # Nuvarande att-göra (en punkt i taget, avstämning inför varje)
 
+- [x] Färgmarkering av mönsterdjup på kundsidan med separata sommar- och vintergränser.
+- [ ] Superadmin kan justera mönsterdjupsgränser i inställningar (väntar på riktiga personalbehörigheter på egen server).
+
 - [x] Spara inläst CSV/Excel lokalt i webbläsaren, plus knapp för att rensa.
 - [x] Bara ankomsttid i tidskolumnen (t.ex. `07:00`).
 - [x] Rast-rader: Frukostrast 09:00–09:15 och Lunchrast 12:00–12:45.
