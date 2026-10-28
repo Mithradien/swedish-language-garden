@@ -13,7 +13,7 @@ const STATUS_LABEL: Record<string, string> = { ej_paborjad: "Ej påbörjad", pab
 export function MechanicView({ userId }: { userId: string }) {
   const [date, setDate] = useState("");
   const [bookings, setBookings] = useState<Booking[]>([]);
-  const [orders, setOrders] = useState<Record<string, Order>>({});
+  const [orders, setOrders] = useState<Partial<Record<string, Order>>>({});
   const [open, setOpen] = useState<string | null>(null);
 
   useEffect(() => { setDate(localDate()); setBookings(readBookings(window.localStorage)); }, []);
@@ -68,7 +68,7 @@ function Protocol({ order, onSave }: { order?: Order; onSave: (p: Partial<Order>
   const num = (s: string) => { const n = parseFloat(s.replace(",", ".")); return Number.isFinite(n) ? n : null; };
   return <form className="mt-4 rounded-md border bg-secondary/40 p-4" onSubmit={async e => {
     e.preventDefault();
-    const ok = await onSave({ ...Object.fromEntries(WHEELS.map(([k]) => [k, num(vals[k])])), note: note || null });
+    const ok = await onSave({ ...Object.fromEntries(WHEELS.map(([k]) => [k, num(vals[k] ?? "")])), note: note || null });
     setMsg(ok ? "Protokollet är sparat." : "Kunde inte spara.");
   }}>
     <p className="mb-3 text-sm font-medium">Mönsterdjup (mm)</p>
