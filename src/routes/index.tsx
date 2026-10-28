@@ -1,3 +1,5 @@
+import { toast } from "sonner";
+import { syncBookingsToDb } from "@/lib/booking-sync";
 import { createFileRoute } from "@tanstack/react-router";
 import { TopNav } from "@/components/top-nav";
 import { Fragment, useEffect, useMemo, useRef, useState, type ChangeEvent } from "react";
@@ -250,11 +252,15 @@ function Index() {
     const f = e.target.files?.[0];
     if (!f) return;
     const text = await f.text();
-    setBookings(parseBookingsCsv(text));
+    const parsed = parseBookingsCsv(text);
+    setBookings(parsed);
     setCsvName(f.name);
     setDay("alla");
     save(CSV_KEY, { name: f.name, text });
     e.target.value = "";
+    const n = await syncBookingsToDb(parsed);
+    if (n !== null) toast.success(`${n} bokningar sparade i databasen`);
+    else toast.info("Bokningarna visas här, men sparas i databasen bara när en superadmin är inloggad.");
   }
 
   async function onXls(e: ChangeEvent<HTMLInputElement>) {

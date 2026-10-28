@@ -3,7 +3,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { supabase } from "@/integrations/supabase/client";
 import type { Database } from "@/integrations/supabase/types";
-import { localDate, readBookings, statusKey } from "@/lib/arrival";
+import { localDate, statusKey } from "@/lib/arrival";
+import { fetchBookingsForDate } from "@/lib/booking-sync";
 import type { Booking } from "@/lib/bookings";
 
 type Order = Database["public"]["Tables"]["work_orders"]["Row"];
@@ -16,7 +17,8 @@ export function MechanicView({ userId }: { userId: string }) {
   const [orders, setOrders] = useState<Partial<Record<string, Order>>>({});
   const [open, setOpen] = useState<string | null>(null);
 
-  useEffect(() => { setDate(localDate()); setBookings(readBookings(window.localStorage)); }, []);
+  useEffect(() => { setDate(localDate()); }, []);
+  useEffect(() => { if (date) fetchBookingsForDate(date).then(setBookings); }, [date]);
   const list = useMemo(() => bookings.filter(b => b.date === date).sort((a, b) => a.start.localeCompare(b.start)), [bookings, date]);
 
   async function load() {
@@ -40,7 +42,7 @@ export function MechanicView({ userId }: { userId: string }) {
       <h1 className="text-3xl font-bold">Arbetslista</h1>
       <label className="text-sm font-medium">Dag<Input type="date" className="mt-1" value={date} onChange={e => setDate(e.target.value)}/></label>
     </div>
-    {!list.length && <p className="text-muted-foreground">Inga bokningar denna dag. Bokningarna hämtas från filen som lästs in i Bokningsöversikten på den här enheten.</p>}
+    {!list.length && <p className="text-muted-foreground">Inga bokningar denna dag. Bokningar kommer in när en superadmin läser in bokningsfilen i Bokningsöversikten.</p>}
     <ul className="divide-y border-y">
       {list.map(b => {
         const key = statusKey(b); const o = orders[key]; const status = o?.status ?? "ej_paborjad";
