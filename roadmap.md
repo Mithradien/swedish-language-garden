@@ -15,6 +15,8 @@ Förutsättning: ingen Lovable Cloud eller extern lagring; verkliga inloggningar
 
 # Nuvarande att-göra (en punkt i taget, avstämning inför varje)
 
+- [x] Kompakt A4-utskrift så att en hel dagslista med obokade tider och raster ryms på ett ark.
+
 - [x] Färgmarkering av mönsterdjup på kundsidan med separata sommar- och vintergränser.
 - [ ] Superadmin kan justera mönsterdjupsgränser i inställningar (väntar på riktiga personalbehörigheter på egen server).
 

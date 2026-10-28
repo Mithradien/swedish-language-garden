@@ -191,24 +191,32 @@
     --muted-foreground: var(--foreground);
     --border: oklch(0.75 0 0);
   }
-  body { font-size: 11pt; print-color-adjust: exact; -webkit-print-color-adjust: exact; }
+  body { font-size: 9pt; print-color-adjust: exact; -webkit-print-color-adjust: exact; }
   .screen-only, [role="tabpanel"]:not(.print-list), [role="tabpanel"][data-state="inactive"] { display: none !important; }
   .print-only { display: block; }
   main { min-height: 0 !important; }
   .booking-content { max-width: none; padding: 0; margin: 0; }
   .booking-content > *, .print-list > * { margin-block: 0 !important; }
   .print-list { margin: 0 !important; }
-  .print-heading { margin-bottom: 4mm !important; }
-  .print-heading h2 { font-size: 20pt; font-weight: 700; }
-  .print-heading p { margin-top: 1mm; font-size: 12pt; }
+  .print-heading { margin-bottom: 3mm !important; }
+  .print-heading h2 { font-size: 16pt; font-weight: 700; line-height: 1.1; }
+  .print-heading p { margin-top: 1mm; font-size: 9pt; line-height: 1.2; }
   .print-list .overflow-x-auto { overflow: visible; border: none; border-radius: 0; }
-  .print-list table { width: 100%; table-layout: auto; }
+  .print-list table { width: 100%; table-layout: fixed; }
+  .print-list th:nth-child(1) { width: 20%; }
+  .print-list th:nth-child(2) { width: 17%; }
+  .print-list th:nth-child(3) { width: 25%; }
+  .print-list th:nth-child(4) { width: 15%; }
+  .print-list th:nth-child(5) { width: 23%; }
   .print-list thead { display: table-header-group; }
   .print-list tr { break-inside: avoid; }
-  .print-list th, .print-list td { padding: 1.35mm 1.2mm; font-size: 11pt; }
+  .print-list th, .print-list td { padding: 1mm 1.2mm; font-size: 9pt; line-height: 1.2; }
+  .print-list td > .inline-flex { gap: 1mm; }
+  .print-list td button { font-size: inherit; line-height: inherit; }
+  .print-list td button.border-2 { width: 100% !important; min-width: 0 !important; }
   .print-list td { overflow-wrap: anywhere; }
   .print-list .status-mark { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-  .print-list .lunch-row td { background: #d9d9d9 !important; color: #000 !important; text-align: center; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  .print-list .lunch-row td { background: var(--border) !important; color: var(--foreground) !important; text-align: center; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
   .print-list td span { font-size: inherit; }
   .print-list td .border-2 { border: none; padding: 0; letter-spacing: 0; }
   .print-list th { letter-spacing: 0; }
