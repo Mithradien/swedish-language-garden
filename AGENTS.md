@@ -22,3 +22,4 @@
 - Staff roles (superadmin/mekaniker/kund) live in the user_roles table checked via has_role(); the first signed-up account becomes superadmin by trigger. Never read roles from local storage. Data sits in Lovable Cloud (plain PostgreSQL) during development so it can be moved to the user's own server later.
 - Branding values (logo, colours, company fields) are read and written only through useSettings in src/lib/settings.ts and edited on the /installningar page, so every page shares one source instead of duplicating storage code.
 - The settings page separates branding in Allmänt from the existing UserAdmin in Konto, so account management is reused without duplicating access logic.
+- Excel car storage is upserted into car_storage via src/lib/car-storage-sync.ts (mergeCard keeps stored values when the new file has blanks; cars absent from a file are never deleted) so import history survives.

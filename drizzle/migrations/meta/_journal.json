@@ -29,6 +29,13 @@
       "when": 1793172396588,
       "tag": "0003_arrivals_and_statuses",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1793178100109,
+      "tag": "0004_car_storage",
+      "breakpoints": true
     }
   ]
 }
