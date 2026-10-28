@@ -32,3 +32,16 @@ export const createUserWithRole = createServerFn({ method: "POST" })
     if (roleErr) throw new Error("Användaren skapades men rollen kunde inte sparas");
     return { id, email: data.email };
   });
+
+// Superadmin sets a new password for another account (e.g. a mechanic who forgot it).
+export const setUserPassword = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d) => z.object({ userId: z.string().uuid(), password: z.string().min(8).max(72) }).parse(d))
+  .handler(async ({ data, context }) => {
+    const { data: isAdmin } = await context.supabase.rpc("has_role", { _user_id: context.userId, _role: "superadmin" });
+    if (!isAdmin) throw new Error("Endast superadmin kan byta lösenord");
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { error } = await supabaseAdmin.auth.admin.updateUserById(data.userId, { password: data.password });
+    if (error) throw new Error(/weak|pwned|leaked/i.test(error.message) ? "Lösenordet är för svagt eller känt från dataläckor – välj ett annat" : "Kunde inte byta lösenord");
+    return { ok: true };
+  });
