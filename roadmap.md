@@ -1,5 +1,7 @@
 # Kundbokning på egen server
 
+- [ ] Surfplattans ankomstsida: regnummer, dagens bokning, bekräftelse och lokal ankomstmarkering.
+
 - [x] Visa obokade schematider som tomma rader i bokningsöversikt och utskrift.
 
 - [ ] Fastställ och godkänn första versionens upplägg för egen drift.
