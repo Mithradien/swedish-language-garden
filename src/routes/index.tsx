@@ -1,5 +1,6 @@
 import { toast } from "sonner";
 import { syncBookingsToDb } from "@/lib/booking-sync";
+import { fetchDbStatuses, saveDbStatus } from "@/lib/status-sync";
 import { createFileRoute } from "@tanstack/react-router";
 import { TopNav } from "@/components/top-nav";
 import { Fragment, useEffect, useMemo, useRef, useState, type ChangeEvent } from "react";
@@ -220,7 +221,12 @@ function Index() {
 
   const [statuses, setStatuses] = useState<Record<string, ArrivalStatus>>({});
   useEffect(() => {
-    const refresh = () => { try { setStatuses(readStatuses(localStorage)); } catch { /* ignoreras */ } };
+    const refresh = () => {
+      let local: Record<string, ArrivalStatus> = {};
+      try { local = readStatuses(localStorage); } catch { /* ignoreras */ }
+      setStatuses(local);
+      fetchDbStatuses().then(db => { if (db) setStatuses({ ...local, ...db }); });
+    };
     refresh();
     window.addEventListener("storage", refresh);
     window.addEventListener("arrival-status-changed", refresh);
@@ -233,6 +239,7 @@ function Index() {
   }, []);
   const statusOf = (b: ScheduleRow): ArrivalStatus => statuses[statusKey(b)] ?? "vantas";
   function setStatus(b: ScheduleRow, s: ArrivalStatus) {
+    void saveDbStatus(statusKey(b), b.regnr, s);
     if (s === "vantas") {
       try { setStatuses(resetArrival(localStorage, statusKey(b))); }
       catch { setStatuses((prev) => { const next = { ...prev }; delete next[statusKey(b)]; return next; }); }
