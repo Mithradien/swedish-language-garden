@@ -13,6 +13,9 @@ import workshop from "@/assets/customer-tires.jpg";
 import { CustomerAddressForm, type CustomerAddress } from "./customer-address";
 import { TopNav } from "@/components/top-nav";
 import { TREAD_STYLES, TreadGuide, TreadReading } from "./tread-reading";
+import { useAuth } from "@/hooks/use-auth";
+import { supabase } from "@/integrations/supabase/client";
+import { CustomerAccount } from "./customer-account";
 
 export function PortalHeader({ staff = false }: { staff?: boolean }) {
   return <header className="border-b bg-primary text-primary-foreground"><TopNav />
@@ -66,16 +69,33 @@ export function CustomerPortal() {
     try { setVehicles(requestPreviewVehicle(vehicles, regnr, EXAMPLE_CUSTOMER)); setClaimOpen(false); setRegnr(""); setMessage("Exempelförfrågan väntar på godkännande. Ingen riktig förfrågan har skickats."); }
     catch(error) { setMessage(error instanceof Error ? error.message : "Kontrollera regnumret."); }
   }
-  function authSubmit(e: FormEvent) { e.preventDefault(); setAuthMessage("Kundkonton är inte aktiverade. Inga uppgifter har skickats eller sparats. Du kan öppna exempelvyn nedan."); }
+  const { user, loading } = useAuth();
+  const [busy, setBusy] = useState(false);
+  async function authSubmit(e: FormEvent<HTMLFormElement>) {
+    e.preventDefault(); setBusy(true); setAuthMessage("");
+    const f = new FormData(e.currentTarget); const email = String(f.get("email") ?? ""); const password = String(f.get("password") ?? "");
+    if (authMode === "login") {
+      const { error } = await supabase.auth.signInWithPassword({ email, password });
+      if (error) setAuthMessage("Fel e-post eller lösenord, eller så är kontot inte bekräftat än.");
+    } else if (authMode === "signup") {
+      const { error } = await supabase.auth.signUp({ email, password, options: { emailRedirectTo: window.location.origin + "/kund", data: { display_name: String(f.get("name") ?? ""), phone: String(f.get("phone") ?? "") } } });
+      setAuthMessage(error ? "Kunde inte skapa kontot: " + error.message : "Kolla din e-post och klicka på länken för att bekräfta kontot.");
+    } else {
+      await supabase.auth.resetPasswordForEmail(email, { redirectTo: window.location.origin + "/aterstall-losenord" });
+      setAuthMessage("Om e-posten finns hos oss har vi skickat en länk för att välja nytt lösenord.");
+    }
+    setBusy(false);
+  }
   function exitPreview() { setAddress(null); setPreview(false); setVehicles(exampleVehicles()); setAppointments([{ id: "example-appointment", customerId: EXAMPLE_CUSTOMER, vehicleId: "car-1", date: exampleDate(), time: "09:00", service: "Skifte och förvaring", status: "Bokad" }]); setMessage(""); setAuthMessage(""); }
 
+  if (!loading && user && !preview) return <main className="min-h-screen"><PortalHeader /><CustomerAccount /></main>;
   return <main className="min-h-screen"><PortalHeader /><PreviewNotice />
     {!preview ? <div className="mx-auto grid max-w-6xl gap-10 px-5 py-10 sm:px-8 lg:grid-cols-[1.1fr_1fr] lg:gap-16 lg:py-16">
       <section><p className="mb-3 font-display text-sm font-semibold uppercase text-muted-foreground">Kundportal</p><h1 className="text-5xl font-bold uppercase sm:text-6xl">Däckhotell<br/><span className="text-muted-foreground">Mina sidor</span></h1><img src={workshop} width={1280} height={720} alt="Däck och fälg i en däckverkstad, illustrativ bild" className="mt-8 aspect-video w-full rounded-md object-cover"/><div className="mt-5 flex flex-wrap items-center gap-x-6 gap-y-2 text-sm text-muted-foreground"><span className="flex items-center gap-2"><CarFront className="h-4 w-4"/>Mina bilar</span><span className="flex items-center gap-2"><CalendarDays className="h-4 w-4"/>Mina bokningar</span><span className="flex items-center gap-2"><Gauge className="h-4 w-4"/>Mina däck</span></div></section>
       <section className="self-start lg:pt-4"><div className="mb-7 flex items-center gap-3"><LockKeyhole className="h-6 w-6"/><h2 className="text-3xl font-semibold">{authMode === "login" ? "Logga in" : authMode === "signup" ? "Skapa konto" : "Återställ lösenord"}</h2></div>
         {authMode !== "forgot" && <div className="mb-6 flex border-b"><Button variant="ghost" className={authMode === "login" ? "rounded-none border-b-2 border-primary" : "rounded-none text-muted-foreground"} onClick={() => {setAuthMode("login"); setAuthMessage("");}}>Logga in</Button><Button variant="ghost" className={authMode === "signup" ? "rounded-none border-b-2 border-primary" : "rounded-none text-muted-foreground"} onClick={() => {setAuthMode("signup");setAuthMessage("");}}>Skapa konto</Button></div>}
-        <form className="space-y-5" onSubmit={authSubmit}>{authMode === "signup" && <><Field label="Namn" name="name" autoComplete="name" required/><Field label="Telefon" name="phone" type="tel" autoComplete="tel" required/></>}<Field label="E-post" name="email" type="email" autoComplete="email" required/>{authMode !== "forgot" && <Field label="Lösenord" name="password" type="password" autoComplete={authMode === "signup" ? "new-password" : "current-password"} minLength={12} required/>}
-          <Button type="submit" className="h-12 w-full font-display text-lg uppercase" disabled title="Aktiveras när din egen server är ansluten">{authMode === "login" ? "Logga in" : authMode === "signup" ? "Skapa konto" : "Skicka återställningslänk"}<ArrowRight/></Button><p className="text-sm text-muted-foreground">Kundkonton öppnar när din egen server är ansluten. Ange inte riktiga lösenord här.</p>
+        <form className="space-y-5" onSubmit={authSubmit}>{authMode === "signup" && <><Field label="Namn" name="name" autoComplete="name" required/><Field label="Telefon" name="phone" type="tel" autoComplete="tel" required/></>}<Field label="E-post" name="email" type="email" autoComplete="email" required/>{authMode !== "forgot" && <Field label="Lösenord" name="password" type="password" autoComplete={authMode === "signup" ? "new-password" : "current-password"} minLength={8} required/>}
+          <Button type="submit" className="h-12 w-full font-display text-lg uppercase" disabled={busy}>{authMode === "login" ? "Logga in" : authMode === "signup" ? "Skapa konto" : "Skicka återställningslänk"}<ArrowRight/></Button><p className="text-sm text-muted-foreground">Använd samma e-post eller telefonnummer som när du bokat, så kopplas dina bilar och bokningar automatiskt.</p>
         </form><Button variant="link" className="mt-2 px-0" onClick={() => {setAuthMode(authMode === "forgot" ? "login" : "forgot");setAuthMessage("");}}>{authMode === "forgot" ? "Tillbaka till inloggning" : "Glömt lösenord?"}</Button>{authMessage && <p role="status" className="mt-4 text-sm">{authMessage}</p>}
         <div className="mt-8 border-t pt-6"><Button variant="outline" className="h-11 w-full" onClick={() => setPreview(true)}>Öppna exempelvy<ChevronRight/></Button></div>
       </section>
