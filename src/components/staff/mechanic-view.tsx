@@ -61,7 +61,7 @@ export function MechanicView({ userId }: { userId: string }) {
   </div>;
 }
 
-function Protocol({ order, onSave }: { order?: Order; onSave: (p: Partial<Order>) => Promise<boolean> }) {
+function Protocol({ order, onSave }: { order: Order | undefined; onSave: (p: Partial<Order>) => Promise<boolean> }) {
   const [vals, setVals] = useState<Record<string, string>>(() => Object.fromEntries(WHEELS.map(([k]) => [k, order?.[k] != null ? String(order[k]) : ""])));
   const [note, setNote] = useState(order?.note ?? "");
   const [msg, setMsg] = useState("");
