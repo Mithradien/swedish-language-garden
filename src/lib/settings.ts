@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 export const SETTINGS_KEY = "bokningar.settings.v1";
 
@@ -43,32 +43,34 @@ function applySignal(signal: string) {
   root.style.setProperty("--signal-foreground", readableOn(signal));
 }
 
+function readStored(): Settings {
+  try {
+    const raw = localStorage.getItem(SETTINGS_KEY);
+    return raw ? { ...DEFAULT_SETTINGS, ...(JSON.parse(raw) as Partial<Settings>) } : DEFAULT_SETTINGS;
+  } catch {
+    return DEFAULT_SETTINGS;
+  }
+}
+
 /**
- * Läser_inställningar från den här webbläsaren, sparar dem vid varje ändring
- * och håller färgen korrekt även i andra fönster som har samma sida öppen.
+ * Läser inställningar ur den här webbläsaren. Varje ändring sparas direkt, så
+ * logotyp, färger och företagsuppgifter finns kvar när sidan öppnas igen –
+ * och följer med till andra fönster som har samma sida öppen.
  */
 export function useSettings() {
-  const [settings, setSettings] = useState<Settings>(DEFAULT_SETTINGS);
+  const [settings, setRaw] = useState<Settings>(DEFAULT_SETTINGS);
   const saved = useRef("");
 
   useEffect(() => {
-    const read = (): Settings => {
-      try {
-        const raw = localStorage.getItem(SETTINGS_KEY);
-        return raw ? { ...DEFAULT_SETTINGS, ...(JSON.parse(raw) as Partial<Settings>) } : DEFAULT_SETTINGS;
-      } catch {
-        return DEFAULT_SETTINGS;
-      }
-    };
-    saved.current = JSON.stringify(read());
-    setSettings(read());
-    // Håller färg/logga korrekt även i andra fönster som har samma sida öppen.
+    const next = readStored();
+    saved.current = JSON.stringify(next);
+    setRaw(next);
     const sync = () => {
-      const next = read();
-      const json = JSON.stringify(next);
+      const fresh = readStored();
+      const json = JSON.stringify(fresh);
       if (json === saved.current) return;
       saved.current = json;
-      setSettings(next);
+      setRaw(fresh);
     };
     window.addEventListener("storage", sync);
     window.addEventListener("settings-changed", sync);
@@ -78,15 +80,22 @@ export function useSettings() {
     };
   }, []);
 
-  useEffect(() => {
-    const json = JSON.stringify(settings);
-    if (json === saved.current) return;
-    saved.current = json;
-    try {
-      localStorage.setItem(SETTINGS_KEY, json);
-      window.dispatchEvent(new Event("settings-changed"));
-    } catch { /* för stor logotyp ignoreras */ }
-  }, [settings]);
+  const setSettings = useCallback((update: (prev: Settings) => Settings) => {
+    setRaw((prev) => {
+      const next = update(prev);
+      const json = JSON.stringify(next);
+      if (json !== saved.current) {
+        saved.current = json;
+        try {
+          localStorage.setItem(SETTINGS_KEY, json);
+        } catch {
+          // för stor logotyp: visas ändå tills sidan stängs
+        }
+        window.dispatchEvent(new Event("settings-changed"));
+      }
+      return next;
+    });
+  }, []);
 
   useEffect(() => {
     applySignal(settings.signal);
