@@ -36,7 +36,7 @@ export const EXAMPLE_SCHEDULE: PreviewSchedule = {
 };
 export function exampleVehicles(): PreviewVehicle[] {
   return [
-    { id: "car-1", ownerId: EXAMPLE_CUSTOMER, regnr: "ABC123", model: "Volvo V60", approved: true, tread: [6.2, 6.1, 5.8, 5.9], dot: "2324", tire: "Vinterdäck · 225/45 R17" },
+    { id: "car-1", ownerId: EXAMPLE_CUSTOMER, regnr: "ABC123", model: "Volvo V60", approved: true, tread: [2.5, 3.5, 4.5, 6.2], dot: "2324", tire: "Vinterdäck · 225/45 R17" },
     { id: "car-2", ownerId: EXAMPLE_CUSTOMER, regnr: "DEF456", model: "Volkswagen Golf", approved: false, tread: null, dot: "", tire: "" },
   ];
 }
