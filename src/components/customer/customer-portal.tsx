@@ -10,12 +10,13 @@ import { SERVICES } from "@/lib/bookings";
 import { EXAMPLE_CUSTOMER, EXAMPLE_SCHEDULE, displayDate, exampleDate, exampleVehicles, previewSlots, requestPreviewVehicle, updatePreviewAppointment, visiblePreviewVehicles, type PreviewAppointment, type PreviewVehicle } from "@/lib/customer-preview";
 import workshop from "@/assets/customer-tires.jpg";
 import { CustomerAddressForm, type CustomerAddress } from "./customer-address";
+import { TopNav } from "@/components/top-nav";
 
 export function PortalHeader({ staff = false }: { staff?: boolean }) {
-  return <header className="border-b bg-primary text-primary-foreground"><div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-4 px-5 py-5 sm:px-8">
-    <Link to="/kund" className="flex items-center gap-3"><span className="flex h-10 w-10 items-center justify-center rounded-md bg-signal text-signal-foreground"><CarFront /></span><span className="font-display text-2xl font-bold uppercase">Däckhotell<span className="ml-2 text-sm font-medium text-signal">{staff ? "Personal" : "Mina sidor"}</span></span></Link>
-    <nav className="flex items-center gap-1" aria-label="Sidmeny"><Button variant="ghost" asChild><Link to="/boka">Boka tid</Link></Button><Button variant="ghost" asChild><Link to="/">Bokningsöversikt</Link></Button><Button variant="ghost" asChild><Link to={staff ? "/kund" : "/personal"}>{staff ? "Kundsida" : "Personal"}<ArrowRight /></Link></Button></nav>
-  </div></header>;
+  return <header className="border-b bg-primary text-primary-foreground"><TopNav />
+    <div className="mx-auto flex max-w-6xl flex-wrap items-center gap-4 px-6 py-5">
+      <Link to="/kund" className="flex items-center gap-3"><span className="flex h-10 w-10 items-center justify-center rounded-md bg-signal text-signal-foreground"><CarFront /></span><span className="font-display text-2xl font-bold uppercase">Däckhotell<span className="ml-2 text-sm font-medium text-signal">{staff ? "Personal" : "Mina sidor"}</span></span></Link>
+    </div></header>;
 }
 export function PreviewNotice() {
   return <div role="status" className="border-b bg-signal/20 text-foreground"><div className="mx-auto flex max-w-6xl items-start gap-2 px-5 py-3 text-sm sm:px-8"><ShieldCheck className="mt-0.5 h-4 w-4 shrink-0"/><p><strong>Förhandsvisning med exempeluppgifter.</strong> Inga riktiga konton, bokningar eller bilder sparas. Din egen server är ännu inte ansluten.</p></div></div>;
