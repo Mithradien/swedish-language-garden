@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { CarFront, CalendarDays, Gauge, History, UserRound } from "lucide-react";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { TREAD_STYLES, TreadReading } from "@/components/customer/tread-reading";
+import { TREAD_STYLES, TreadGuide, TreadReading } from "@/components/customer/tread-reading";
 import { tireSeason, treadColor } from "@/lib/tread";
 import { carBookings, fetchCarHistory, type CarEvent, type CarWorkOrder } from "@/lib/admin-car";
 import { statusKey, type ArrivalStatus } from "@/lib/arrival";
@@ -46,7 +46,7 @@ export function CarDetailDialog({ regnr, card, storage, bookings, statuses, onCl
           <p className="break-words text-sm text-muted-foreground">{t.marke || "Märke ej angivet"}</p>
           <TreadReading depth={t.depth} tire={t.typ}/>
           {t.inland && <p className="mt-2 text-xs text-foreground">Inlämnad {t.inland}</p>}
-        </article>)}</div> : <p className="text-sm text-muted-foreground">Inga detaljerade däckuppgifter finns för bilen.{card?.minDepth != null && ` Minsta mönsterdjup: ${card.minDepth.toLocaleString("sv-SE")} mm.`}</p>}
+        </article>)}</div> : null}{card?.tires.length ? <TreadGuide tire={card.tires[0]!.typ}/> : <p className="text-sm text-muted-foreground">Inga detaljerade däckuppgifter finns för bilen.{card?.minDepth != null && ` Minsta mönsterdjup: ${card.minDepth.toLocaleString("sv-SE")} mm.`}</p>}
       </section>
       <section className="space-y-4 border-b pb-6">
         <h2 className="flex items-center gap-2 text-2xl font-semibold"><CalendarDays className="h-5 w-5"/>Bokningar <span className="text-base text-muted-foreground">{own.length}</span></h2>
