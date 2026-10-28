@@ -6,6 +6,9 @@ import { TopNav } from "@/components/top-nav";
 import { Fragment, useEffect, useMemo, useState, type ChangeEvent } from "react";
 import { ARRIVAL_HISTORY_KEY, STATUS_KEY, readStatuses, resetArrival, statusKey, type ArrivalStatus } from "@/lib/arrival";
 import { useSettings } from "@/lib/settings";
+import { useAuth } from "@/hooks/use-auth";
+import { searchCars } from "@/lib/admin-car";
+import { CarDetailDialog } from "@/components/staff/car-detail-dialog";
 
 const CSV_KEY = "bokningar.csv.v1";
 const XLS_KEY = "bokningar.xls.v1";
@@ -17,7 +20,7 @@ const STATUS: Record<ArrivalStatus, { label: string; cls: string }> = {
   ej: { label: "Ej ankommen", cls: "bg-st-noshow status-mark" },
   avbokad: { label: "Avbokad under dagen", cls: "bg-st-cancelled status-mark" },
 };
-import { FileSpreadsheet, FileText, Printer, Search, Tag, Upload } from "lucide-react";
+import { FileSpreadsheet, FileText, Printer, Search, Tag, Upload, ChevronDown, CarFront, ArrowRight } from "lucide-react";
 import { printLabel } from "@/lib/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
@@ -28,7 +31,7 @@ import {
 } from "@/components/ui/select";
 import {
   SERVICES, buildCarCards, guessColumns, normalizeRegnr, parseBookingsCsv, withEmptySlots,
-  type Booking, type CarCard, type ScheduleRow, type Service, type Tire,
+  type Booking, type ScheduleRow, type Service,
 } from "@/lib/bookings";
 
 
@@ -63,67 +66,11 @@ function ServiceTag({ s }: { s: Service }) {
   );
 }
 
-const depthTone = (d: number | null) =>
-  d == null ? "text-muted-foreground" : d < 3 ? "text-st-noshow" : d < 4 ? "text-st-cancelled" : "text-st-arrived";
-
-function TireCard({ card }: { card: CarCard }) {
-  const groups = new Map<string, Tire[]>();
-  for (const t of card.tires) {
-    const k = t.typ || "Däck";
-    groups.set(k, [...(groups.get(k) ?? []), t]);
-  }
-  return (
-    <div className="space-y-4 rounded-md border bg-card p-5">
-      <div className="flex flex-wrap items-baseline gap-x-6 gap-y-1">
-        <span className="font-display text-3xl font-bold uppercase tracking-widest">{card.regnr}</span>
-        {card.modell && <span className="font-display text-lg uppercase text-muted-foreground">{card.modell}</span>}
-        {card.lagerplats && (
-          <span className="font-display text-lg uppercase">Lagerplats <span className="text-signal">{card.lagerplats}</span></span>
-        )}
-        {card.minDepth != null && (
-          <span className={`font-display text-lg uppercase ${depthTone(card.minDepth)}`}>
-            Minsta mönsterdjup {card.minDepth.toFixed(1)} mm
-          </span>
-        )}
-      </div>
-      {(card.owner || card.kundnr || card.phone || card.email) && (
-        <div className="flex flex-wrap gap-x-6 gap-y-1 text-sm text-muted-foreground">
-          {card.owner && <span>{card.owner}</span>}
-          {card.kundnr && <span>Kundnr {card.kundnr}</span>}
-          {card.phone && <span>{card.phone}</span>}
-          {card.email && <span>{card.email}</span>}
-        </div>
-      )}
-      {groups.size ? (
-        [...groups.entries()].map(([typ, tires]) => (
-          <div key={typ} className="space-y-2">
-            <div className="font-display text-sm uppercase tracking-widest text-muted-foreground">{typ}</div>
-            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-              {tires.map((t, i) => (
-                <div key={i} className="rounded-md border bg-background p-3">
-                  <div className="font-display text-xl font-bold">{t.position}</div>
-                  <div className="text-sm tabular-nums">{t.dimension || "—"}</div>
-                  <div className="truncate text-sm text-muted-foreground">{t.marke || "—"}</div>
-                  <div className={`font-display text-2xl font-bold tabular-nums ${depthTone(t.depth)}`}>
-                    {t.depth == null ? "—" : `${t.depth.toFixed(1)} mm`}
-                  </div>
-                  {t.inland && <div className="text-xs text-muted-foreground">Inlämnad {t.inland}</div>}
-                </div>
-              ))}
-            </div>
-          </div>
-        ))
-      ) : (
-        <p className="text-sm text-muted-foreground">
-          Den här filen har inga hjuluppgifter – bara lagerplats{card.minDepth == null ? "" : " och minsta mönsterdjup"}.
-        </p>
-      )}
-    </div>
-  );
-}
-
 function Index() {
   const { settings } = useSettings();
+  const { hasRole } = useAuth();
+  const isStaff = hasRole("superadmin") || hasRole("mekaniker");
+  const [selectedRegnr, setSelectedRegnr] = useState<string | null>(null);
 
 
 
@@ -268,7 +215,7 @@ function Index() {
   const dayBooked = dayList.filter(b => b.service !== "").length;
   const q = normalizeRegnr(query);
   const hits = q ? sorted.filter((b) => b.regnr.includes(q)) : [];
-  const card = q ? cards.get(q) : undefined;
+  const matchingCars = searchCars(query, bookings, cards, platsMap);
 
 
   const stats = useMemo(() => {
@@ -322,20 +269,20 @@ function Index() {
               <td className="px-4 py-2.5 whitespace-nowrap tabular-nums">{b.start}</td>
               <td className="px-4 py-2.5">{b.service && (
                 <span className="inline-flex items-center gap-2">
+                  {isStaff ? <Button type="button" variant="outline" title={`Visa bil ${b.regnr}`} onClick={() => setSelectedRegnr(normalizeRegnr(b.regnr))}
+                    className={`h-8 w-30 min-w-30 shrink-0 justify-center rounded-sm border-2 border-primary px-2 font-display font-bold whitespace-nowrap ${STATUS[statusOf(b)].cls}`}>
+                    {b.regnr || "?"}
+                  </Button> : <span className={`inline-flex h-8 w-30 min-w-30 shrink-0 items-center justify-center rounded-sm border-2 border-primary px-2 font-display font-bold whitespace-nowrap ${STATUS[statusOf(b)].cls}`}>{b.regnr || "?"}</span>}
                   <Popover>
                     <PopoverTrigger asChild>
-                      <button type="button" title="Ändra status"
-                        style={{ width: "7.5rem", minWidth: "7.5rem" }}
-                        className={`inline-flex shrink-0 justify-center rounded-sm border-2 border-primary px-2 py-0.5 font-display font-bold tracking-widest whitespace-nowrap ${STATUS[statusOf(b)].cls}`}>
-                        {b.regnr || "?"}
-                      </button>
+                      <Button type="button" variant="ghost" size="icon" title="Ändra status" aria-label={`Ändra status för ${b.regnr} ${b.start}`} className="screen-only h-7 w-7"><ChevronDown className="h-4 w-4"/></Button>
                     </PopoverTrigger>
-                    <PopoverContent className="w-48 p-1">
+                    <PopoverContent className="w-56 p-1">
                       {(Object.keys(STATUS) as ArrivalStatus[]).map((s) => (
-                        <button key={s} type="button" onClick={() => setStatus(b, s)}
-                          className={`flex w-full items-center gap-2 rounded-sm px-3 py-2 text-left text-sm hover:bg-muted ${statusOf(b) === s ? "font-semibold" : ""}`}>
-                          <span className={`h-3 w-3 rounded-full border border-primary ${STATUS[s].cls}`} />{STATUS[s].label}
-                        </button>
+                        <Button key={s} type="button" variant="ghost" onClick={() => setStatus(b, s)}
+                          className={`flex w-full justify-start gap-2 rounded-sm px-3 py-2 text-left text-sm ${statusOf(b) === s ? "font-semibold" : ""}`}>
+                          <span className={`h-3 w-3 shrink-0 rounded-full border border-primary ${STATUS[s].cls}`} />{STATUS[s].label}
+                        </Button>
                       ))}
                     </PopoverContent>
                   </Popover>
@@ -470,11 +417,12 @@ function Index() {
             </div>
             {q && (
               <>
-                {card ? (
-                  <TireCard card={card} />
-                ) : platsMap.has(q) ? (
-                  <p className="text-sm">Lagerplats för <b>{q}</b>: <Plats r={q} /></p>
-                ) : null}
+                {isStaff && <div className="divide-y border-y">{matchingCars.map(regnr => {
+                  const info = cards.get(regnr);
+                  return <Button key={regnr} variant="ghost" onClick={() => setSelectedRegnr(regnr)} className="h-auto w-full justify-between gap-4 rounded-none px-3 py-4 text-left whitespace-normal" title={`Visa bil ${regnr}`}>
+                    <span className="flex min-w-0 items-center gap-3"><CarFront className="h-5 w-5 shrink-0"/><span className="min-w-0"><span className="block font-display text-xl font-bold">{regnr}</span><span className="block break-words text-sm text-muted-foreground">{info?.modell || "Modell ej angiven"}{(platsMap.get(regnr) || info?.lagerplats) && ` · Lagerplats ${platsMap.get(regnr) || info?.lagerplats}`}</span></span></span><ArrowRight className="h-5 w-5 shrink-0"/>
+                  </Button>;
+                })}{!matchingCars.length && <p className="py-4 text-sm text-muted-foreground">Ingen bil hittades.</p>}</div>}
                 <Table list={hits} showDate />
               </>
             )}
@@ -522,6 +470,7 @@ function Index() {
         </Tabs>
 
       </div>
+      {isStaff && selectedRegnr && <CarDetailDialog regnr={selectedRegnr} card={cards.get(selectedRegnr)} storage={platsMap.get(selectedRegnr)} bookings={bookings} statuses={statuses} onClose={() => setSelectedRegnr(null)}/> }
     </main>
   );
 }
