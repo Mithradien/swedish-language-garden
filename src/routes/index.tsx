@@ -84,8 +84,10 @@ function Index() {
   const [day, setDay] = useState("alla");
   const [query, setQuery] = useState("");
 
+  const [dbCards, setDbCards] = useState<Map<string, CarCard>>(new Map());
   useEffect(() => {
     fetchAllBookings().then(db => { if (db && db.length) { setBookings(db); setCsvName("Databasen"); } });
+    fetchCarStorage().then(db => { if (db) setDbCards(db); });
   }, []);
 
   useEffect(() => {
@@ -185,18 +187,27 @@ function Index() {
     const g = guessColumns(h);
     setRows(data); setHeaders(h); setRegCol(g.reg); setPlatsCol(g.plats); setXlsName(f.name);
     e.target.value = "";
+    const n = await syncCarStorage(buildCarCards(data));
+    if (n !== null) { toast.success(`${n} bilar uppdaterade i databasen`); fetchCarStorage().then(db => { if (db) setDbCards(db); }); }
+    else toast.info("Billagret visas här, men sparas i databasen bara när en superadmin är inloggad.");
   }
 
   const platsMap = useMemo(() => {
     const m = new Map<string, string>();
+    for (const c of dbCards.values()) if (c.lagerplats) m.set(c.regnr, c.lagerplats);
     for (const r of rows) {
       const k = normalizeRegnr(String(r[regCol] ?? ""));
-      if (k) m.set(k, String(r[platsCol] ?? ""));
+      const p = String(r[platsCol] ?? "").trim();
+      if (k && (p || !m.has(k))) m.set(k, p);
     }
     return m;
-  }, [rows, regCol, platsCol]);
+  }, [rows, regCol, platsCol, dbCards]);
 
-  const cards = useMemo(() => buildCarCards(rows), [rows]);
+  const cards = useMemo(() => {
+    const m = new Map(dbCards);
+    for (const c of buildCarCards(rows).values()) m.set(c.regnr, mergeCard(m.get(c.regnr), c));
+    return m;
+  }, [rows, dbCards]);
 
 
 
