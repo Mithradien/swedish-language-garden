@@ -43,6 +43,13 @@
       "when": 1793179655112,
       "tag": "0005_booking_contact_fields",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1793180114511,
+      "tag": "0006_customer_profile_fields",
+      "breakpoints": true
     }
   ]
 }
