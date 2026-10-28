@@ -6,6 +6,9 @@ import { useAuth, type AppRole } from "@/hooks/use-auth";
 import { StaffPreview } from "@/components/customer/staff-preview";
 import { TopNav } from "@/components/top-nav";
 import { MechanicView } from "./mechanic-view";
+import { useServerFn } from "@tanstack/react-start";
+import { toast } from "sonner";
+import { setUserPassword } from "@/lib/users.functions";
 
 const LABEL: Record<AppRole, string> = { superadmin: "Superadmin", mekaniker: "Mekaniker", kund: "Kund" };
 
@@ -49,9 +52,31 @@ export function UserRoles({ selfId }: { selfId: string }) {
   return <section className="mb-10"><h2 className="mb-4 text-2xl font-semibold">Användare och roller</h2><div className="divide-y border-y">
     {rows.map(r => <div key={r.id} className="flex flex-wrap items-center justify-between gap-3 py-3"><div><p className="font-medium">{r.display_name || r.email}</p><p className="text-sm text-muted-foreground">{r.email}</p></div>
       {r.id === selfId ? <span className="text-sm">{r.roles.map(x => LABEL[x]).join(", ")} (du)</span> :
-        <select aria-label={`Roll för ${r.email}`} className="rounded-md border bg-background px-3 py-2 text-sm" value={r.roles[0] ?? "kund"} onChange={e => setRole(r.id, e.target.value as AppRole)}>
+        <div className="flex flex-wrap items-center gap-2"><PasswordButton userId={r.id} email={r.email ?? ""}/><select aria-label={`Roll för ${r.email}`} className="rounded-md border bg-background px-3 py-2 text-sm" value={r.roles[0] ?? "kund"} onChange={e => setRole(r.id, e.target.value as AppRole)}>
           {(Object.keys(LABEL) as AppRole[]).map(k => <option key={k} value={k}>{LABEL[k]}</option>)}
-        </select>}
+        </select></div>}
     </div>)}
   </div></section>;
+}
+
+function PasswordButton({ userId, email }: { userId: string; email: string }) {
+  const setPw = useServerFn(setUserPassword);
+  const [open, setOpen] = useState(false);
+  const [pw, setPwValue] = useState("");
+  const [busy, setBusy] = useState(false);
+  if (!open) return <Button size="sm" variant="outline" onClick={() => setOpen(true)}>Byt lösenord</Button>;
+  async function save(e: React.FormEvent) {
+    e.preventDefault();
+    if (pw.length < 8) { toast.error("Lösenordet måste vara minst 8 tecken"); return; }
+    setBusy(true);
+    try { await setPw({ data: { userId, password: pw } }); toast.success(`Nytt lösenord sparat för ${email}`); setOpen(false); setPwValue(""); }
+    catch (err) { toast.error(err instanceof Error ? err.message : "Kunde inte byta lösenord"); }
+    finally { setBusy(false); }
+  }
+  return <form onSubmit={save} className="flex items-center gap-2">
+    <input type="text" autoComplete="new-password" aria-label={`Nytt lösenord för ${email}`} placeholder="Nytt lösenord (minst 8)" minLength={8} required
+      className="h-9 w-48 rounded-md border bg-background px-3 text-sm" value={pw} onChange={e => setPwValue(e.target.value)}/>
+    <Button type="submit" size="sm" disabled={busy}>{busy ? "Sparar…" : "Spara"}</Button>
+    <Button type="button" size="sm" variant="ghost" onClick={() => { setOpen(false); setPwValue(""); }}>Avbryt</Button>
+  </form>;
 }
