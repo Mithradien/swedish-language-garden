@@ -114,3 +114,12 @@ describe("kundbokning på servern", () => {
     expect(_endTimeFor("07:15")).toBe("07:45");
   });
 });
+
+import { canStaffMoveTo, moveNote } from "./booking-flow";
+describe("staff move", () => {
+  it("allows a free schedule time on a weekday", () => expect(canStaffMoveTo("2026-11-02", "07:00", [])).toBe(true));
+  it("rejects a taken time", () => expect(canStaffMoveTo("2026-11-02", "07:00", ["07:00"])).toBe(false));
+  it("rejects weekends", () => expect(canStaffMoveTo("2026-11-01", "07:00", [])).toBe(false));
+  it("rejects times outside the schedule", () => expect(canStaffMoveTo("2026-11-02", "07:10", [])).toBe(false));
+  it("records where the booking was moved from", () => expect(moveNote("Ringde", "2026-10-30", "13:15")).toBe("Ringde\nFlyttad från 2026-10-30 13:15"));
+});

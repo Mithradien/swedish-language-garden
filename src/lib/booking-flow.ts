@@ -201,3 +201,14 @@ export function isBookable(date: string, time: string, now: Date, taken: string[
   if (!isOpenDay(date)) return false;
   return slotsForDate(date, now, taken).some((s) => s.time === time && s.state === "ledig");
 }
+
+/** Personalen flyttar en bokning: öppen dag, en tid i schemat och inte redan tagen. 48h-gränsen gäller inte personal. */
+export function canStaffMoveTo(date: string, time: string, taken: string[]): boolean {
+  return isOpenDay(date) && scheduleTimes().includes(time) && !taken.includes(time);
+}
+
+/** Noteringen som sparas på en flyttad bokning. */
+export function moveNote(prev: string | null, fromDate: string, fromTime: string): string {
+  const line = `Flyttad från ${fromDate} ${fromTime}`;
+  return prev ? `${prev}\n${line}` : line;
+}
