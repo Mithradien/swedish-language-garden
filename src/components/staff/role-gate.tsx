@@ -5,6 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth, type AppRole } from "@/hooks/use-auth";
 import { StaffPreview } from "@/components/customer/staff-preview";
 import { TopNav } from "@/components/top-nav";
+import { MechanicView } from "./mechanic-view";
 
 const LABEL: Record<AppRole, string> = { superadmin: "Superadmin", mekaniker: "Mekaniker", kund: "Kund" };
 
@@ -22,7 +23,7 @@ export function StaffArea() {
   const bar = <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-3 border-b px-5 py-3 text-sm"><span>Inloggad som <b>{user.email}</b> · {roles.map(r => LABEL[r]).join(", ") || "ingen roll"}</span><Button variant="outline" size="sm" onClick={signOut}>Logga ut</Button></div>;
 
   if (hasRole("superadmin")) return <><div className="bg-primary text-primary-foreground"><TopNav/></div>{bar}<div className="mx-auto max-w-6xl px-5 pt-8"><UserRoles selfId={user.id}/></div><StaffPreview embedded/></>;
-  if (hasRole("mekaniker")) return <><div className="bg-primary text-primary-foreground"><TopNav/></div>{bar}<div className="mx-auto max-w-4xl px-5 py-10"><h1 className="mb-3 text-3xl font-bold">Mekanikervy</h1><p className="text-muted-foreground">Här kommer dagens arbetslista och däckprotokoll. Byggs i nästa steg.</p></div></>;
+  if (hasRole("mekaniker")) return <><div className="bg-primary text-primary-foreground"><TopNav/></div>{bar}<MechanicView userId={user.id}/></>;
   return <><div className="bg-primary text-primary-foreground"><TopNav/></div>{bar}<div className="mx-auto max-w-4xl px-5 py-10"><h1 className="mb-3 text-3xl font-bold">Ingen personalbehörighet</h1><p className="text-muted-foreground">Ditt konto är ett kundkonto. Be en superadmin ge dig en personalroll.</p></div></>;
 }
 
