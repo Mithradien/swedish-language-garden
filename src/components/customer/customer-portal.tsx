@@ -7,11 +7,12 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { SERVICES } from "@/lib/bookings";
-import { tireSeason, treadColor, type TreadColor } from "@/lib/tread";
+import { tireSeason, treadColor } from "@/lib/tread";
 import { EXAMPLE_CUSTOMER, EXAMPLE_SCHEDULE, displayDate, exampleDate, exampleVehicles, previewSlots, requestPreviewVehicle, updatePreviewAppointment, visiblePreviewVehicles, type PreviewAppointment, type PreviewVehicle } from "@/lib/customer-preview";
 import workshop from "@/assets/customer-tires.jpg";
 import { CustomerAddressForm, type CustomerAddress } from "./customer-address";
 import { TopNav } from "@/components/top-nav";
+import { TREAD_STYLES, TreadReading } from "./tread-reading";
 
 export function PortalHeader({ staff = false }: { staff?: boolean }) {
   return <header className="border-b bg-primary text-primary-foreground"><TopNav />
@@ -105,21 +106,3 @@ function VehicleCard({ vehicle:v, onDetails, onBook }: { vehicle: PreviewVehicle
   return <article className="rounded-md border bg-card"><div className="flex items-center justify-between border-b px-5 py-4"><span className="rounded-sm border-2 border-primary px-3 py-1 font-display text-xl font-bold">{v.regnr}</span><span className={`flex items-center gap-1.5 text-xs font-medium ${v.approved ? "text-svc-forvaring" : "text-muted-foreground"}`}>{v.approved ? <ShieldCheck className="h-4 w-4"/> : <Clock3 className="h-4 w-4"/>}{v.approved ? "Godkänd koppling" : "Inväntar godkännande"}</span></div><div className="p-5"><div className="flex items-center gap-3"><CarFront className="h-9 w-9 text-muted-foreground"/><div><h3 className="text-2xl font-semibold">{v.model}</h3><p className="mt-1 text-sm text-muted-foreground">{v.approved ? v.tire : "Förfrågan om bilkoppling"}</p></div></div>{v.approved ? <><div className="my-5 flex flex-wrap gap-x-8 gap-y-3 border-y py-4"><div><p className="text-xs text-muted-foreground">Lägsta mönsterdjup</p><TreadReading depth={v.tread ? Math.min(...v.tread) : null} tire={v.tire}/></div><div><p className="text-xs text-muted-foreground">DOT</p><p className="mt-1 font-display text-2xl font-semibold">{v.dot || "—"}</p></div></div><div className="flex flex-wrap gap-2"><Button variant="outline" onClick={onDetails}><Gauge/>Däckuppgifter</Button><Button variant="ghost" onClick={onBook}>Boka tid<ArrowRight/></Button></div></> : <p className="mt-5 flex min-h-28 items-start gap-2 text-sm text-muted-foreground"><LockKeyhole className="mt-0.5 h-4 w-4 shrink-0"/>Befintliga däckuppgifter och bokning blir tillgängliga efter personalens godkännande.</p>}</div></article>;
 }
 
-const TREAD_STYLES: Record<TreadColor, string> = {
-  red: "border-tread-red bg-tread-red/10 text-tread-red",
-  orange: "border-tread-orange bg-tread-orange/10 text-tread-orange",
-  yellow: "border-tread-yellow bg-tread-yellow/20 text-foreground",
-  green: "border-tread-green bg-tread-green/10 text-tread-green",
-  unknown: "border-border text-muted-foreground",
-};
-const TREAD_DOTS: Record<TreadColor, string> = {
-  red: "bg-tread-red", orange: "bg-tread-orange", yellow: "bg-tread-yellow",
-  green: "bg-tread-green", unknown: "bg-muted-foreground",
-};
-const TREAD_LABELS: Record<TreadColor, string> = {
-  red: "Röd", orange: "Orange", yellow: "Gul", green: "Grön", unknown: "Ej bedömt",
-};
-function TreadReading({ depth, tire }: { depth: number | null | undefined; tire: string }) {
-  const color = treadColor(depth, tireSeason(tire));
-  return <div className="mt-1"><p className="font-display text-2xl font-semibold">{depth?.toLocaleString("sv-SE") ?? "—"} <span className="text-base font-normal">mm</span></p><p className="mt-1 flex items-center gap-2 text-xs font-medium"><span aria-hidden="true" className={`h-2.5 w-2.5 shrink-0 rounded-full ${TREAD_DOTS[color]}`}/>{TREAD_LABELS[color]}</p></div>;
-}

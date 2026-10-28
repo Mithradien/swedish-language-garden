@@ -10,6 +10,7 @@
 <!-- LOVABLE:END -->
 
 ## Rules
+- Admin car details use current overview bookings and Excel cards with exact normalized registration matching in src/lib/admin-car.ts; history reads use the ordinary staff client and shared customer tread presentation, so live data never becomes preview data.
 - Customer tread classification lives in src/lib/tread.ts with separate season thresholds and boundary tests, so future settings can change limits without duplicating rules in the UI.
 - Arrival lookup, local status keys and timestamped arrival writes live in src/lib/arrival.ts; the kiosk and overview share these to prevent inconsistent status identities until self-hosted persistence is connected.
 - Customer address editing stays in the customer profile's preview form until self-hosted accounts are connected; this avoids implying persistent customer storage.
