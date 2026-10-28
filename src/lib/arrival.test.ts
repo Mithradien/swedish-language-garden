@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { ARRIVAL_HISTORY_KEY, CSV_KEY, STATUS_KEY, findArrivalBookings, localDate, registerArrival, statusKey } from "./arrival";
+import { ARRIVAL_HISTORY_KEY, CSV_KEY, STATUS_KEY, findArrivalBookings, localDate, registerArrival, resetArrival, statusKey } from "./arrival";
 import { parseBookingsCsv, type Booking } from "./bookings";
 
 const now = new Date("2026-10-28T10:00:00");
@@ -44,5 +44,13 @@ describe("ankomstregistrering", () => {
     const { store, booking } = setup();
     store.removeItem(CSV_KEY);
     expect(() => registerArrival(store, booking, now)).toThrow("inte längre");
+  });
+  it("återställning till Väntas tar bort ankomsten så bilen kan registreras igen", () => {
+    const { store, booking } = setup();
+    registerArrival(store, booking, now);
+    resetArrival(store, statusKey(booking));
+    expect(JSON.parse(store.getItem(STATUS_KEY) ?? "{}")[statusKey(booking)]).toBeUndefined();
+    expect(JSON.parse(store.getItem(ARRIVAL_HISTORY_KEY) ?? "[]")).toEqual([]);
+    expect(registerArrival(store, booking, now)).toBe("registered");
   });
 });

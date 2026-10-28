@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { TopNav } from "@/components/top-nav";
 import { Fragment, useEffect, useMemo, useRef, useState, type ChangeEvent } from "react";
-import { ARRIVAL_HISTORY_KEY, STATUS_KEY, readStatuses, statusKey, type ArrivalStatus } from "@/lib/arrival";
+import { ARRIVAL_HISTORY_KEY, STATUS_KEY, readStatuses, resetArrival, statusKey, type ArrivalStatus } from "@/lib/arrival";
 
 const CSV_KEY = "bokningar.csv.v1";
 const XLS_KEY = "bokningar.xls.v1";
@@ -231,10 +231,16 @@ function Index() {
   }, []);
   const statusOf = (b: ScheduleRow): ArrivalStatus => statuses[statusKey(b)] ?? "vantas";
   function setStatus(b: ScheduleRow, s: ArrivalStatus) {
+    if (s === "vantas") {
+      try { setStatuses(resetArrival(localStorage, statusKey(b))); }
+      catch { setStatuses((prev) => { const next = { ...prev }; delete next[statusKey(b)]; return next; }); }
+      window.dispatchEvent(new Event("arrival-status-changed"));
+      return;
+    }
     setStatuses((prev) => {
       let next = { ...prev };
       try { next = readStatuses(localStorage); } catch { /* use displayed statuses */ }
-      if (s === "vantas") delete next[statusKey(b)]; else next[statusKey(b)] = s;
+      next[statusKey(b)] = s;
       save(STATUS_KEY, next);
       return next;
     });

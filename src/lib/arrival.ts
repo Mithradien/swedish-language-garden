@@ -32,6 +32,20 @@ export function readBookings(store: Store): Booking[] {
   return parseBookingsCsv(saved.text);
 }
 
+/** Staff reset to "Väntas": drop status and the kiosk arrival event so the car is unregistered again. */
+export function resetArrival(store: Store, key: string): Statuses {
+  const statuses = readStatuses(store);
+  delete statuses[key];
+  store.setItem(STATUS_KEY, JSON.stringify(statuses));
+  const raw = store.getItem(ARRIVAL_HISTORY_KEY);
+  const history: unknown = raw ? JSON.parse(raw) : [];
+  if (Array.isArray(history)) {
+    const kept = (history as ArrivalEvent[]).filter(e => e.bookingKey !== key);
+    if (kept.length !== history.length) store.setItem(ARRIVAL_HISTORY_KEY, JSON.stringify(kept));
+  }
+  return statuses;
+}
+
 export function findArrivalBookings(bookings: Booking[], regnr: string, date: string, statuses: Statuses) {
   const normalized = normalizeRegnr(regnr);
   if (!normalized) return [];
