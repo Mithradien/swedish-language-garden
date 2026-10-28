@@ -31,8 +31,9 @@ import {
 } from "@/components/ui/select";
 import {
   SERVICES, buildCarCards, guessColumns, normalizeRegnr, parseBookingsCsv, withEmptySlots,
-  type Booking, type ScheduleRow, type Service,
+  type Booking, type CarCard, type ScheduleRow, type Service,
 } from "@/lib/bookings";
+import { fetchCarStorage, mergeCard, syncCarStorage } from "@/lib/car-storage-sync";
 
 
 export const Route = createFileRoute("/")({
