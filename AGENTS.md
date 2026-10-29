@@ -27,3 +27,4 @@
 - Staff booking moves go through staffMoveBooking in src/lib/staff-booking.functions.ts (superadmin checked server-side); cancelling reuses the "avbokad" status so bookings are never deleted and history/statistics survive.
 - Booking schedule (work passes + slot step) is stored in app_config key 'schedule' and applied via applySchedule in src/lib/bookings.ts; the root layout loads it on the client and booking server functions call loadScheduleServer before validating, so client and server use the same times.
 - Service prices (tiers by rim inch) are stored in app_config key 'prices' and applied via applyPrices in src/lib/prices.ts, loaded together with the schedule, so booking pages and settings share one price source.
+- Tread colour limits are stored in app_config key 'tread' and applied via applyTread in src/lib/tread.ts (also rewrites guide range texts), loaded with schedule and prices.

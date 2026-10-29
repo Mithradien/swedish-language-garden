@@ -44,3 +44,39 @@ export function treadColor(depth: number | null | undefined, season: TireSeason 
   if (depth < limits.greenFrom) return "yellow";
   return "green";
 }
+
+type Limits = { orangeFrom: number; yellowFrom: number; greenFrom: number };
+export const DEFAULT_TREAD_THRESHOLDS: Record<TireSeason, Limits> = {
+  summer: { orangeFrom: 1.6, yellowFrom: 3, greenFrom: 5 },
+  winter: { orangeFrom: 3, yellowFrom: 4, greenFrom: 6 },
+};
+
+export function validTread(v: unknown): Record<TireSeason, Limits> | null {
+  const o = v as Record<TireSeason, Limits> | null;
+  if (!o) return null;
+  for (const s of ["summer", "winter"] as const) {
+    const l = o[s];
+    if (!l || ![l.orangeFrom, l.yellowFrom, l.greenFrom].every((n) => Number.isFinite(n) && n >= 0 && n <= 15)) return null;
+    if (!(l.orangeFrom < l.yellowFrom && l.yellowFrom < l.greenFrom)) return null;
+  }
+  return { summer: { ...o.summer }, winter: { ...o.winter } };
+}
+
+const mm = (n: number) => n.toFixed(1).replace(".", ",");
+const below = (n: number) => mm(Math.round((n - 0.1) * 10) / 10);
+
+/** Byter gränserna (Inställningar → Mönsterdjup) och uppdaterar intervalltexterna. */
+export function applyTread(v: unknown) {
+  const next = validTread(v) ?? DEFAULT_TREAD_THRESHOLDS;
+  for (const s of ["summer", "winter"] as const) {
+    const l = next[s];
+    Object.assign(TREAD_THRESHOLDS[s], l);
+    const ranges: Record<Level, string> = {
+      green: `≥ ${mm(l.greenFrom)} mm`,
+      yellow: `${mm(l.yellowFrom)} – ${below(l.greenFrom)} mm`,
+      orange: `${mm(l.orangeFrom)} – ${below(l.yellowFrom)} mm`,
+      red: `< ${mm(l.orangeFrom)} mm`,
+    };
+    for (const g of TREAD_GUIDE[s]) g.range = ranges[g.color];
+  }
+}

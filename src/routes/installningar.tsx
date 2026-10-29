@@ -4,11 +4,12 @@ import { TopNav } from "@/components/top-nav";
 import { SettingsPanel } from "@/components/settings-panel";
 import { UserAdmin } from "@/components/staff/user-admin";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { BadgeDollarSign, CalendarClock, Database, Settings, Users } from "lucide-react";
+import { BadgeDollarSign, Gauge, CalendarClock, Database, Settings, Users } from "lucide-react";
 import { UserRoles } from "@/components/staff/role-gate";
 import { useAuth } from "@/hooks/use-auth";
 import { DataImport } from "@/components/staff/data-import";
 import { PriceSettings } from "@/components/staff/price-settings";
+import { TreadSettings } from "@/components/staff/tread-settings";
 import { ScheduleSettings } from "@/components/staff/schedule-settings";
 
 export const Route = createFileRoute("/installningar")({
@@ -47,12 +48,14 @@ function SettingsPage() {
             <TabsTrigger value="konto" className="gap-2"><Users className="h-4 w-4" />Konto</TabsTrigger>
             <TabsTrigger value="bokningar" className="gap-2"><CalendarClock className="h-4 w-4" />Bokningar</TabsTrigger>
             <TabsTrigger value="priser" className="gap-2"><BadgeDollarSign className="h-4 w-4" />Priser</TabsTrigger>
+            <TabsTrigger value="monsterdjup" className="gap-2"><Gauge className="h-4 w-4" />Mönsterdjup</TabsTrigger>
             <TabsTrigger value="data" className="gap-2"><Database className="h-4 w-4" />Data &amp; import</TabsTrigger>
           </TabsList>
           <TabsContent value="allmant"><SettingsPanel /></TabsContent>
           <TabsContent value="konto" className="space-y-8"><UserAdmin /><AccountRoles /></TabsContent>
           <TabsContent value="bokningar"><ScheduleSettings /></TabsContent>
           <TabsContent value="priser"><PriceSettings /></TabsContent>
+          <TabsContent value="monsterdjup"><TreadSettings /></TabsContent>
           <TabsContent value="data"><DataImport /></TabsContent>
         </Tabs>
       </div>

@@ -36,3 +36,19 @@ it("identifierar sommar och vinter utan att anta säsong för okänd typ", () =>
   expect(tireSeason("Sommardäck")).toBe("summer");
   expect(tireSeason("")).toBeNull();
 });
+
+import { applyTread, TREAD_GUIDE } from "./tread";
+describe("inställbara gränser", () => {
+  it("nya sommargränser ändrar färg och text", () => {
+    applyTread({ summer: { orangeFrom: 2, yellowFrom: 4, greenFrom: 6 }, winter: { orangeFrom: 3, yellowFrom: 4, greenFrom: 6 } });
+    expect(treadColor(5, "summer")).toBe("yellow");
+    expect(TREAD_GUIDE.summer[0]!.range).toBe("≥ 6,0 mm");
+    applyTread(null);
+    expect(treadColor(5, "summer")).toBe("green");
+  });
+  it("felaktig ordning avvisas och standard gäller", () => {
+    applyTread({ summer: { orangeFrom: 5, yellowFrom: 4, greenFrom: 6 }, winter: { orangeFrom: 3, yellowFrom: 4, greenFrom: 6 } });
+    expect(treadColor(1.5, "summer")).toBe("red");
+    expect(treadColor(1.6, "summer")).toBe("orange");
+  });
+});
