@@ -40,9 +40,11 @@ function ArrivalPage() {
     setRegnr(""); setStage("entry"); setMatches([]); setSelected(null); setError(""); setAlready(false);
     input.current?.focus();
   }
+  const [time, setTime] = useState("");
   useEffect(() => {
-    setToday(localDate());
-    const clock = window.setInterval(() => setToday(localDate()), 30000);
+    const tick = () => { const n = new Date(); setToday(localDate(n)); setTime(n.toLocaleTimeString("sv-SE", { hour: "2-digit", minute: "2-digit" })); };
+    tick();
+    const clock = window.setInterval(tick, 1000);
     try { const settings = JSON.parse(localStorage.getItem("bokningar.settings.v1") || "{}"); if (settings.company) setCompany(settings.company); } catch { /* use default */ }
     return () => window.clearInterval(clock);
   }, []);
@@ -97,7 +99,7 @@ function ArrivalPage() {
       <div className="h-1.5 bg-signal" />
     </header>
     <section className="mx-auto max-w-3xl px-4 py-8 text-center sm:px-8 sm:py-10">
-      <p className="mb-3 font-display text-lg uppercase text-muted-foreground">{today ? new Date(`${today}T12:00:00`).toLocaleDateString("sv-SE", { weekday: "long", day: "numeric", month: "long" }) : "Välkommen"}</p>
+      <p className="mb-3 font-display text-lg uppercase text-muted-foreground">{today ? <>{new Date(`${today}T12:00:00`).toLocaleDateString("sv-SE", { weekday: "long", day: "numeric", month: "long" })} · <span className="font-bold text-foreground tabular-nums">{time}</span></> : "Välkommen"}</p>
       {stage === "entry" ? <>
         <h1 className="text-4xl font-bold uppercase sm:text-5xl">Välkommen</h1>
         <form onSubmit={lookup} className="mt-7">
