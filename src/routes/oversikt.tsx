@@ -72,13 +72,13 @@ function ServiceTag({ s }: { s: Service }) {
 }
 
 function GuardedIndex() {
-  return <RequireRole roles={["superadmin", "mekaniker"]}><Index /></RequireRole>;
+  return <RequireRole roles={["superadmin", "useradmin", "mekaniker"]}><Index /></RequireRole>;
 }
 
 function Index() {
   const { settings } = useSettings();
   const { hasRole } = useAuth();
-  const isStaff = hasRole("superadmin") || hasRole("mekaniker");
+  const isStaff = hasRole("superadmin") || hasRole("useradmin") || hasRole("mekaniker");
   const isAdmin = hasRole("superadmin");
   const canLock = isAdmin || hasRole("useradmin");
   const [locks, setLocks] = useState<Set<string>>(new Set());
