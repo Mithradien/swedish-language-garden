@@ -6,6 +6,9 @@ import { endTimeFor, isBookable, stockholmNow, LEAD_HOURS } from "./booking-flow
 import { claimStatus, matchesContact, normPhone, type Contact } from "./customer-match";
 import type { Tire } from "./bookings";
 import { completedTyreHistory } from "./tyre-history";
+import { canRenewStorage, renewalInput, renewalSeasons } from "./storage-renewal";
+import { parseTerms } from "./storage-terms";
+import { DEFAULT_PRICES, validPrices } from "./prices";
 
 // Signed-in customer: only rows whose e-mail/phone match the customer (or bookings for their linked cars) are returned.
 type Ctx = { supabase: any; userId: string; claims: { email?: string } };
@@ -141,4 +144,38 @@ export const claimMyCar = createServerFn({ method: "POST" }).middleware([require
       if (error) return { ok: false as const, error: "Kunde inte lägga till bilen. Försök igen." };
     }
     return { ok: true as const, regnr, status: (existing && existing.status === "kopplad" ? "kopplad" : status) as "kopplad" | "vantar" };
+  });
+
+async function renewalConfig(ctx: Ctx) {
+  const { data, error } = await ctx.supabase.from("app_config").select("key,value,updated_at").in("key", ["storage_terms", "prices"]);
+  if (error) throw new Error("Villkoren kunde inte hämtas. Försök igen.");
+  const rows = (data ?? []) as { key: string; value: unknown; updated_at: string }[];
+  return {
+    terms: parseTerms(rows.find(r => r.key === "storage_terms")?.value),
+    prices: validPrices(rows.find(r => r.key === "prices")?.value) ?? DEFAULT_PRICES,
+    version: rows.map(r => `${r.key}:${r.updated_at}`).sort().join("|"),
+  };
+}
+
+export const myStorageRenewals = createServerFn({ method: "POST" }).middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    const config = await renewalConfig(context as Ctx);
+    const { data, error } = await context.supabase.from("storage_renewals").select("id,regnr,season,accepted_at").eq("user_id", context.userId).order("accepted_at", { ascending: false });
+    if (error) throw new Error("Förnyelserna kunde inte hämtas.");
+    return { ...config, renewals: data ?? [], seasons: renewalSeasons() };
+  });
+
+export const renewMyStorage = createServerFn({ method: "POST" }).middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) => renewalInput.parse(d))
+  .handler(async ({ data, context }) => {
+    const me = await contactOf(context as Ctx);
+    const { cars } = await load(me, context.userId);
+    if (!canRenewStorage(cars, data.regnr)) return { ok: false as const, error: "Bilen saknar förvaring på ditt konto." };
+    if (!renewalSeasons().includes(data.season)) return { ok: false as const, error: "Välj en aktuell förvaringssäsong." };
+    const config = await renewalConfig(context as Ctx);
+    if (config.version !== data.version) return { ok: false as const, error: "Villkoren eller prislistan har ändrats. Stäng och öppna förnyelsen igen." };
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { error } = await supabaseAdmin.from("storage_renewals").insert({ user_id: context.userId, regnr: data.regnr, season: data.season, accepted_name: me.name || me.email, terms_snapshot: config.terms as unknown as import("@/integrations/supabase/types").Json, prices_snapshot: config.prices as unknown as import("@/integrations/supabase/types").Json });
+    if (error && error.code !== "23505") return { ok: false as const, error: "Förnyelsen kunde inte sparas. Försök igen." };
+    return { ok: true as const };
   });
