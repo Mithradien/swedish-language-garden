@@ -356,6 +356,39 @@ export type Database = {
         }
         Relationships: []
       }
+      storage_renewals: {
+        Row: {
+          accepted_at: string
+          accepted_name: string
+          id: string
+          prices_snapshot: Json
+          regnr: string
+          season: string
+          terms_snapshot: Json
+          user_id: string
+        }
+        Insert: {
+          accepted_at?: string
+          accepted_name?: string
+          id?: string
+          prices_snapshot: Json
+          regnr: string
+          season: string
+          terms_snapshot: Json
+          user_id: string
+        }
+        Update: {
+          accepted_at?: string
+          accepted_name?: string
+          id?: string
+          prices_snapshot?: Json
+          regnr?: string
+          season?: string
+          terms_snapshot?: Json
+          user_id?: string
+        }
+        Relationships: []
+      }
       user_roles: {
         Row: {
           created_at: string
