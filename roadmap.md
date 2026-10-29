@@ -40,3 +40,12 @@ Förutsättning: ingen Lovable Cloud eller extern lagring; verkliga inloggningar
 - [ ] Koppla flödet till egen databas: bokningar, kunder och lagerplatser.
 - [x] Personalens låsning och öppning av tider styr vilka tider som visas i flödet (per enskild tid).
 - [x] Roll "Användaradmin": låsa tider, flytta/avboka, godkänna väntande bilar, skapa mekaniker-/kundkonton.
+
+# Utskick och kundkontakt
+- [x] Bekräftelsemail vid bokning (egen SMTP, Inställningar → E-post).
+- [ ] SMS-påminnelse dagen innan – väntar på att ni skaffar SMS-tjänst (t.ex. 46elks).
+- [ ] Digitalt däckkvitto & hämtningsmejl när bilen markeras "Klar".
+- [ ] Automatiserad däckoffert med 3 prisförslag.
+- [ ] QR-skylt för ankomst (väntar).
+- [ ] Surfplatta-anpassning av ankomstskärmen (väntar).
+- [ ] Roterande hjul i bakgrunden på ankomstsidan (väntar).
