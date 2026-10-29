@@ -23,7 +23,7 @@ export function StorageRenewal({ cars, example = false }: { cars: { regnr: strin
   const [message, setMessage] = useState("");
   const available = cars.filter(c => c.lagerplats.trim());
   async function reload() {
-    if (example) { setData({ terms: parseTerms(null), prices: DEFAULT_PRICES, version: "example", renewals: [], seasons: renewalSeasons() }); return; }
+    if (example) { setData(previous => previous ?? { terms: parseTerms(null), prices: DEFAULT_PRICES, version: "example", renewals: [], seasons: renewalSeasons() }); return; }
     try { setData(await fetch()); setError(""); } catch { setError("Förnyelserna kunde inte hämtas."); }
   }
   useEffect(() => { void reload(); }, [example]);
