@@ -1,11 +1,12 @@
 export type NavRole = "superadmin" | "useradmin" | "mekaniker" | "kund";
-export type NavPath = "/oversikt" | "/boka" | "/kund" | "/personal" | "/ankomst" | "/installningar";
+export type NavPath = "/oversikt" | "/boka" | "/kund" | "/personal" | "/verkstad" | "/ankomst" | "/installningar";
 
 const ALL: { to: NavPath; label: string; roles: NavRole[] | "all" }[] = [
   { to: "/oversikt", label: "Bokningsöversikt", roles: ["superadmin", "useradmin", "mekaniker"] },
   { to: "/boka", label: "Boka tid", roles: "all" },
   { to: "/kund", label: "Mina sidor", roles: ["superadmin", "kund"] },
   { to: "/personal", label: "Personal", roles: ["superadmin", "useradmin", "mekaniker"] },
+  { to: "/verkstad", label: "Verkstadsskärm", roles: ["superadmin", "useradmin", "mekaniker"] },
   { to: "/ankomst", label: "Ankomst", roles: ["superadmin", "useradmin", "mekaniker"] },
   { to: "/installningar", label: "Inställningar", roles: ["superadmin", "useradmin"] },
 ];

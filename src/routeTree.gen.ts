@@ -18,6 +18,7 @@ import { Route as KundRouteImport } from './routes/kund'
 import { Route as LoggaInRouteImport } from './routes/logga-in'
 import { Route as OversiktRouteImport } from './routes/oversikt'
 import { Route as PersonalRouteImport } from './routes/personal'
+import { Route as VerkstadRouteImport } from './routes/verkstad'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -64,6 +65,11 @@ const PersonalRoute = PersonalRouteImport.update({
   path: '/personal',
   getParentRoute: () => rootRouteImport,
 } as any)
+const VerkstadRoute = VerkstadRouteImport.update({
+  id: '/verkstad',
+  path: '/verkstad',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -75,6 +81,7 @@ export interface FileRoutesByFullPath {
   '/logga-in': typeof LoggaInRoute
   '/oversikt': typeof OversiktRoute
   '/personal': typeof PersonalRoute
+  '/verkstad': typeof VerkstadRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -86,6 +93,7 @@ export interface FileRoutesByTo {
   '/logga-in': typeof LoggaInRoute
   '/oversikt': typeof OversiktRoute
   '/personal': typeof PersonalRoute
+  '/verkstad': typeof VerkstadRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -98,6 +106,7 @@ export interface FileRoutesById {
   '/logga-in': typeof LoggaInRoute
   '/oversikt': typeof OversiktRoute
   '/personal': typeof PersonalRoute
+  '/verkstad': typeof VerkstadRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -111,6 +120,7 @@ export interface FileRouteTypes {
     | '/logga-in'
     | '/oversikt'
     | '/personal'
+    | '/verkstad'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -122,6 +132,7 @@ export interface FileRouteTypes {
     | '/logga-in'
     | '/oversikt'
     | '/personal'
+    | '/verkstad'
   id:
     | '__root__'
     | '/'
@@ -133,6 +144,7 @@ export interface FileRouteTypes {
     | '/logga-in'
     | '/oversikt'
     | '/personal'
+    | '/verkstad'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -145,6 +157,7 @@ export interface RootRouteChildren {
   LoggaInRoute: typeof LoggaInRoute
   OversiktRoute: typeof OversiktRoute
   PersonalRoute: typeof PersonalRoute
+  VerkstadRoute: typeof VerkstadRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -212,6 +225,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PersonalRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/verkstad': {
+      id: '/verkstad'
+      path: '/verkstad'
+      fullPath: '/verkstad'
+      preLoaderRoute: typeof VerkstadRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -225,6 +245,7 @@ const rootRouteChildren: RootRouteChildren = {
   LoggaInRoute: LoggaInRoute,
   OversiktRoute: OversiktRoute,
   PersonalRoute: PersonalRoute,
+  VerkstadRoute: VerkstadRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
