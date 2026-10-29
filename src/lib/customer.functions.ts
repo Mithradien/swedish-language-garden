@@ -25,12 +25,12 @@ async function load(me: Contact, userId?: string) {
   const linked = (links ?? []).filter(l => l.status === "kopplad").map(l => l.regnr);
   const pending = (links ?? []).filter(l => l.status === "vantar").map(l => l.regnr);
   if (!ors.length && !linked.length && !pending.length) return { cars: [], bookings: [], pending: [] as string[] };
-  const { data: carRows } = ors.length ? await supabaseAdmin.from("car_storage").select("regnr,modell,lagerplats,min_depth,tires,email,phone").or(ors.join(",")) : { data: [] };
-  const { data: linkedRows } = linked.length ? await supabaseAdmin.from("car_storage").select("regnr,modell,lagerplats,min_depth,tires,email,phone").in("regnr", linked) : { data: [] };
+  const { data: carRows } = ors.length ? await supabaseAdmin.from("car_storage").select("regnr,modell,lagerplats,min_depth,tires,email,phone,kundnr").or(ors.join(",")) : { data: [] };
+  const { data: linkedRows } = linked.length ? await supabaseAdmin.from("car_storage").select("regnr,modell,lagerplats,min_depth,tires,email,phone,kundnr").in("regnr", linked) : { data: [] };
   const cars = (carRows ?? []).filter(c => matchesContact(me, c));
   for (const c of linkedRows ?? []) if (!cars.some(x => x.regnr === c.regnr)) cars.push(c);
   // Kopplade bilar som inte finns i billagret visas med bara regnumret.
-  for (const r of linked) if (!cars.some(x => x.regnr === r)) cars.push({ regnr: r, modell: "", lagerplats: "", min_depth: null, tires: [], email: "", phone: "" });
+  for (const r of linked) if (!cars.some(x => x.regnr === r)) cars.push({ regnr: r, modell: "", lagerplats: "", min_depth: null, tires: [], email: "", phone: "", kundnr: "" });
   const regnrs = cars.map(c => c.regnr);
   const { data: byContact } = !ors.length ? { data: [] } : await supabaseAdmin.from("bookings").select("booking_key,regnr,booking_date,start_time,service,email,phone,name").or(ors.join(","));
   const { data: byCar } = regnrs.length ? await supabaseAdmin.from("bookings").select("booking_key,regnr,booking_date,start_time,service,email,phone,name").in("regnr", regnrs) : { data: [] };
@@ -43,7 +43,7 @@ async function load(me: Contact, userId?: string) {
   const bookings = [...map.values()].map(b => ({ key: b.booking_key, regnr: b.regnr, date: b.booking_date, time: b.start_time.slice(0, 5),
     service: b.service ?? "", status: status.get(b.booking_key) ?? "vantas" }))
     .sort((a, b) => (b.date + b.time).localeCompare(a.date + a.time));
-  return { cars: cars.map(c => ({ regnr: c.regnr, modell: c.modell, lagerplats: c.lagerplats,
+  return { cars: cars.map(c => ({ regnr: c.regnr, modell: c.modell, lagerplats: c.lagerplats, kundnr: c.kundnr,
     minDepth: c.min_depth == null ? null : Number(c.min_depth), tires: (Array.isArray(c.tires) ? c.tires : []) as unknown as Tire[] })), bookings, pending: pending.filter(r => !cars.some(c => c.regnr === r)) };
 }
 

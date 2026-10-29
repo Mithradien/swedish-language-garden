@@ -1,0 +1,2 @@
+DROP POLICY "Alla kan läsa schema, priser och gränser" ON public.app_config;
+CREATE POLICY "Alla kan läsa publika inställningar" ON public.app_config FOR SELECT TO anon, authenticated USING (key IN ('schedule', 'prices', 'tread', 'company', 'storage_terms'));

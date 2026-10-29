@@ -1,6 +1,7 @@
 import { useRef, useState, type ChangeEvent } from "react";
 import { Check, Upload } from "lucide-react";
 import type { Settings } from "@/lib/settings";
+import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { DEFAULT_SETTINGS, SIGNAL_PRESETS, useSettings } from "@/lib/settings";
@@ -16,7 +17,11 @@ export function SettingsPanel() {
   const val = (k: TextKey) => (draft[k] as string | undefined) ?? settings[k];
   const edit = (k: TextKey, v: string) => { setSavedMsg(false); setDraft((d) => ({ ...d, [k]: v })); };
   function save() {
+    const next = { ...settings, ...draft };
     setSettings((s) => ({ ...s, ...draft }));
+    // Företagsuppgifterna publiceras så att kunder ser dem på t.ex. förvaringsbeviset.
+    const { logo: _logo, signal: _signal, ...company } = next;
+    void supabase.from("app_config").upsert({ key: "company", value: company, updated_at: new Date().toISOString() });
     setDraft({});
     setSavedMsg(true);
   }
