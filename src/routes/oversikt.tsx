@@ -182,7 +182,7 @@ function Index() {
     const parsed = parseBookingsCsv(text);
     setBookings(parsed);
     setCsvName(f.name);
-    setDay("alla");
+    setDay("alla"); autoDay.current = false;
     save(CSV_KEY, { name: f.name, text });
     e.target.value = "";
     const n = await syncBookingsToDb(parsed);
