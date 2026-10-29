@@ -8,6 +8,7 @@ import { TopNav } from "@/components/top-nav";
 import { PendingCars } from "./pending-cars";
 import { CarTools } from "./car-tools";
 import { PickList } from "./pick-list";
+import { MechanicView } from "./mechanic-view";
 import { useServerFn } from "@tanstack/react-start";
 import { toast } from "sonner";
 import { setUserPassword } from "@/lib/users.functions";
@@ -28,7 +29,7 @@ export function StaffArea() {
   const bar = <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-3 border-b px-5 py-3 text-sm"><span>Inloggad som <b>{user.email}</b> · {roles.map(r => LABEL[r]).join(", ") || "ingen roll"}</span><Button variant="outline" size="sm" onClick={signOut}>Logga ut</Button></div>;
 
   const readOnly = !hasRole("superadmin") && !hasRole("useradmin");
-  if (hasRole("superadmin") || hasRole("useradmin") || hasRole("mekaniker")) return <><div className="bg-primary text-primary-foreground"><TopNav/></div>{bar}<div className="mx-auto max-w-6xl px-5 pt-8"><PendingCars canApprove={!readOnly}/><PickList/><CarTools/></div>{hasRole("superadmin") && <StaffPreview embedded/>}</>;
+  if (hasRole("superadmin") || hasRole("useradmin") || hasRole("mekaniker")) return <><div className="bg-primary text-primary-foreground"><TopNav/></div>{bar}<MechanicView userId={user.id}/><div className="mx-auto max-w-6xl px-5 pt-8"><PendingCars canApprove={!readOnly}/><PickList/><CarTools/></div>{hasRole("superadmin") && <StaffPreview embedded/>}</>;
   return <><div className="bg-primary text-primary-foreground"><TopNav/></div>{bar}<div className="mx-auto max-w-4xl px-5 py-10"><h1 className="mb-3 text-3xl font-bold">Ingen personalbehörighet</h1><p className="text-muted-foreground">Ditt konto är ett kundkonto. Be en superadmin ge dig en personalroll.</p></div></>;
 }
 
