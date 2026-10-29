@@ -61,7 +61,7 @@ export function registerArrival(store: Store, booking: Booking, now = new Date()
   const statuses = readStatuses(store);
   const key = statusKey(current);
   if (statuses[key] === "avbokad") throw new Error("Bokningen är avbokad. Kontakta personalen.");
-  if (statuses[key] === "ankommen") return "already";
+  if (statuses[key] === "ankommen" || statuses[key] === "sen") return "already";
   const oldHistory = store.getItem(ARRIVAL_HISTORY_KEY);
   const history: ArrivalEvent[] = oldHistory ? JSON.parse(oldHistory) : [];
   if (!Array.isArray(history)) throw new Error("Ankomsthistoriken kunde inte läsas.");
