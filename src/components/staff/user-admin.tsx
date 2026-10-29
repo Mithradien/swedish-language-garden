@@ -11,7 +11,7 @@ import { createUserWithRole } from "@/lib/users.functions";
 export function UserAdmin() {
   const { user, loading, hasRole } = useAuth();
   const create = useServerFn(createUserWithRole);
-  const [form, setForm] = useState({ name: "", email: "", password: "", role: "mekaniker" as AppRole });
+  const [form, setForm] = useState({ name: "", email: "", password: "", confirm: "", role: "mekaniker" as AppRole });
   const [busy, setBusy] = useState(false);
 
   if (loading) return null;
@@ -22,11 +22,12 @@ export function UserAdmin() {
   async function submit(e: React.FormEvent) {
     e.preventDefault();
     if (form.password.length < 8) { toast.error("Lösenordet måste vara minst 8 tecken"); return; }
+    if (form.confirm !== form.password) { toast.error("Lösenorden stämmer inte överens"); return; }
     setBusy(true);
     try {
       await create({ data: form });
       toast.success(`${form.email} skapad – kan logga in direkt`);
-      setForm({ name: "", email: "", password: "", role: "mekaniker" });
+      setForm({ name: "", email: "", password: "", confirm: "", role: "mekaniker" });
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Kunde inte skapa användaren");
     } finally { setBusy(false); }
@@ -40,6 +41,7 @@ export function UserAdmin() {
         <label className="space-y-1 text-sm">Namn<Input required value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} /></label>
         <label className="space-y-1 text-sm">E-post<Input required type="email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} /></label>
         <label className="space-y-1 text-sm">Lösenord (minst 8 tecken)<PasswordInput required minLength={8} value={form.password} onChange={(e) => setForm({ ...form, password: e.target.value })} /></label>
+        <label className="space-y-1 text-sm">Bekräfta lösenord<PasswordInput required minLength={8} value={form.confirm} onChange={(e) => setForm({ ...form, confirm: e.target.value })} /></label>
         <label className="space-y-1 text-sm">Roll
           <select className="flex h-10 w-full rounded-md border bg-background px-3 text-sm" value={form.role} onChange={(e) => setForm({ ...form, role: e.target.value as AppRole })}>
             <option value="superadmin">Superadmin</option>
