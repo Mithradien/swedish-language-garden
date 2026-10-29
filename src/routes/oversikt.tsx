@@ -23,7 +23,7 @@ const STATUS: Record<ArrivalStatus, { label: string; cls: string }> = {
   ej: { label: "Ej ankommen", cls: "bg-st-noshow status-mark" },
   avbokad: { label: "Avbokad under dagen", cls: "bg-st-cancelled status-mark" },
 };
-import { FileSpreadsheet, FileText, Printer, Search, Tag, Upload, ChevronDown, CarFront, ArrowRight } from "lucide-react";
+import { Printer, Search, Tag, ChevronDown, CarFront, ArrowRight } from "lucide-react";
 import { printLabel } from "@/lib/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
@@ -129,11 +129,6 @@ function Index() {
     catch { alert("Filen är för stor för att sparas i webbläsaren. Den visas ändå tills sidan stängs."); }
   }
 
-  function clearSaved() {
-    localStorage.removeItem(CSV_KEY); localStorage.removeItem(XLS_KEY); localStorage.removeItem(STATUS_KEY);
-    localStorage.removeItem(ARRIVAL_HISTORY_KEY);
-    setBookings([]); setCsvName(""); setRows([]); setHeaders([]); setRegCol(""); setPlatsCol(""); setXlsName(""); setDay("alla"); setStatuses({});
-  }
 
   const [statuses, setStatuses] = useState<Record<string, ArrivalStatus>>({});
   const [arrivedAt, setArrivedAt] = useState<Record<string, string>>({});
@@ -181,37 +176,6 @@ function Index() {
     });
   }
 
-  async function onCsv(e: ChangeEvent<HTMLInputElement>) {
-    const f = e.target.files?.[0];
-    if (!f) return;
-    const text = await f.text();
-    const parsed = parseBookingsCsv(text);
-    setBookings(parsed);
-    setCsvName(f.name);
-    setDay("alla"); autoDay.current = false;
-    save(CSV_KEY, { name: f.name, text });
-    e.target.value = "";
-    const n = await syncBookingsToDb(parsed);
-    if (n !== null) toast.success(`${n} bokningar sparade i databasen`);
-    else toast.info("Bokningarna visas här, men sparas i databasen bara när en superadmin är inloggad.");
-  }
-
-  async function onXls(e: ChangeEvent<HTMLInputElement>) {
-    const f = e.target.files?.[0];
-    if (!f) return;
-    const XLSX = await import("xlsx");
-    const wb = XLSX.read(await f.arrayBuffer());
-    const sheet = wb.Sheets[wb.SheetNames[0] ?? ""];
-    if (!sheet) return;
-    const data = XLSX.utils.sheet_to_json<Record<string, unknown>>(sheet, { defval: "" });
-    const h = data[0] ? Object.keys(data[0]) : [];
-    const g = guessColumns(h);
-    setRows(data); setHeaders(h); setRegCol(g.reg); setPlatsCol(g.plats); setXlsName(f.name);
-    e.target.value = "";
-    const n = await syncCarStorage(buildCarCards(data));
-    if (n !== null) { toast.success(`${n} bilar uppdaterade i databasen`); fetchCarStorage().then(db => { if (db) setDbCards(db); }); }
-    else toast.info("Billagret visas här, men sparas i databasen bara när en superadmin är inloggad.");
-  }
 
   const platsMap = useMemo(() => {
     const m = new Map<string, string>();
@@ -372,32 +336,7 @@ function Index() {
 
 
       <div className="booking-content mx-auto max-w-6xl space-y-8 px-6 py-8">
-        <section className="screen-only grid gap-4 md:grid-cols-2">
-          <label className="group flex cursor-pointer items-center gap-4 rounded-md border-2 border-dashed bg-card p-5 transition hover:border-primary">
-            <FileText className="h-9 w-9 shrink-0" />
-            <div className="min-w-0 flex-1">
-              <div className="font-display text-xl font-semibold uppercase">1. Bokningar (CSV)</div>
-              <div className="truncate text-sm text-muted-foreground">{csvName ? `${csvName} · ${bookings.length} bokningar` : "Välj exportfilen från bokningssystemet"}</div>
-            </div>
-            <Upload className="h-5 w-5 text-muted-foreground group-hover:text-foreground" />
-            <input type="file" accept=".csv,text/csv" className="sr-only" onChange={onCsv} />
-          </label>
-          <label className="group flex cursor-pointer items-center gap-4 rounded-md border-2 border-dashed bg-card p-5 transition hover:border-primary">
-            <FileSpreadsheet className="h-9 w-9 shrink-0" />
-            <div className="min-w-0 flex-1">
-              <div className="font-display text-xl font-semibold uppercase">2. Billager (Excel)</div>
-              <div className="truncate text-sm text-muted-foreground">{xlsName ? `${xlsName} · ${cards.size} bilar` : "Valfritt – välj Excel-filen med lagerplatser"}</div>
-            </div>
-            <Upload className="h-5 w-5 text-muted-foreground group-hover:text-foreground" />
-            <input type="file" accept=".xlsx,.xls,.csv" className="sr-only" onChange={onXls} />
-          </label>
-          {(csvName || xlsName) && (
-            <div className="flex items-center justify-between gap-3 text-sm text-muted-foreground md:col-span-2">
-              <span>Filerna sparas i den här webbläsaren tills du laddar in nya.</span>
-              <Button variant="outline" size="sm" onClick={clearSaved}>Rensa sparad data</Button>
-            </div>
-          )}
-        </section>
+        {!bookings.length && <p className="screen-only rounded-md bg-secondary p-4 text-sm">Inga bokningar inlästa. Läs in filer under <a href="/installningar" className="font-semibold underline">Inställningar → Data &amp; import</a>.</p>}
 
 
         <Tabs defaultValue="bokade">
