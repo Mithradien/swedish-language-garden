@@ -3,6 +3,7 @@ import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { PasswordInput } from "@/components/password-input";
 import { TopNav } from "@/components/top-nav";
 
 export const Route = createFileRoute("/logga-in")({
@@ -47,7 +48,7 @@ function LoginPage() {
       <form onSubmit={submit} className="space-y-4">
         {mode === "up" && <label className="block text-sm font-medium">Namn<Input className="mt-1" value={name} onChange={e => setName(e.target.value)} required/></label>}
         <label className="block text-sm font-medium">E-post<Input className="mt-1" type="email" value={email} onChange={e => setEmail(e.target.value)} required/></label>
-        <label className="block text-sm font-medium">Lösenord<Input className="mt-1" type="password" minLength={8} value={password} onChange={e => setPassword(e.target.value)} required/></label>
+        <label className="block text-sm font-medium">Lösenord<PasswordInput className="mt-1" minLength={8} value={password} onChange={e => setPassword(e.target.value)} required/></label>
         <Button type="submit" className="w-full" disabled={busy}>{mode === "in" ? "Logga in" : "Skapa konto"}</Button>
       </form>
       {msg && <p role="status" className="mt-4 rounded-md border bg-secondary p-3 text-sm">{msg}</p>}

@@ -1,6 +1,7 @@
 import { useMemo, useState, type FormEvent } from "react";
 import { Link } from "@tanstack/react-router";
 import { ArrowLeft, ArrowRight, CalendarDays, CarFront, Check, ChevronRight, Clock3, Gauge, ImageIcon, LockKeyhole, LogOut, Plus, ShieldCheck, UserRound, Wrench } from "lucide-react";
+import { PasswordInput } from "@/components/password-input";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
