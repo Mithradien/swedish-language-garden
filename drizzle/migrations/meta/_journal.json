@@ -99,6 +99,13 @@
       "when": 1793301949987,
       "tag": "0013_customer_cars_nekad",
       "breakpoints": true
+    },
+    {
+      "idx": 14,
+      "version": "7",
+      "when": 1793302314396,
+      "tag": "0014_add_useradmin_role",
+      "breakpoints": true
     }
   ]
 }
