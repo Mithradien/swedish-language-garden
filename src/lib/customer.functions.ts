@@ -5,6 +5,7 @@ import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { endTimeFor, isBookable, stockholmNow, LEAD_HOURS } from "./booking-flow";
 import { claimStatus, matchesContact, normPhone, type Contact } from "./customer-match";
 import type { Tire } from "./bookings";
+import { completedTyreHistory } from "./tyre-history";
 
 // Signed-in customer: only rows whose e-mail/phone match the customer (or bookings for their linked cars) are returned.
 type Ctx = { supabase: any; userId: string; claims: { email?: string } };
@@ -24,7 +25,7 @@ async function load(me: Contact, userId?: string) {
   const { data: links } = userId ? await supabaseAdmin.from("customer_cars").select("regnr,status").eq("user_id", userId) : { data: [] };
   const linked = (links ?? []).filter(l => l.status === "kopplad").map(l => l.regnr);
   const pending = (links ?? []).filter(l => l.status === "vantar").map(l => l.regnr);
-  if (!ors.length && !linked.length && !pending.length) return { cars: [], bookings: [], pending: [] as string[] };
+  if (!ors.length && !linked.length && !pending.length) return { cars: [], bookings: [], pending: [] as string[], tyreHistory: [] };
   const { data: carRows } = ors.length ? await supabaseAdmin.from("car_storage").select("regnr,modell,lagerplats,min_depth,tires,email,phone,kundnr").or(ors.join(",")) : { data: [] };
   const { data: linkedRows } = linked.length ? await supabaseAdmin.from("car_storage").select("regnr,modell,lagerplats,min_depth,tires,email,phone,kundnr").in("regnr", linked) : { data: [] };
   const cars = (carRows ?? []).filter(c => matchesContact(me, c));
@@ -38,13 +39,16 @@ async function load(me: Contact, userId?: string) {
   for (const b of byContact ?? []) if (matchesContact(me, b)) map.set(b.booking_key, b);
   for (const b of byCar ?? []) map.set(b.booking_key, b);
   const keys = [...map.keys()];
+  const { data: orders, error: historyError } = keys.length ? await supabaseAdmin.from("work_orders").select("id,booking_key,regnr,booking_date,finished_at,service,status,depth_vf,depth_hf,depth_vb,depth_hb,tire_season,fitted_tire_set").in("booking_key", keys).eq("status", "klar") : { data: [], error: null };
+  if (historyError) throw new Error("Skifteshistoriken kunde inte hämtas.");
+  const tyreHistory = completedTyreHistory(orders ?? [], keys);
   const { data: st } = keys.length ? await supabaseAdmin.from("booking_statuses").select("booking_key,status").in("booking_key", keys) : { data: [] };
   const status = new Map((st ?? []).map(s => [s.booking_key, s.status]));
   const bookings = [...map.values()].map(b => ({ key: b.booking_key, regnr: b.regnr, date: b.booking_date, time: b.start_time.slice(0, 5),
     service: b.service ?? "", status: status.get(b.booking_key) ?? "vantas" }))
     .sort((a, b) => (b.date + b.time).localeCompare(a.date + a.time));
   return { cars: cars.map(c => ({ regnr: c.regnr, modell: c.modell, lagerplats: c.lagerplats, kundnr: c.kundnr,
-    minDepth: c.min_depth == null ? null : Number(c.min_depth), tires: (Array.isArray(c.tires) ? c.tires : []) as unknown as Tire[] })), bookings, pending: pending.filter(r => !cars.some(c => c.regnr === r)) };
+    minDepth: c.min_depth == null ? null : Number(c.min_depth), tires: (Array.isArray(c.tires) ? c.tires : []) as unknown as Tire[] })), bookings, tyreHistory, pending: pending.filter(r => !cars.some(c => c.regnr === r)) };
 }
 
 export const myCustomerPage = createServerFn({ method: "POST" }).middleware([requireSupabaseAuth])

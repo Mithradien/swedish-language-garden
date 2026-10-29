@@ -17,6 +17,8 @@ import { TREAD_STYLES, TreadGuide, TreadReading } from "./tread-reading";
 import { useAuth } from "@/hooks/use-auth";
 import { supabase } from "@/integrations/supabase/client";
 import { CustomerAccount } from "./customer-account";
+import { TyreHistory } from "./tyre-history";
+import { EXAMPLE_TYRE_HISTORY } from "@/lib/tyre-history-example";
 
 export function PortalHeader({ staff = false }: { staff?: boolean }) {
   return <header className="border-b bg-primary text-primary-foreground"><TopNav />
@@ -30,8 +32,8 @@ export function PreviewNotice() {
 function Field({ label, ...props }: { label: string } & React.ComponentProps<typeof Input>) {
   return <label className="block space-y-2 text-sm font-medium"><span>{label}</span>{props.type === "password" ? <PasswordInput {...props} className="h-11 bg-card" /> : <Input {...props} className="h-11 bg-card" />}</label>;
 }
-export function CustomerPortal() {
-  const [preview, setPreview] = useState(false);
+export function CustomerPortal({ exampleOnly = false }: { exampleOnly?: boolean }) {
+  const [preview, setPreview] = useState(exampleOnly);
   const [authMode, setAuthMode] = useState("login");
   const [authMessage, setAuthMessage] = useState("");
   const [vehicles, setVehicles] = useState(exampleVehicles);
@@ -90,7 +92,7 @@ export function CustomerPortal() {
   }
   function exitPreview() { setAddress(null); setPreview(false); setVehicles(exampleVehicles()); setAppointments([{ id: "example-appointment", customerId: EXAMPLE_CUSTOMER, vehicleId: "car-1", date: exampleDate(), time: "09:00", service: "Skifte och förvaring", status: "Bokad" }]); setMessage(""); setAuthMessage(""); }
 
-  if (!loading && user && !preview) return <main className="min-h-screen"><PortalHeader /><CustomerAccount /></main>;
+  if (!exampleOnly && !loading && user && !preview) return <main className="min-h-screen"><PortalHeader /><CustomerAccount /></main>;
   return <main className="min-h-screen"><PortalHeader />{preview && <PreviewNotice />}
     {!preview ? <div className="mx-auto grid max-w-6xl gap-10 px-5 py-10 sm:px-8 lg:grid-cols-[1.1fr_1fr] lg:gap-16 lg:py-16">
       <section><p className="mb-3 font-display text-sm font-semibold uppercase text-muted-foreground">Kundportal</p><h1 className="text-5xl font-bold uppercase sm:text-6xl">Däckhotell<br/><span className="text-muted-foreground">Mina sidor</span></h1><img src={workshop} width={1280} height={720} alt="Däck och fälg i en däckverkstad, illustrativ bild" className="mt-8 aspect-video w-full rounded-md object-cover"/><div className="mt-5 flex flex-wrap items-center gap-x-6 gap-y-2 text-sm text-muted-foreground"><span className="flex items-center gap-2"><CarFront className="h-4 w-4"/>Mina bilar</span><span className="flex items-center gap-2"><CalendarDays className="h-4 w-4"/>Mina bokningar</span><span className="flex items-center gap-2"><Gauge className="h-4 w-4"/>Mina däck</span></div></section>

@@ -66,14 +66,17 @@ export function MechanicView({ userId }: { userId: string }) {
 function Protocol({ order, onSave }: { order: Order | undefined; onSave: (p: Partial<Order>) => Promise<boolean> }) {
   const [vals, setVals] = useState<Record<string, string>>(() => Object.fromEntries(WHEELS.map(([k]) => [k, order?.[k] != null ? String(order[k]) : ""])));
   const [note, setNote] = useState(order?.note ?? "");
+  const [season, setSeason] = useState(order?.tire_season ?? "");
+  const [fitted, setFitted] = useState(order?.fitted_tire_set ?? "");
   const [msg, setMsg] = useState("");
   const num = (s: string) => { const n = parseFloat(s.replace(",", ".")); return Number.isFinite(n) ? n : null; };
   return <form className="mt-4 rounded-md border bg-secondary/40 p-4" onSubmit={async e => {
     e.preventDefault();
-    const ok = await onSave({ ...Object.fromEntries(WHEELS.map(([k]) => [k, num(vals[k] ?? "")])), note: note || null });
+    const ok = await onSave({ ...Object.fromEntries(WHEELS.map(([k]) => [k, num(vals[k] ?? "")])), note: note || null, tire_season: season || null, fitted_tire_set: fitted.trim() || null });
     setMsg(ok ? "Protokollet är sparat." : "Kunde inte spara.");
   }}>
     <p className="mb-3 text-sm font-medium">Mönsterdjup (mm)</p>
+    <div className="mb-4 space-y-3"><label className="block text-sm">Monterade däck / hjulsats<Input className="mt-1 h-12" value={fitted} onChange={e=>setFitted(e.target.value)} placeholder="Märke, dimension och hjulsats" maxLength={300}/></label><fieldset><legend className="mb-2 text-sm">Däckens säsong</legend><div className="flex flex-wrap gap-4">{[["summer","Sommar"],["winter","Vinter"],["","Ej angiven"]].map(([value,label])=><label key={value} className="flex items-center gap-2 text-sm"><input type="radio" name="tire-season" checked={season===value} onChange={()=>setSeason(value ?? "")}/>{label}</label>)}</div></fieldset></div>
     <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
       {WHEELS.map(([k, label]) => <label key={k} className="text-sm">{label}<Input inputMode="decimal" className="mt-1 h-14 text-center text-2xl font-bold" value={vals[k]} onChange={e => setVals({ ...vals, [k]: e.target.value })}/></label>)}
     </div>
