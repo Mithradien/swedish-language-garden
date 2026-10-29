@@ -17,7 +17,24 @@ export interface Booking {
 export type ScheduleRow = Omit<Booking, "service"> & { service: Service | "" };
 
 /** Verkstadens tre arbetspass i minuter från midnatt: morgon, förmiddag, eftermiddag. */
-export const WORK_PASSES: readonly (readonly [number, number])[] = [[420, 495], [555, 675], [765, 930]];
+/** Standardschemat: tre arbetspass, ny tid var 15:e minut. */
+export const DEFAULT_WORK_PASSES: readonly (readonly [number, number])[] = [[420, 495], [555, 675], [765, 930]];
+export const DEFAULT_SLOT_STEP = 15;
+/** Aktuellt schema – kan bytas från Inställningar → Bokningar via applySchedule. */
+export let WORK_PASSES: readonly (readonly [number, number])[] = DEFAULT_WORK_PASSES;
+export let SLOT_STEP = DEFAULT_SLOT_STEP;
+export interface ScheduleConfig { passes: [number, number][]; step: number }
+export function validSchedule(c: unknown): ScheduleConfig | null {
+  const o = c as ScheduleConfig;
+  if (!o || !Array.isArray(o.passes) || !o.passes.length || !Number.isInteger(o.step) || o.step < 5 || o.step > 120) return null;
+  for (const p of o.passes) if (!Array.isArray(p) || !Number.isInteger(p[0]) || !Number.isInteger(p[1]) || p[0] < 0 || p[1] > 1440 || p[1] < p[0]) return null;
+  return { passes: o.passes.map((p) => [p[0], p[1]] as [number, number]).sort((a, b) => a[0] - b[0]), step: o.step };
+}
+export function applySchedule(c: unknown) {
+  const v = validSchedule(c);
+  WORK_PASSES = v ? v.passes : DEFAULT_WORK_PASSES;
+  SLOT_STEP = v ? v.step : DEFAULT_SLOT_STEP;
+}
 
 /** Schemat kompletterar endast dagar i importen; bokningar utanför schemat behålls. */
 export function withEmptySlots(bookings: Booking[]): ScheduleRow[] {
@@ -32,7 +49,7 @@ export function withEmptySlots(bookings: Booking[]): ScheduleRow[] {
     const daily = bookings.filter(b => b.date === date);
     const occupied = new Set(daily.map(b => minutes(b.start)));
     for (const [first, last] of WORK_PASSES) {
-      for (let start = first; start <= last; start += 15) {
+      for (let start = first; start <= last; start += SLOT_STEP) {
         if (occupied.has(start)) continue;
         rows.push({ date, dateLabel: daily[0]?.dateLabel ?? date, start: timeLabel(start), end: timeLabel(start + 30), regnr: "", name: "", phone: "", service: "" });
       }
