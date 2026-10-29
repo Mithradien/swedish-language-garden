@@ -1,6 +1,7 @@
 import { useMemo, useState, type FormEvent } from "react";
 import { Link } from "@tanstack/react-router";
 import { ArrowLeft, ArrowRight, CalendarDays, CarFront, Check, ChevronRight, Clock3, Gauge, ImageIcon, LockKeyhole, LogOut, Plus, ShieldCheck, UserRound, Wrench } from "lucide-react";
+import { PasswordInput } from "@/components/password-input";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -27,7 +28,7 @@ export function PreviewNotice() {
   return <div role="status" className="border-b bg-signal/20 text-foreground"><div className="mx-auto flex max-w-6xl items-start gap-2 px-5 py-3 text-sm sm:px-8"><ShieldCheck className="mt-0.5 h-4 w-4 shrink-0"/><p><strong>Förhandsvisning med exempeluppgifter.</strong> Inga riktiga konton, bokningar eller bilder sparas. Din egen server är ännu inte ansluten.</p></div></div>;
 }
 function Field({ label, ...props }: { label: string } & React.ComponentProps<typeof Input>) {
-  return <label className="block space-y-2 text-sm font-medium"><span>{label}</span><Input {...props} className="h-11 bg-card" /></label>;
+  return <label className="block space-y-2 text-sm font-medium"><span>{label}</span>{props.type === "password" ? <PasswordInput {...props} className="h-11 bg-card" /> : <Input {...props} className="h-11 bg-card" />}</label>;
 }
 export function CustomerPortal() {
   const [preview, setPreview] = useState(false);
