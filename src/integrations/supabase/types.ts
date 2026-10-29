@@ -416,6 +416,7 @@ export type Database = {
           depth_vb: number | null
           depth_vf: number | null
           finished_at: string | null
+          fitted_tire_set: string | null
           id: string
           mechanic_id: string | null
           note: string | null
@@ -423,6 +424,7 @@ export type Database = {
           service: string | null
           started_at: string | null
           status: string
+          tire_season: string | null
           updated_at: string
         }
         Insert: {
@@ -433,6 +435,7 @@ export type Database = {
           depth_vb?: number | null
           depth_vf?: number | null
           finished_at?: string | null
+          fitted_tire_set?: string | null
           id?: string
           mechanic_id?: string | null
           note?: string | null
@@ -440,6 +443,7 @@ export type Database = {
           service?: string | null
           started_at?: string | null
           status?: string
+          tire_season?: string | null
           updated_at?: string
         }
         Update: {
@@ -450,6 +454,7 @@ export type Database = {
           depth_vb?: number | null
           depth_vf?: number | null
           finished_at?: string | null
+          fitted_tire_set?: string | null
           id?: string
           mechanic_id?: string | null
           note?: string | null
@@ -457,6 +462,7 @@ export type Database = {
           service?: string | null
           started_at?: string | null
           status?: string
+          tire_season?: string | null
           updated_at?: string
         }
         Relationships: []
