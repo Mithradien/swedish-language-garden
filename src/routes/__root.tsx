@@ -8,7 +8,9 @@ import {
   Scripts,
   type ErrorComponentProps,
 } from "@tanstack/react-router";
-import { useEffect, type ReactNode } from "react";
+import { Fragment, useEffect, useState, type ReactNode } from "react";
+import { loadSchedule } from "@/lib/schedule";
+import { supabase } from "@/integrations/supabase/client";
 
 import { Toaster } from "@/components/ui/sonner";
 import appCss from "../styles.css?url";
@@ -115,11 +117,18 @@ function RootShell({ children }: { children: ReactNode }) {
 
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
+  const [scheduleVersion, setScheduleVersion] = useState(0);
+  useEffect(() => {
+    const reload = () => loadSchedule(supabase).then(() => setScheduleVersion((v) => v + 1)).catch(() => {});
+    reload();
+    window.addEventListener("schedule-changed", reload);
+    return () => window.removeEventListener("schedule-changed", reload);
+  }, []);
 
   return (
     <QueryClientProvider client={queryClient}>
       {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
-      <Outlet />
+      <Fragment key={scheduleVersion}><Outlet /></Fragment>
       <Toaster />
     </QueryClientProvider>
   );

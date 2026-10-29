@@ -1,4 +1,5 @@
 import { createServerFn } from "@tanstack/react-start";
+import { loadScheduleServer } from "./schedule";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { endTimeFor, isBookable, stockholmNow, LEAD_HOURS } from "./booking-flow";
@@ -86,6 +87,7 @@ export const cancelMyBooking = createServerFn({ method: "POST" }).middleware([re
 export const rebookMyBooking = createServerFn({ method: "POST" }).middleware([requireSupabaseAuth])
   .inputValidator((d: unknown) => z.object({ key: z.string().max(60), date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/), time: z.string().regex(/^\d{2}:\d{2}$/) }).parse(d))
   .handler(async ({ data, context }) => {
+    await loadScheduleServer();
     const b = await ownBooking(context as Ctx, data.key);
     if (!b || b.status === "avbokad") return { ok: false as const, error: "Bokningen hittades inte." };
     if (!changeable(b.date, b.time)) return { ok: false as const, error: "Det är mindre än 48 timmar kvar. Ring verkstaden för att boka om." };

@@ -1,4 +1,5 @@
 import { createServerFn } from "@tanstack/react-start";
+import { loadScheduleServer } from "./schedule";
 import { z } from "zod";
 import { endTimeFor, isBookable, serviceFor, stockholmNow } from "./booking-flow";
 
@@ -41,6 +42,7 @@ export const createPublicBooking = createServerFn({ method: "POST" })
     note: z.string().max(1000).optional(),
   }).parse(d))
   .handler(async ({ data }) => {
+    await loadScheduleServer();
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const regnr = clean(data.regnr);
     const service = serviceFor(data.tillId, data.franId);
