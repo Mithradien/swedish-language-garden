@@ -1,7 +1,7 @@
 import { RequireRole } from "@/components/staff/require-role";
 import { toast } from "sonner";
 import { fetchAllBookings, syncBookingsToDb } from "@/lib/booking-sync";
-import { fetchDbStatuses, saveDbStatus } from "@/lib/status-sync";
+import { fetchDbArrivalTimes, fetchDbStatuses, saveDbStatus } from "@/lib/status-sync";
 import { createFileRoute } from "@tanstack/react-router";
 import { TopNav } from "@/components/top-nav";
 import { Fragment, useEffect, useMemo, useRef, useState, type ChangeEvent } from "react";
@@ -136,12 +136,17 @@ function Index() {
   }
 
   const [statuses, setStatuses] = useState<Record<string, ArrivalStatus>>({});
+  const [arrivedAt, setArrivedAt] = useState<Record<string, string>>({});
   useEffect(() => {
     const refresh = () => {
       let local: Record<string, ArrivalStatus> = {};
       try { local = readStatuses(localStorage); } catch { /* ignoreras */ }
       setStatuses(local);
       fetchDbStatuses().then(db => { if (db) setStatuses({ ...local, ...db }); });
+      let localTimes: Record<string, string> = {};
+      try { const h = JSON.parse(localStorage.getItem("bokningar.arrivals.v1") || "[]"); if (Array.isArray(h)) for (const e of h) if (e?.bookingKey && e?.arrivedAt) localTimes[e.bookingKey] = e.arrivedAt; } catch { /* ignoreras */ }
+      setArrivedAt(localTimes);
+      fetchDbArrivalTimes().then(db => { if (db) setArrivedAt({ ...localTimes, ...db }); });
     };
     refresh();
     window.addEventListener("storage", refresh);
@@ -328,6 +333,7 @@ function Index() {
                       </div>}
                     </PopoverContent>
                   </Popover>
+                  {(statusOf(b) === "ankommen" || statusOf(b) === "sen") && arrivedAt[statusKey(b)] && <span className="text-xs whitespace-nowrap text-muted-foreground tabular-nums">Ankom {new Date(arrivedAt[statusKey(b)]!).toLocaleTimeString("sv-SE", { hour: "2-digit", minute: "2-digit" })}</span>}
                   <Button size="sm" variant="ghost" className="screen-only h-7 px-2" title="Skriv ut etikett"
                     onClick={() => printLabel(b.regnr || "?", `${b.start} · ${b.dateLabel}`, b.service)}>
                     <Tag className="h-4 w-4" />
