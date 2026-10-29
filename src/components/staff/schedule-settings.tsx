@@ -24,7 +24,7 @@ export function ScheduleSettings() {
   async function save() {
     if (!cfg) return;
     setBusy(true);
-    const { error } = await supabase.from("app_config").upsert({ key: "schedule", value: cfg, updated_at: new Date().toISOString() });
+    const { error } = await supabase.from("app_config").upsert({ key: "schedule", value: { passes: cfg.passes, step: cfg.step }, updated_at: new Date().toISOString() });
     setBusy(false);
     if (error) { setMsg({ ok: false, text: "Kunde inte spara. Försök igen." }); return; }
     setMsg({ ok: true, text: "Bokningstiderna är sparade" });
