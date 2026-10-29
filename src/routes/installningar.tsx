@@ -4,7 +4,7 @@ import { TopNav } from "@/components/top-nav";
 import { SettingsPanel } from "@/components/settings-panel";
 import { UserAdmin } from "@/components/staff/user-admin";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { BadgeDollarSign, ScrollText, Gauge, CalendarClock, Database, Settings, Users } from "lucide-react";
+import { BadgeDollarSign, ScrollText, Gauge, CalendarClock, Database, Mail, Settings, Users } from "lucide-react";
 import { UserRoles } from "@/components/staff/role-gate";
 import { useAuth } from "@/hooks/use-auth";
 import { DataImport } from "@/components/staff/data-import";
@@ -12,6 +12,7 @@ import { PriceSettings } from "@/components/staff/price-settings";
 import { TreadSettings } from "@/components/staff/tread-settings";
 import { TermsSettings } from "@/components/staff/terms-settings";
 import { ScheduleSettings } from "@/components/staff/schedule-settings";
+import { MailSettings } from "@/components/staff/mail-settings";
 
 export const Route = createFileRoute("/installningar")({
   head: () => ({
@@ -57,6 +58,7 @@ function SettingsPage({ limited }: { limited: boolean }) {
             {!limited && <TabsTrigger value="priser" className="gap-2"><BadgeDollarSign className="h-4 w-4" />Priser</TabsTrigger>}
             {!limited && <TabsTrigger value="monsterdjup" className="gap-2"><Gauge className="h-4 w-4" />Mönsterdjup</TabsTrigger>}
             {!limited && <TabsTrigger value="villkor" className="gap-2"><ScrollText className="h-4 w-4" />Villkor</TabsTrigger>}
+            {!limited && <TabsTrigger value="epost" className="gap-2"><Mail className="h-4 w-4" />E-post</TabsTrigger>}
             {!limited && <TabsTrigger value="data" className="gap-2"><Database className="h-4 w-4" />Data &amp; import</TabsTrigger>}
           </TabsList>
           {!limited && <TabsContent value="allmant"><SettingsPanel /></TabsContent>}
@@ -65,6 +67,7 @@ function SettingsPage({ limited }: { limited: boolean }) {
           {!limited && <TabsContent value="priser"><PriceSettings /></TabsContent>}
           {!limited && <TabsContent value="monsterdjup"><TreadSettings /></TabsContent>}
           {!limited && <TabsContent value="villkor"><TermsSettings /></TabsContent>}
+          {!limited && <TabsContent value="epost"><MailSettings /></TabsContent>}
           {!limited && <TabsContent value="data"><DataImport /></TabsContent>}
         </Tabs>
       </div>
