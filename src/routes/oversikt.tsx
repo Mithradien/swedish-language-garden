@@ -399,21 +399,6 @@ function Index() {
           )}
         </section>
 
-        {headers.length > 0 && (
-          <section className="screen-only flex flex-wrap items-center gap-4 rounded-md bg-secondary p-4 text-sm">
-            <span className="font-medium">Kolumner i Excel:</span>
-            <span>Regnummer</span>
-            <Select value={regCol} onValueChange={setRegCol}>
-              <SelectTrigger className="w-48 bg-card"><SelectValue /></SelectTrigger>
-              <SelectContent>{headers.map((h) => <SelectItem key={h} value={h}>{h}</SelectItem>)}</SelectContent>
-            </Select>
-            <span>Lagerplats</span>
-            <Select value={platsCol} onValueChange={setPlatsCol}>
-              <SelectTrigger className="w-48 bg-card"><SelectValue /></SelectTrigger>
-              <SelectContent>{headers.map((h) => <SelectItem key={h} value={h}>{h}</SelectItem>)}</SelectContent>
-            </Select>
-          </section>
-        )}
 
         <Tabs defaultValue="bokade">
           <TabsList className="screen-only h-auto">
