@@ -10,6 +10,7 @@ import {
   franChoicesFor, longDayLabel, openDays, serviceFor, slotsForDate, tillChoicesFor,
   type Choice, type DemoCar,
 } from "@/lib/booking-flow";
+import { PENDING_REGNR_KEY } from "@/lib/customer-match";
 import { priceForSize, priceText } from "@/lib/prices";
 import { createPublicBooking, publicCarLookup, publicTakenTimes } from "@/lib/public-booking.functions";
 import { Link } from "@tanstack/react-router";
@@ -39,6 +40,7 @@ export function Boka() {
   const [regnr, setRegnr] = useState("");
   useEffect(() => { const q = new URLSearchParams(window.location.search).get("regnr"); if (q) setRegnr(q.toUpperCase().slice(0, 10)); }, []);
   const [car, setCar] = useState<DemoCar | null | undefined>(undefined);
+  const rememberRegnr = () => { try { localStorage.setItem(PENDING_REGNR_KEY, normalizeRegnr(regnr)); } catch { /* privat läge */ } };
   const [tillId, setTillId] = useState("");
   const [franId, setFranId] = useState("");
   const [date, setDate] = useState("");
@@ -213,8 +215,8 @@ export function Boka() {
                   </>
                 )}
                 <div className="grid gap-3 sm:grid-cols-2">
-                  <Button asChild className="h-12 font-display text-lg uppercase"><Link to="/kund">Logga in</Link></Button>
-                  <Button asChild variant="outline" className="h-12 font-display text-lg uppercase"><Link to="/kund">Skapa konto</Link></Button>
+                  <Button asChild className="h-12 font-display text-lg uppercase"><Link to="/kund" onClick={rememberRegnr}>Logga in</Link></Button>
+                  <Button asChild variant="outline" className="h-12 font-display text-lg uppercase"><Link to="/kund" onClick={rememberRegnr}>Skapa konto</Link></Button>
                 </div>
                 <Button type="button" variant="ghost" className="h-12 w-full font-display text-lg uppercase" onClick={() => continueAfterRegnr(car)}>
                   Fortsätt som gäst <ArrowRight className="ml-2 h-5 w-5" />

@@ -17,3 +17,6 @@ export function matchesContact(me: Contact, row: { email?: string | null; phone?
   const p = normPhone(me.phone);
   return p.length >= 7 && normPhone(row.phone) === p;
 }
+
+/** Regnummer från bokningen som ska kopplas till kontot efter inloggning. */
+export const PENDING_REGNR_KEY = "pending-regnr";
