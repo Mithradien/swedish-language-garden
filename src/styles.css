@@ -212,7 +212,10 @@
   .print-list tr { break-inside: avoid; }
   .print-list th, .print-list td { height: 8.25mm; padding: 1.2mm; font-size: 10.5pt; line-height: 1.2; }
   .print-list td > .inline-flex { gap: 1mm; }
-  .print-list td button { font-size: inherit; line-height: inherit; }
+  /* Screen buttons are 32px tall; with cell padding they push a full day onto page two. */
+  .print-list td button { height: auto; min-height: 0; font-size: inherit; line-height: inherit; }
+  .print-list td > .inline-flex { vertical-align: middle; }
+  .print-list td .inline-flex.h-8 { height: auto; min-height: 0; }
   .print-list td button.border-2 { width: 100% !important; min-width: 0 !important; }
   .print-list td { overflow-wrap: anywhere; }
   .print-list .status-mark { background: transparent !important; color: var(--foreground) !important; box-shadow: none !important; }
