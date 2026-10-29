@@ -170,6 +170,42 @@ export type Database = {
         }
         Relationships: []
       }
+      mail_settings: {
+        Row: {
+          enabled: boolean
+          from_address: string
+          host: string
+          id: number
+          password: string
+          port: number
+          site_url: string
+          updated_at: string
+          username: string
+        }
+        Insert: {
+          enabled?: boolean
+          from_address?: string
+          host?: string
+          id?: number
+          password?: string
+          port?: number
+          site_url?: string
+          updated_at?: string
+          username?: string
+        }
+        Update: {
+          enabled?: boolean
+          from_address?: string
+          host?: string
+          id?: number
+          password?: string
+          port?: number
+          site_url?: string
+          updated_at?: string
+          username?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           city: string | null
