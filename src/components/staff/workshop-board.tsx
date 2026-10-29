@@ -13,7 +13,8 @@ const STAGES = {
   klar: { label: "Klar", icon: CheckCheck, color: "border-tread-green", badge: "bg-tread-green/15 text-foreground" },
 };
 
-export function WorkshopBoard() {
+export function WorkshopBoard({ audience = "workshop" }: { audience?: "workshop" | "reception" }) {
+  const reception = audience === "reception";
   const [now, setNow] = useState<Date | null>(null);
   const [cars, setCars] = useState<BoardCar[]>([]);
   const [updated, setUpdated] = useState<Date | null>(null);
@@ -48,7 +49,7 @@ export function WorkshopBoard() {
         const rows = bookings.data ?? [];
         const [statuses, storage] = rows.length ? await Promise.all([
           supabase.from("booking_statuses").select("booking_key,status").in("booking_key", rows.map(b => b.booking_key)),
-          supabase.from("car_storage").select("regnr,lagerplats").in("regnr", [...new Set(rows.map(b => b.regnr))]),
+          reception ? Promise.resolve({ data: [], error: null }) : supabase.from("car_storage").select("regnr,lagerplats").in("regnr", [...new Set(rows.map(b => b.regnr))]),
         ]) : [{ data: [], error: null }, { data: [], error: null }];
         if (statuses.error || storage.error) throw new Error("read");
         if (active) { setCars(buildWorkshopBoard(rows, statuses.data ?? [], orders.data ?? [], storage.data ?? [])); setUpdated(new Date()); setError(""); }
@@ -62,7 +63,7 @@ export function WorkshopBoard() {
     document.addEventListener("visibilitychange", refresh);
     window.addEventListener("online", refresh);
     return () => { active = false; window.clearInterval(timer); document.removeEventListener("visibilitychange", refresh); window.removeEventListener("online", refresh); };
-  }, [date, retry]);
+  }, [date, retry, reception]);
 
   async function toggleFullscreen() {
     try {
@@ -72,12 +73,12 @@ export function WorkshopBoard() {
   }
 
   return <main className="min-h-screen bg-background">
-    {!fullscreen && <div className="bg-primary text-primary-foreground"><TopNav /></div>}
+    {!fullscreen && <div className="bg-primary text-primary-foreground"><TopNav hideAccount={reception} /></div>}
     <div className="px-4 py-6 sm:px-6 lg:px-8">
       <header className="mb-7 flex flex-wrap items-center justify-between gap-4 border-b pb-5">
         <div className="flex min-w-0 items-center gap-4">
           {settings.logo && <img src={settings.logo} alt={settings.company || "Verkstadens logotyp"} className="h-14 w-20 object-contain" />}
-          <div><h1 className="text-4xl font-bold tracking-normal">Verkstadsskärm</h1>{settings.company && <p className="text-muted-foreground">{settings.company}</p>}</div>
+          <div><h1 className="text-4xl font-bold tracking-normal">{reception ? "Kundmottagning" : "Verkstadsskärm"}</h1>{settings.company && <p className="text-muted-foreground">{settings.company}</p>}</div>
         </div>
         <div className="flex flex-wrap items-center gap-5">
           <div className="text-right"><p className="text-base capitalize">{now?.toLocaleDateString("sv-SE", { timeZone: "Europe/Stockholm", weekday: "long", day: "numeric", month: "long" }) ?? "—"}</p><p className="font-display text-4xl font-bold tabular-nums">{now?.toLocaleTimeString("sv-SE", { timeZone: "Europe/Stockholm", hour: "2-digit", minute: "2-digit" }) ?? "—"}</p></div>
@@ -91,14 +92,17 @@ export function WorkshopBoard() {
       <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
         {BOARD_STAGES.map(stage => {
           const meta = STAGES[stage]; const Icon = meta.icon; const list = cars.filter(c => c.stage === stage);
-          return <section key={stage} aria-label={meta.label} className="min-w-0">
-            <div className={`mb-4 flex items-center justify-between border-t-4 pt-4 ${meta.color}`}><h2 className="flex items-center gap-2 text-3xl font-bold tracking-normal"><Icon className="h-6 w-6" />{meta.label}</h2><span className={`flex h-9 min-w-9 items-center justify-center rounded px-2 text-lg font-bold tabular-nums ${meta.badge}`}>{list.length}</span></div>
+          const label = reception && stage === "klar" ? "Klar för avhämtning" : meta.label;
+          return <section key={stage} aria-label={label} className="min-w-0">
+            <div className={`mb-4 flex items-center justify-between gap-2 border-t-4 pt-4 ${meta.color}`}><h2 className="flex min-w-0 items-center gap-2 text-3xl font-bold tracking-normal"><Icon className="h-6 w-6 shrink-0" /><span>{label}</span></h2><span className={`flex h-9 min-w-9 shrink-0 items-center justify-center rounded px-2 text-lg font-bold tabular-nums ${meta.badge}`}>{list.length}</span></div>
             <ul className="space-y-3">{list.map(car => <li key={car.booking_key} className={`rounded-md border border-l-4 bg-card p-4 text-card-foreground ${meta.color}`}>
               <div className="flex flex-wrap items-baseline justify-between gap-2"><span className="font-display text-3xl font-bold break-all">{car.regnr}</span><span className="text-xl font-semibold tabular-nums">{car.start_time}</span></div>
-              <p className="mt-2 break-words text-lg">{car.service || "Ej angiven tjänst"}</p>
-              <p className="mt-4 flex items-center gap-2 text-base text-muted-foreground"><MapPin className="h-4 w-4 shrink-0" /><span className="break-all">{car.lagerplats || "Ingen lagerplats"}</span></p>
-              {car.arrival === "sen" && stage === "ankommen" && <p className="mt-3 rounded bg-st-late px-2 py-1 text-sm font-semibold text-foreground">Sen ankomst</p>}
-              {car.arrival === "ej" && stage === "vantas" && <p className="mt-3 rounded bg-st-noshow px-2 py-1 text-sm font-semibold text-foreground">Ej ankommen</p>}
+              {!reception && <>
+                <p className="mt-2 break-words text-lg">{car.service || "Ej angiven tjänst"}</p>
+                <p className="mt-4 flex items-center gap-2 text-base text-muted-foreground"><MapPin className="h-4 w-4 shrink-0" /><span className="break-all">{car.lagerplats || "Ingen lagerplats"}</span></p>
+                {car.arrival === "sen" && stage === "ankommen" && <p className="mt-3 rounded bg-st-late px-2 py-1 text-sm font-semibold text-foreground">Sen ankomst</p>}
+                {car.arrival === "ej" && stage === "vantas" && <p className="mt-3 rounded bg-st-noshow px-2 py-1 text-sm font-semibold text-foreground">Ej ankommen</p>}
+              </>}
             </li>)}</ul>
             {!list.length && <p className="border-t py-6 text-muted-foreground">Inga bilar</p>}
           </section>;
