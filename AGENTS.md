@@ -10,6 +10,7 @@
 <!-- LOVABLE:END -->
 
 ## Rules
+- Customer tyre history uses completed owned booking keys and safe work-order projections through customer.functions.ts; per-visit tyre season/set are recorded in mechanic protocols, never inferred from current storage. The explicit /kund-exempel route always opens isolated sample data, even for signed-in staff.
 - Staff-only /verkstad and /kundmottagning share WorkshopBoard and persisted status derivation in src/lib/workshop-board.ts, polling every ten seconds with Stockholm dates; reception hides internal fields and account identity and never queries storage. Both links are grouped in the Skärmar menu via nav-access.ts so the screens cannot drift.
 - Admin car details use current overview bookings and Excel cards with exact normalized registration matching in src/lib/admin-car.ts; history reads use the ordinary staff client and shared customer tread presentation, so live data never becomes preview data.
 - Customer tread classification lives in src/lib/tread.ts with separate season thresholds and boundary tests, so future settings can change limits without duplicating rules in the UI.

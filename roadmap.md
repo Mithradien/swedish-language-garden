@@ -16,10 +16,10 @@ Förutsättning: ingen Lovable Cloud eller extern lagring; verkliga inloggningar
 # Nuvarande att-göra (en punkt i taget, avstämning inför varje)
 
 ## Mina sidor – nästa steg
-- [ ] Skifteshistorik: genomförda skiften, använda däck och mönsterdjup över säsongerna (första steget).
+- [x] Skifteshistorik: genomförda skiften, dokumenterad hjulsats/säsong och mönsterdjup med jämförelse över år. Verifierad med sparat testskifte på inloggat kundkonto; testposterna borttagna.
 - [ ] Förnya förvaringen: kunden godkänner en ny förvaringssäsong.
 - [ ] Anmäla hämtning av hjul utan skifte: kunden väljer datum så personalen kan förbereda hjulen.
-- [ ] Undermeny för Mina sidor med direktåtkomst; inväntar förtydligande om exempelvy, egna sidor eller personalens kundvy.
+- [x] Mina sidor-undermeny med Mitt konto och Kundens exempelvy; direktval till exempelvyn fungerar även inloggad.
 
 - [x] Bilvy för inloggad personal från regnummer och sökning: kunduppgifter, Excel-däckkort, bokningar, statusändringar och däckprotokoll; separat statusknapp. Verifierad som administratör på dator och telefon.
 

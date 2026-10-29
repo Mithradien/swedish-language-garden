@@ -6,7 +6,11 @@ describe("menu access", () => {
   it("signed-out visitors only see booking", () => expect(paths([])).toEqual(["/boka"]));
   it("customers see booking and their own page", () => expect(paths(["kund"])).toEqual(["/boka", "/kund"]));
   it("mechanics lack settings and customer page", () => expect(paths(["mekaniker"])).toEqual(["/oversikt", "/boka", "/personal", "/verkstad", "/kundmottagning", "/ankomst"]));
-  it("superadmin sees everything", () => expect(paths(["superadmin"])).toHaveLength(8));
+  it("superadmin sees everything", () => expect(paths(["superadmin"])).toHaveLength(9));
+  it("administratören når exempelvyn separat från eget konto", () => {
+    expect(navItemsFor(["superadmin"]).filter(i=>i.group==="customer").map(i=>i.to)).toEqual(["/kund","/kund-exempel"]);
+    expect(paths(["kund"])).not.toContain("/kund-exempel");
+  });
   it("båda skärmarna ligger i personalens gemensamma skärmmeny", () => {
     for (const role of ["superadmin", "useradmin", "mekaniker"] as const) {
       expect(navItemsFor([role]).filter(item => item.group === "screens").map(item => item.to)).toEqual(["/verkstad", "/kundmottagning"]);

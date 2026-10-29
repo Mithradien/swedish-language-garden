@@ -17,6 +17,8 @@ import { TREAD_STYLES, TreadGuide, TreadReading } from "./tread-reading";
 import { useAuth } from "@/hooks/use-auth";
 import { supabase } from "@/integrations/supabase/client";
 import { CustomerAccount } from "./customer-account";
+import { TyreHistory } from "./tyre-history";
+import { EXAMPLE_TYRE_HISTORY } from "@/lib/tyre-history-example";
 
 export function PortalHeader({ staff = false }: { staff?: boolean }) {
   return <header className="border-b bg-primary text-primary-foreground"><TopNav />
@@ -30,8 +32,8 @@ export function PreviewNotice() {
 function Field({ label, ...props }: { label: string } & React.ComponentProps<typeof Input>) {
   return <label className="block space-y-2 text-sm font-medium"><span>{label}</span>{props.type === "password" ? <PasswordInput {...props} className="h-11 bg-card" /> : <Input {...props} className="h-11 bg-card" />}</label>;
 }
-export function CustomerPortal() {
-  const [preview, setPreview] = useState(false);
+export function CustomerPortal({ exampleOnly = false }: { exampleOnly?: boolean }) {
+  const [preview, setPreview] = useState(exampleOnly);
   const [authMode, setAuthMode] = useState("login");
   const [authMessage, setAuthMessage] = useState("");
   const [vehicles, setVehicles] = useState(exampleVehicles);
@@ -90,7 +92,7 @@ export function CustomerPortal() {
   }
   function exitPreview() { setAddress(null); setPreview(false); setVehicles(exampleVehicles()); setAppointments([{ id: "example-appointment", customerId: EXAMPLE_CUSTOMER, vehicleId: "car-1", date: exampleDate(), time: "09:00", service: "Skifte och förvaring", status: "Bokad" }]); setMessage(""); setAuthMessage(""); }
 
-  if (!loading && user && !preview) return <main className="min-h-screen"><PortalHeader /><CustomerAccount /></main>;
+  if (!exampleOnly && !loading && user && !preview) return <main className="min-h-screen"><PortalHeader /><CustomerAccount /></main>;
   return <main className="min-h-screen"><PortalHeader />{preview && <PreviewNotice />}
     {!preview ? <div className="mx-auto grid max-w-6xl gap-10 px-5 py-10 sm:px-8 lg:grid-cols-[1.1fr_1fr] lg:gap-16 lg:py-16">
       <section><p className="mb-3 font-display text-sm font-semibold uppercase text-muted-foreground">Kundportal</p><h1 className="text-5xl font-bold uppercase sm:text-6xl">Däckhotell<br/><span className="text-muted-foreground">Mina sidor</span></h1><img src={workshop} width={1280} height={720} alt="Däck och fälg i en däckverkstad, illustrativ bild" className="mt-8 aspect-video w-full rounded-md object-cover"/><div className="mt-5 flex flex-wrap items-center gap-x-6 gap-y-2 text-sm text-muted-foreground"><span className="flex items-center gap-2"><CarFront className="h-4 w-4"/>Mina bilar</span><span className="flex items-center gap-2"><CalendarDays className="h-4 w-4"/>Mina bokningar</span><span className="flex items-center gap-2"><Gauge className="h-4 w-4"/>Mina däck</span></div></section>
@@ -104,13 +106,13 @@ export function CustomerPortal() {
     </div> : <div className="mx-auto max-w-6xl px-5 py-8 sm:px-8">
       <div className="mb-8 flex flex-wrap items-start justify-between gap-5"><div><p className="mb-2 text-sm text-muted-foreground">Exempelkund</p><h1 className="text-4xl font-bold sm:text-5xl">Mina sidor</h1></div><div className="flex gap-2"><Button onClick={() => openBooking()} className="h-11"><Plus/>Boka tid</Button><Button variant="outline" size="icon" className="h-11 w-11" title="Lämna exempelvyn" aria-label="Lämna exempelvyn" onClick={exitPreview}><LogOut/></Button></div></div>
       {message && !bookingOpen && !claimOpen && <p role="status" className="mb-6 rounded-md border border-svc-forvaring bg-svc-forvaring/10 px-4 py-3 text-sm">{message}</p>}
-      <Tabs value={tab} onValueChange={setTab}><TabsList className="h-auto w-full justify-start overflow-x-auto bg-transparent p-0"><TabsTrigger value="overview" className="px-4 py-3"><CalendarDays className="mr-2 h-4 w-4"/>Översikt</TabsTrigger><TabsTrigger value="vehicles" className="px-4 py-3"><CarFront className="mr-2 h-4 w-4"/>Mina bilar</TabsTrigger><TabsTrigger value="bookings" className="px-4 py-3"><Clock3 className="mr-2 h-4 w-4"/>Mina bokningar</TabsTrigger><TabsTrigger value="profile" className="px-4 py-3"><UserRound className="mr-2 h-4 w-4"/>Mitt konto</TabsTrigger></TabsList>
+      <Tabs value={tab} onValueChange={setTab}><TabsList className="h-auto w-full justify-start overflow-x-auto bg-transparent p-0"><TabsTrigger value="overview" className="px-4 py-3"><CalendarDays className="mr-2 h-4 w-4"/>Översikt</TabsTrigger><TabsTrigger value="vehicles" className="px-4 py-3"><CarFront className="mr-2 h-4 w-4"/>Mina bilar</TabsTrigger><TabsTrigger value="bookings" className="px-4 py-3"><Clock3 className="mr-2 h-4 w-4"/>Mina bokningar</TabsTrigger><TabsTrigger value="history" className="px-4 py-3"><Gauge className="mr-2 h-4 w-4"/>Skifteshistorik</TabsTrigger><TabsTrigger value="profile" className="px-4 py-3"><UserRound className="mr-2 h-4 w-4"/>Mitt konto</TabsTrigger></TabsList>
         <TabsContent value="overview" className="mt-8 space-y-10"><section><div className="mb-4 flex items-center justify-between"><h2 className="text-2xl font-semibold">Nästa bokning</h2><Button variant="link" onClick={() => setTab("bookings")}>Alla bokningar<ArrowRight/></Button></div>{upcoming[0] ? <AppointmentCard appointment={upcoming[0]} vehicles={vehicles} onEdit={() => openBooking(upcoming[0])}/> : <Empty icon="calendar" text="Ingen kommande bokning"/>}</section>
           <section><div className="mb-4 flex flex-wrap items-center justify-between gap-2"><h2 className="text-2xl font-semibold">Mina bilar <span className="ml-2 text-lg text-muted-foreground">{mine.length}</span></h2><Button variant="outline" onClick={() => {setMessage("");setClaimOpen(true);}}><Plus/>Lägg till bil</Button></div><div className="grid gap-5 md:grid-cols-2">{mine.map(v => <VehicleCard key={v.id} vehicle={v} onDetails={() => setDetails(v)} onBook={() => {openBooking();setVehicleId(v.id);}}/>)}</div></section>
         </TabsContent>
         <TabsContent value="vehicles" className="mt-8"><div className="mb-5 flex flex-wrap items-center justify-between gap-3"><h2 className="text-3xl font-semibold">Mina bilar</h2><Button variant="outline" onClick={() => {setMessage("");setClaimOpen(true);}}><Plus/>Lägg till bil</Button></div><div className="grid gap-5 md:grid-cols-2">{mine.map(v => <VehicleCard key={v.id} vehicle={v} onDetails={() => setDetails(v)} onBook={() => {openBooking();setVehicleId(v.id);}}/>)}</div></TabsContent>
         <TabsContent value="bookings" className="mt-8 space-y-4"><h2 className="mb-5 text-3xl font-semibold">Mina bokningar</h2>{upcoming.length ? upcoming.map(a => <AppointmentCard key={a.id} appointment={a} vehicles={vehicles} onEdit={() => openBooking(a)}/>) : <Empty icon="calendar" text="Ingen kommande bokning"/>}</TabsContent>
-        <TabsContent value="profile" className="mt-8 max-w-xl"><h2 className="mb-6 text-3xl font-semibold">Mitt konto</h2><dl className="divide-y border-y"><div className="flex justify-between py-4"><dt className="text-muted-foreground">Namn</dt><dd>Exempelkund</dd></div><div className="flex justify-between py-4"><dt className="text-muted-foreground">E-post</dt><dd>kund@example.com</dd></div><div className="flex justify-between py-4"><dt className="text-muted-foreground">Telefon</dt><dd>Ej angivet</dd></div></dl><CustomerAddressForm initialAddress={address} onSave={setAddress}/><Button variant="outline" className="mt-6" onClick={exitPreview}><LogOut/>Lämna exempelvyn</Button></TabsContent>
+        <TabsContent value="history" className="mt-8"><TyreHistory visits={EXAMPLE_TYRE_HISTORY}/></TabsContent><TabsContent value="profile" className="mt-8 max-w-xl"><h2 className="mb-6 text-3xl font-semibold">Mitt konto</h2><dl className="divide-y border-y"><div className="flex justify-between py-4"><dt className="text-muted-foreground">Namn</dt><dd>Exempelkund</dd></div><div className="flex justify-between py-4"><dt className="text-muted-foreground">E-post</dt><dd>kund@example.com</dd></div><div className="flex justify-between py-4"><dt className="text-muted-foreground">Telefon</dt><dd>Ej angivet</dd></div></dl><CustomerAddressForm initialAddress={address} onSave={setAddress}/><Button variant="outline" className="mt-6" onClick={exitPreview}><LogOut/>Lämna exempelvyn</Button></TabsContent>
       </Tabs>
       <footer className="mt-12 flex flex-wrap items-center justify-between gap-4 border-t py-6 text-sm text-muted-foreground"><span className="flex items-center gap-2"><ShieldCheck className="h-4 w-4"/>Exempeluppgifter – inget sparas</span><span>Däckhotell · Mina sidor</span></footer>
     </div>}

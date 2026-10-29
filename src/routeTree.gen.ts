@@ -15,6 +15,7 @@ import { Route as AterstallLosenordRouteImport } from './routes/aterstall-loseno
 import { Route as BokaRouteImport } from './routes/boka'
 import { Route as InstallningarRouteImport } from './routes/installningar'
 import { Route as KundRouteImport } from './routes/kund'
+import { Route as KundExempelRouteImport } from './routes/kund-exempel'
 import { Route as KundmottagningRouteImport } from './routes/kundmottagning'
 import { Route as LoggaInRouteImport } from './routes/logga-in'
 import { Route as OversiktRouteImport } from './routes/oversikt'
@@ -51,6 +52,11 @@ const KundRoute = KundRouteImport.update({
   path: '/kund',
   getParentRoute: () => rootRouteImport,
 } as any)
+const KundExempelRoute = KundExempelRouteImport.update({
+  id: '/kund-exempel',
+  path: '/kund-exempel',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const KundmottagningRoute = KundmottagningRouteImport.update({
   id: '/kundmottagning',
   path: '/kundmottagning',
@@ -84,6 +90,7 @@ export interface FileRoutesByFullPath {
   '/boka': typeof BokaRoute
   '/installningar': typeof InstallningarRoute
   '/kund': typeof KundRoute
+  '/kund-exempel': typeof KundExempelRoute
   '/kundmottagning': typeof KundmottagningRoute
   '/logga-in': typeof LoggaInRoute
   '/oversikt': typeof OversiktRoute
@@ -97,6 +104,7 @@ export interface FileRoutesByTo {
   '/boka': typeof BokaRoute
   '/installningar': typeof InstallningarRoute
   '/kund': typeof KundRoute
+  '/kund-exempel': typeof KundExempelRoute
   '/kundmottagning': typeof KundmottagningRoute
   '/logga-in': typeof LoggaInRoute
   '/oversikt': typeof OversiktRoute
@@ -111,6 +119,7 @@ export interface FileRoutesById {
   '/boka': typeof BokaRoute
   '/installningar': typeof InstallningarRoute
   '/kund': typeof KundRoute
+  '/kund-exempel': typeof KundExempelRoute
   '/kundmottagning': typeof KundmottagningRoute
   '/logga-in': typeof LoggaInRoute
   '/oversikt': typeof OversiktRoute
@@ -126,6 +135,7 @@ export interface FileRouteTypes {
     | '/boka'
     | '/installningar'
     | '/kund'
+    | '/kund-exempel'
     | '/kundmottagning'
     | '/logga-in'
     | '/oversikt'
@@ -139,6 +149,7 @@ export interface FileRouteTypes {
     | '/boka'
     | '/installningar'
     | '/kund'
+    | '/kund-exempel'
     | '/kundmottagning'
     | '/logga-in'
     | '/oversikt'
@@ -152,6 +163,7 @@ export interface FileRouteTypes {
     | '/boka'
     | '/installningar'
     | '/kund'
+    | '/kund-exempel'
     | '/kundmottagning'
     | '/logga-in'
     | '/oversikt'
@@ -166,6 +178,7 @@ export interface RootRouteChildren {
   BokaRoute: typeof BokaRoute
   InstallningarRoute: typeof InstallningarRoute
   KundRoute: typeof KundRoute
+  KundExempelRoute: typeof KundExempelRoute
   KundmottagningRoute: typeof KundmottagningRoute
   LoggaInRoute: typeof LoggaInRoute
   OversiktRoute: typeof OversiktRoute
@@ -217,6 +230,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof KundRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/kund-exempel': {
+      id: '/kund-exempel'
+      path: '/kund-exempel'
+      fullPath: '/kund-exempel'
+      preLoaderRoute: typeof KundExempelRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/kundmottagning': {
       id: '/kundmottagning'
       path: '/kundmottagning'
@@ -262,6 +282,7 @@ const rootRouteChildren: RootRouteChildren = {
   BokaRoute: BokaRoute,
   InstallningarRoute: InstallningarRoute,
   KundRoute: KundRoute,
+  KundExempelRoute: KundExempelRoute,
   KundmottagningRoute: KundmottagningRoute,
   LoggaInRoute: LoggaInRoute,
   OversiktRoute: OversiktRoute,

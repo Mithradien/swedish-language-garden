@@ -14,6 +14,7 @@ import { dayLabel, longDayLabel, openDays, slotsForDate, stockholmNow } from "@/
 import { tireSeason, treadColor } from "@/lib/tread";
 import { StorageCertificate } from "./storage-certificate";
 import { TREAD_STYLES, TreadGuide, TreadReading } from "./tread-reading";
+import { TyreHistory } from "./tyre-history";
 
 type Page = Awaited<ReturnType<typeof myCustomerPage>>;
 type Car = Page["cars"][number];
@@ -67,6 +68,7 @@ export function CustomerAccount() {
       <TabsTrigger value="overview" className="px-4 py-3"><CalendarDays className="mr-2 h-4 w-4"/>Översikt</TabsTrigger>
       <TabsTrigger value="vehicles" className="px-4 py-3"><CarFront className="mr-2 h-4 w-4"/>Mina bilar</TabsTrigger>
       <TabsTrigger value="bookings" className="px-4 py-3"><Clock3 className="mr-2 h-4 w-4"/>Mina bokningar</TabsTrigger>
+      <TabsTrigger value="history" className="px-4 py-3"><Gauge className="mr-2 h-4 w-4"/>Skifteshistorik</TabsTrigger>
       <TabsTrigger value="profile" className="px-4 py-3"><UserRound className="mr-2 h-4 w-4"/>Mitt konto</TabsTrigger></TabsList>
       <TabsContent value="overview" className="mt-8 space-y-10">
         <section><h2 className="mb-4 text-2xl font-semibold">Nästa bokning</h2>{upcoming[0] ? <BookingCard b={upcoming[0]} onMove={() => setMoving(upcoming[0]!)} onCancel={() => doCancel(upcoming[0]!)}/> : <Empty text="Ingen kommande bokning"/>}</section>
@@ -74,7 +76,8 @@ export function CustomerAccount() {
       </TabsContent>
       <TabsContent value="vehicles" className="mt-8 space-y-6"><AddCar onAdd={async regnr => { const r = await claim({ data: { regnr } }); if (!r.ok) return r.error; setMsg(r.status === "kopplad" ? `${r.regnr} är tillagd under Mina bilar.` : `${r.regnr} väntar på att verkstaden godkänner kopplingen.`); reload(); return ""; }}/><Cars cars={page.cars} pending={page.pending} onDetails={setDetails} onCert={setCert}/></TabsContent>
       <TabsContent value="bookings" className="mt-8 space-y-4"><h2 className="text-2xl font-semibold">Kommande</h2>{upcoming.length ? upcoming.map(b => <BookingCard key={b.key} b={b} onMove={() => setMoving(b)} onCancel={() => doCancel(b)}/>) : <Empty text="Ingen kommande bokning"/>}
-        <h2 className="pt-6 text-2xl font-semibold">Historik</h2>{history.length ? <ul className="divide-y rounded-md border bg-card">{history.map(b => <li key={b.key} className="flex flex-wrap justify-between gap-2 px-4 py-3 text-sm"><span><b>{b.regnr}</b> · {dayLabel(b.date)} kl. {b.time} · {b.service}</span><span className="text-muted-foreground">{b.status === "vantas" ? "Genomförd" : STATUS[b.status] ?? b.status}</span></li>)}</ul> : <Empty text="Ingen tidigare historik"/>}</TabsContent>
+        <h2 className="pt-6 text-2xl font-semibold">Historik</h2>{history.length ? <ul className="divide-y rounded-md border bg-card">{history.map(b => <li key={b.key} className="flex flex-wrap justify-between gap-2 px-4 py-3 text-sm"><span><b>{b.regnr}</b> · {dayLabel(b.date)} kl. {b.time} · {b.service}</span><span className="text-muted-foreground">{page.tyreHistory.some(v=>v.booking_key===b.key) ? "Genomförd" : b.status === "vantas" ? "Tid passerad" : STATUS[b.status] ?? b.status}</span></li>)}</ul> : <Empty text="Ingen tidigare historik"/>}</TabsContent>
+      <TabsContent value="history" className="mt-8"><TyreHistory visits={page.tyreHistory}/></TabsContent>
       <TabsContent value="profile" className="mt-8 max-w-xl"><Profile page={page} onSave={async d => { const r = await saveProfile({ data: d }); setMsg(r.ok ? "Uppgifterna är sparade." : "Kunde inte spara."); reload(); }}/></TabsContent>
     </Tabs>
     <Dialog open={!!details} onOpenChange={o => { if (!o) setDetails(null); }}><DialogContent className="max-h-[90dvh] max-w-xl overflow-y-auto"><DialogHeader><DialogTitle className="text-3xl">{details?.regnr} · Däckuppgifter</DialogTitle><DialogDescription>{details?.modell}{details?.lagerplats ? ` · Lagerplats ${details.lagerplats}` : ""}</DialogDescription></DialogHeader>
