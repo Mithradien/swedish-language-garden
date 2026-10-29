@@ -230,3 +230,11 @@
   .print-regnrs > .grid { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 2mm 6mm; }
   .print-regnrs > .grid > div { break-inside: avoid; font-size: 14pt; letter-spacing: 0; }
 }
+
+/* Förvaringsbevis: skriv bara ut beviset i dialogen. */
+@media print {
+  body.printing-cert > *:not([role="dialog"]) { display: none !important; }
+  body.printing-cert .cert-dialog { position: static !important; transform: none !important; max-height: none !important; max-width: none !important; width: 100% !important; overflow: visible !important; border: none !important; box-shadow: none !important; padding: 0 !important; }
+  body.printing-cert .cert-dialog > button { display: none !important; }
+  body.printing-cert .cert { font-size: 9.5pt; }
+}

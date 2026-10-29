@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState, type FormEvent } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import { Link } from "@tanstack/react-router";
-import { CalendarDays, CarFront, Check, Clock3, Gauge, LogOut, Plus, UserRound, X } from "lucide-react";
+import { CalendarDays, CarFront, Check, FileText, Clock3, Gauge, LogOut, Plus, UserRound, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -12,6 +12,7 @@ import { cancelMyBooking, claimMyCar, myCustomerPage, rebookMyBooking, updateMyP
 import { publicTakenTimes } from "@/lib/public-booking.functions";
 import { dayLabel, longDayLabel, openDays, slotsForDate, stockholmNow } from "@/lib/booking-flow";
 import { tireSeason, treadColor } from "@/lib/tread";
+import { StorageCertificate } from "./storage-certificate";
 import { TREAD_STYLES, TreadGuide, TreadReading } from "./tread-reading";
 
 type Page = Awaited<ReturnType<typeof myCustomerPage>>;
@@ -30,6 +31,7 @@ export function CustomerAccount() {
   const [error, setError] = useState("");
   const [msg, setMsg] = useState("");
   const [details, setDetails] = useState<Car | null>(null);
+  const [cert, setCert] = useState<Car | null>(null);
   const [moving, setMoving] = useState<Bk | null>(null);
   const reload = () => fetchPage().then(setPage).catch(() => setError("Kunde inte hämta dina uppgifter."));
   const claim = useServerFn(claimMyCar);
@@ -59,6 +61,7 @@ export function CustomerAccount() {
   return <div className="mx-auto max-w-6xl px-5 py-8 sm:px-8">
     <div className="mb-8 flex flex-wrap items-start justify-between gap-5"><div><p className="mb-2 text-sm text-muted-foreground">{page.profile.name || page.profile.email}</p><h1 className="text-4xl font-bold sm:text-5xl">Mina sidor</h1></div>
       <div className="flex gap-2"><Button asChild className="h-11"><Link to="/boka"><Plus/>Boka tid</Link></Button><Button variant="outline" size="icon" className="h-11 w-11" aria-label="Logga ut" title="Logga ut" onClick={signOut}><LogOut/></Button></div></div>
+    <StorageCertificate car={cert} customer={page.profile} open={!!cert} onOpenChange={o => { if (!o) setCert(null); }}/>
     {msg && <p role="status" className="mb-6 rounded-md border bg-secondary px-4 py-3 text-sm">{msg}</p>}
     <Tabs defaultValue="overview"><TabsList className="h-auto w-full justify-start overflow-x-auto bg-transparent p-0">
       <TabsTrigger value="overview" className="px-4 py-3"><CalendarDays className="mr-2 h-4 w-4"/>Översikt</TabsTrigger>
@@ -67,9 +70,9 @@ export function CustomerAccount() {
       <TabsTrigger value="profile" className="px-4 py-3"><UserRound className="mr-2 h-4 w-4"/>Mitt konto</TabsTrigger></TabsList>
       <TabsContent value="overview" className="mt-8 space-y-10">
         <section><h2 className="mb-4 text-2xl font-semibold">Nästa bokning</h2>{upcoming[0] ? <BookingCard b={upcoming[0]} onMove={() => setMoving(upcoming[0]!)} onCancel={() => doCancel(upcoming[0]!)}/> : <Empty text="Ingen kommande bokning"/>}</section>
-        <section><h2 className="mb-4 text-2xl font-semibold">Mina bilar <span className="text-lg text-muted-foreground">{page.cars.length}</span></h2><Cars cars={page.cars} pending={page.pending} onDetails={setDetails}/></section>
+        <section><h2 className="mb-4 text-2xl font-semibold">Mina bilar <span className="text-lg text-muted-foreground">{page.cars.length}</span></h2><Cars cars={page.cars} pending={page.pending} onDetails={setDetails} onCert={setCert}/></section>
       </TabsContent>
-      <TabsContent value="vehicles" className="mt-8 space-y-6"><AddCar onAdd={async regnr => { const r = await claim({ data: { regnr } }); if (!r.ok) return r.error; setMsg(r.status === "kopplad" ? `${r.regnr} är tillagd under Mina bilar.` : `${r.regnr} väntar på att verkstaden godkänner kopplingen.`); reload(); return ""; }}/><Cars cars={page.cars} pending={page.pending} onDetails={setDetails}/></TabsContent>
+      <TabsContent value="vehicles" className="mt-8 space-y-6"><AddCar onAdd={async regnr => { const r = await claim({ data: { regnr } }); if (!r.ok) return r.error; setMsg(r.status === "kopplad" ? `${r.regnr} är tillagd under Mina bilar.` : `${r.regnr} väntar på att verkstaden godkänner kopplingen.`); reload(); return ""; }}/><Cars cars={page.cars} pending={page.pending} onDetails={setDetails} onCert={setCert}/></TabsContent>
       <TabsContent value="bookings" className="mt-8 space-y-4"><h2 className="text-2xl font-semibold">Kommande</h2>{upcoming.length ? upcoming.map(b => <BookingCard key={b.key} b={b} onMove={() => setMoving(b)} onCancel={() => doCancel(b)}/>) : <Empty text="Ingen kommande bokning"/>}
         <h2 className="pt-6 text-2xl font-semibold">Historik</h2>{history.length ? <ul className="divide-y rounded-md border bg-card">{history.map(b => <li key={b.key} className="flex flex-wrap justify-between gap-2 px-4 py-3 text-sm"><span><b>{b.regnr}</b> · {dayLabel(b.date)} kl. {b.time} · {b.service}</span><span className="text-muted-foreground">{b.status === "vantas" ? "Genomförd" : STATUS[b.status] ?? b.status}</span></li>)}</ul> : <Empty text="Ingen tidigare historik"/>}</TabsContent>
       <TabsContent value="profile" className="mt-8 max-w-xl"><Profile page={page} onSave={async d => { const r = await saveProfile({ data: d }); setMsg(r.ok ? "Uppgifterna är sparade." : "Kunde inte spara."); reload(); }}/></TabsContent>
@@ -83,10 +86,10 @@ export function CustomerAccount() {
 
 function Empty({ text }: { text: string }) { return <div className="flex min-h-28 items-center justify-center rounded-md border border-dashed text-muted-foreground">{text}</div>; }
 
-function Cars({ cars, pending, onDetails }: { cars: Car[]; pending: string[]; onDetails: (c: Car) => void }) {
+function Cars({ cars, pending, onDetails, onCert }: { cars: Car[]; pending: string[]; onDetails: (c: Car) => void; onCert: (c: Car) => void }) {
   if (!cars.length && pending.length) return <div className="grid gap-5 md:grid-cols-2">{pending.map(r => <PendingCar key={r} regnr={r}/>)}</div>;
   if (!cars.length) return <Empty text="Inga bilar hittades med din e-post eller ditt telefonnummer"/>;
-  return <div className="grid gap-5 md:grid-cols-2">{cars.map(c => <article key={c.regnr} className="rounded-md border bg-card p-5"><div className="flex items-center justify-between"><span className="rounded-sm border-2 border-primary px-3 py-1 font-display text-xl font-bold">{c.regnr}</span>{c.lagerplats && <span className="text-sm text-muted-foreground">Däck hos oss</span>}</div><h3 className="mt-4 text-2xl font-semibold">{c.modell || "Bil"}</h3><div className="my-4 border-y py-3"><p className="text-xs text-muted-foreground">Lägsta mönsterdjup</p><TreadReading depth={c.minDepth} tire={c.tires[0]?.typ ?? ""}/></div><div className="flex flex-wrap gap-2"><Button variant="outline" onClick={() => onDetails(c)}><Gauge/>Däckuppgifter</Button><Button variant="ghost" asChild><Link to="/boka">Boka tid</Link></Button></div></article>)}{pending.map(r => <PendingCar key={r} regnr={r}/>)}</div>;
+  return <div className="grid gap-5 md:grid-cols-2">{cars.map(c => <article key={c.regnr} className="rounded-md border bg-card p-5"><div className="flex items-center justify-between"><span className="rounded-sm border-2 border-primary px-3 py-1 font-display text-xl font-bold">{c.regnr}</span>{c.lagerplats && <span className="text-sm text-muted-foreground">Däck hos oss</span>}</div><h3 className="mt-4 text-2xl font-semibold">{c.modell || "Bil"}</h3><div className="my-4 border-y py-3"><p className="text-xs text-muted-foreground">Lägsta mönsterdjup</p><TreadReading depth={c.minDepth} tire={c.tires[0]?.typ ?? ""}/></div><div className="flex flex-wrap gap-2"><Button variant="outline" onClick={() => onDetails(c)}><Gauge/>Däckuppgifter</Button>{c.lagerplats && <Button variant="outline" onClick={() => onCert(c)}><FileText/>Förvaringsbevis</Button>}<Button variant="ghost" asChild><Link to="/boka">Boka tid</Link></Button></div></article>)}{pending.map(r => <PendingCar key={r} regnr={r}/>)}</div>;
 }
 
 function BookingCard({ b, onMove, onCancel }: { b: Bk; onMove: () => void; onCancel: () => void }) {
