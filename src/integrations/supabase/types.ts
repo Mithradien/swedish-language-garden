@@ -254,6 +254,24 @@ export type Database = {
         }
         Relationships: []
       }
+      pick_checks: {
+        Row: {
+          booking_key: string
+          checked_at: string
+          checked_by: string | null
+        }
+        Insert: {
+          booking_key: string
+          checked_at?: string
+          checked_by?: string | null
+        }
+        Update: {
+          booking_key?: string
+          checked_at?: string
+          checked_by?: string | null
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           city: string | null
