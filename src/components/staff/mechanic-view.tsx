@@ -52,9 +52,9 @@ export function MechanicView({ userId }: { userId: string }) {
             <span className="w-28 rounded border px-2 py-1 text-center font-display text-lg font-bold">{b.regnr}</span>
             <span className="flex-1 text-sm">{b.service}</span>
             <span className={`rounded px-2 py-1 text-xs font-medium ${status === "klar" ? "bg-tread-green/20" : status === "paborjad" ? "bg-tread-yellow/30" : "bg-secondary"}`}>{STATUS_LABEL[status]}</span>
-            {status === "ej_paborjad" && <Button size="sm" onClick={() => save(b, { status: "paborjad", started_at: new Date().toISOString() })}>Påbörja</Button>}
-            {status === "paborjad" && <Button size="sm" onClick={() => save(b, { status: "klar", finished_at: new Date().toISOString() })}>Klar</Button>}
-            <Button size="sm" variant="outline" onClick={() => setOpen(open === key ? null : key)}>Protokoll</Button>
+            {status === "ej_paborjad" && <Button size="lg" className="h-12 px-6 text-base" onClick={() => save(b, { status: "paborjad", started_at: new Date().toISOString() })}>Påbörja</Button>}
+            {status === "paborjad" && <Button size="lg" className="h-12 px-6 text-base" onClick={() => save(b, { status: "klar", finished_at: new Date().toISOString() })}>Klar</Button>}
+            <Button size="lg" variant="outline" className="h-12 px-6 text-base" onClick={() => setOpen(open === key ? null : key)}>Protokoll</Button>
           </div>
           {open === key && <Protocol order={o} onSave={patch => save(b, patch)}/>}
         </li>;
@@ -75,9 +75,9 @@ function Protocol({ order, onSave }: { order: Order | undefined; onSave: (p: Par
   }}>
     <p className="mb-3 text-sm font-medium">Mönsterdjup (mm)</p>
     <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-      {WHEELS.map(([k, label]) => <label key={k} className="text-sm">{label}<Input inputMode="decimal" className="mt-1" value={vals[k]} onChange={e => setVals({ ...vals, [k]: e.target.value })}/></label>)}
+      {WHEELS.map(([k, label]) => <label key={k} className="text-sm">{label}<Input inputMode="decimal" className="mt-1 h-14 text-center text-2xl font-bold" value={vals[k]} onChange={e => setVals({ ...vals, [k]: e.target.value })}/></label>)}
     </div>
     <label className="mt-3 block text-sm">Notering<textarea className="mt-1 w-full rounded-md border bg-background p-2" rows={2} value={note} onChange={e => setNote(e.target.value)}/></label>
-    <div className="mt-3 flex items-center gap-3"><Button type="submit" size="sm">Spara protokoll</Button>{msg && <span role="status" className="text-sm">{msg}</span>}</div>
+    <div className="mt-3 flex items-center gap-3"><Button type="submit" size="lg" className="h-12 px-6 text-base">Spara protokoll</Button>{msg && <span role="status" className="text-sm">{msg}</span>}</div>
   </form>;
 }
