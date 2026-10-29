@@ -29,6 +29,7 @@
   --color-svc-avsluta: var(--svc-avsluta);
   --color-st-arrived: var(--st-arrived);
   --color-st-noshow: var(--st-noshow);
+  --color-st-late: var(--st-late);
   --color-st-cancelled: var(--st-cancelled);
   --color-tread-red: var(--tread-red);
   --color-tread-orange: var(--tread-orange);
@@ -100,6 +101,7 @@
   --svc-avsluta: oklch(0.6 0.18 28);
   --st-arrived: oklch(0.85 0.13 150);
   --st-noshow: oklch(0.78 0.14 25);
+  --st-late: oklch(0.8 0.15 60);
   --st-cancelled: oklch(0.88 0.13 80);
   --tread-red: oklch(0.52 0.2 27);
   --tread-orange: oklch(0.58 0.16 50);

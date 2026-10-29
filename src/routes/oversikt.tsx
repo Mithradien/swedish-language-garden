@@ -19,6 +19,7 @@ const XLS_KEY = "bokningar.xls.v1";
 const STATUS: Record<ArrivalStatus, { label: string; cls: string }> = {
   vantas: { label: "Väntas", cls: "bg-card" },
   ankommen: { label: "Ankommen", cls: "bg-st-arrived status-mark" },
+  sen: { label: "Sen ankomst", cls: "bg-st-late status-mark" },
   ej: { label: "Ej ankommen", cls: "bg-st-noshow status-mark" },
   avbokad: { label: "Avbokad under dagen", cls: "bg-st-cancelled status-mark" },
 };
