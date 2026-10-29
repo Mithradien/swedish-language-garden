@@ -15,6 +15,12 @@ Förutsättning: ingen Lovable Cloud eller extern lagring; verkliga inloggningar
 
 # Nuvarande att-göra (en punkt i taget, avstämning inför varje)
 
+## Mina sidor – nästa steg
+- [ ] Skifteshistorik: genomförda skiften, använda däck och mönsterdjup över säsongerna (första steget).
+- [ ] Förnya förvaringen: kunden godkänner en ny förvaringssäsong.
+- [ ] Anmäla hämtning av hjul utan skifte: kunden väljer datum så personalen kan förbereda hjulen.
+- [ ] Undermeny för Mina sidor med direktåtkomst; inväntar förtydligande om exempelvy, egna sidor eller personalens kundvy.
+
 - [x] Bilvy för inloggad personal från regnummer och sökning: kunduppgifter, Excel-däckkort, bokningar, statusändringar och däckprotokoll; separat statusknapp. Verifierad som administratör på dator och telefon.
 
 - [x] Kompakt A4-utskrift så att en hel dagslista med obokade tider och raster ryms på ett ark.
