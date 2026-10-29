@@ -1,0 +1,1 @@
+CREATE POLICY "Staff read screen settings" ON public.app_config FOR SELECT TO authenticated USING (key = 'screens' AND public.is_staff(auth.uid()));

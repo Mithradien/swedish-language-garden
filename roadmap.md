@@ -14,6 +14,7 @@
 Förutsättning: ingen Lovable Cloud eller extern lagring; verkliga inloggningar och lagring behöver kunna köras och verifieras på den egna serverlösningen.
 
 # Nuvarande att-göra (en punkt i taget, avstämning inför varje)
+- [ ] Kundmottagning: dölj Ej ankommen, visa fem kommande under Väntas och lägg skärmens värden under Inställningar.
 
 ## Mina sidor – nästa steg
 - [x] Skifteshistorik: genomförda skiften, dokumenterad hjulsats/säsong och mönsterdjup med jämförelse över år. Verifierad med sparat testskifte på inloggat kundkonto; testposterna borttagna.
