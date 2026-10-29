@@ -15,3 +15,12 @@ describe("Administratörens bilval", () => {
     expect(searchCars("", [booking("ABC123")], cards, new Map())).toEqual([]);
   });
 });
+describe("bred sökning", () => {
+  const card = { regnr: "XYZ789", modell: "Volvo V60", lagerplats: "H21", kundnr: "1042", owner: "Anna Andersson", phone: "070-123 45 67", email: "anna@example.com", minDepth: null, tires: [] };
+  const cards = new Map([["XYZ789", card]]);
+  it("hittar på kundnamn", () => expect(searchCars("anna", [], cards, new Map())).toEqual(["XYZ789"]));
+  it("hittar på lagerplats", () => expect(searchCars("h21", [], cards, new Map())).toEqual(["XYZ789"]));
+  it("hittar på kundnummer", () => expect(searchCars("1042", [], cards, new Map())).toEqual(["XYZ789"]));
+  it("hittar på modell", () => expect(searchCars("volvo", [], cards, new Map())).toEqual(["XYZ789"]));
+  it("hittar på telefon", () => expect(searchCars("0701234567", [], cards, new Map())).toEqual(["XYZ789"]));
+});
