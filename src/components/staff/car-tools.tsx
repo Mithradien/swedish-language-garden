@@ -5,6 +5,7 @@ import { useAuth } from "@/hooks/use-auth";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { renewalSeasonLabel } from "@/lib/storage-renewal";
 
 const clean = (s: string) => s.toUpperCase().replace(/[^A-Z0-9ÅÄÖ]/g, "");
 type Car = { regnr: string; modell: string; lagerplats: string; owner: string };
@@ -36,6 +37,8 @@ function CarPanel({ regnr }: { regnr: string }) {
   const [savedNote, setSavedNote] = useState("");
   const [photos, setPhotos] = useState<Photo[]>([]);
   const [handovers, setHandovers] = useState<Handover[]>([]);
+  const [renewals, setRenewals] = useState<{ id: string; season: string; accepted_name: string; accepted_at: string }[]>([]);
+  const [renewalError, setRenewalError] = useState("");
   const [flash, setFlash] = useState("");
   const [busy, setBusy] = useState(false);
   const ok = (t: string) => { setFlash(t); setTimeout(() => setFlash(""), 3000); };
@@ -55,6 +58,7 @@ function CarPanel({ regnr }: { regnr: string }) {
     void supabase.from("car_storage").select("regnr,modell,lagerplats,owner").eq("regnr", regnr).maybeSingle().then(({ data }) => { setCar(data); setPlace(data?.lagerplats ?? ""); });
     void supabase.from("car_notes").select("note").eq("regnr", regnr).maybeSingle().then(({ data }) => { setNote(data?.note ?? ""); setSavedNote(data?.note ?? ""); });
     void loadPhotos(); void loadHandovers();
+    void supabase.from("storage_renewals").select("id,season,accepted_name,accepted_at").eq("regnr", regnr).order("accepted_at", { ascending: false }).then(({ data, error }) => { setRenewals(data ?? []); if (error) setRenewalError("Förnyelserna kunde inte hämtas."); });
   }, [regnr]);
 
   async function savePlace() {
@@ -119,6 +123,10 @@ function CarPanel({ regnr }: { regnr: string }) {
         {flash && <span className="flex items-center gap-1 rounded-md bg-st-arrived px-2 py-1 text-sm font-medium text-foreground"><Check className="h-4 w-4" />{flash}</span>}
       </div>
 
+      <section className="space-y-2 border-y py-4">
+        <h3 className="font-semibold">Förnyelse av förvaring</h3>
+        {renewalError ? <p role="alert" className="text-sm text-destructive">{renewalError}</p> : renewals.length ? <ul className="divide-y text-sm">{renewals.map(r => <li key={r.id} className="py-2"><b>{renewalSeasonLabel(r.season)}</b> · Godkänd av {r.accepted_name} · {fmt(r.accepted_at)}</li>)}</ul> : <p className="text-sm text-muted-foreground">Ingen ny förvaringssäsong godkänd via Mina sidor.</p>}
+      </section>
       <div className="grid gap-5 md:grid-cols-2">
         <div className="space-y-2 rounded-md border p-4">
           <h3 className="font-semibold">Lagerplats</h3>

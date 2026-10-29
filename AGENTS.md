@@ -10,6 +10,7 @@
 <!-- LOVABLE:END -->
 
 ## Rules
+- Storage renewals use authenticated ownership checks in customer.functions.ts and immutable terms/price snapshots; customers read only their own approvals, staff read them in CarTools, and the example view never persists approvals.
 - Customer tyre history uses completed owned booking keys and safe work-order projections through customer.functions.ts; per-visit tyre season/set are recorded in mechanic protocols, never inferred from current storage. The explicit /kund-exempel route always opens isolated sample data, even for signed-in staff.
 - Staff-only /verkstad and /kundmottagning share WorkshopBoard and persisted status derivation in src/lib/workshop-board.ts, polling every ten seconds with Stockholm dates; reception hides internal fields and account identity and never queries storage. Both links are grouped in the Skärmar menu via nav-access.ts so the screens cannot drift.
 - Admin car details use current overview bookings and Excel cards with exact normalized registration matching in src/lib/admin-car.ts; history reads use the ordinary staff client and shared customer tread presentation, so live data never becomes preview data.
