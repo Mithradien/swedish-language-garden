@@ -146,7 +146,10 @@ function Index() {
     window.addEventListener("storage", refresh);
     window.addEventListener("arrival-status-changed", refresh);
     window.addEventListener("focus", refresh);
+    // Auto-refresh so kiosk/QR arrivals show up without reloading the page.
+    const poll = window.setInterval(() => { if (document.visibilityState === "visible") refresh(); }, 10000);
     return () => {
+      window.clearInterval(poll);
       window.removeEventListener("storage", refresh);
       window.removeEventListener("arrival-status-changed", refresh);
       window.removeEventListener("focus", refresh);
