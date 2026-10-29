@@ -1,5 +1,6 @@
-import { useRef, type ChangeEvent } from "react";
-import { Upload } from "lucide-react";
+import { useRef, useState, type ChangeEvent } from "react";
+import { Check, Upload } from "lucide-react";
+import type { Settings } from "@/lib/settings";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { DEFAULT_SETTINGS, SIGNAL_PRESETS, useSettings } from "@/lib/settings";
@@ -8,6 +9,17 @@ import { DEFAULT_SETTINGS, SIGNAL_PRESETS, useSettings } from "@/lib/settings";
 export function SettingsPanel() {
   const { settings, setSettings } = useSettings();
   const logoInput = useRef<HTMLInputElement>(null);
+  const [draft, setDraft] = useState<Partial<Settings>>({});
+  const [savedMsg, setSavedMsg] = useState(false);
+  const dirty = Object.keys(draft).length > 0;
+  type TextKey = "company" | "phone" | "email" | "address" | "postalCode" | "city" | "swish" | "vatNr" | "bic" | "iban" | "bankgiro";
+  const val = (k: TextKey) => (draft[k] as string | undefined) ?? settings[k];
+  const edit = (k: TextKey, v: string) => { setSavedMsg(false); setDraft((d) => ({ ...d, [k]: v })); };
+  function save() {
+    setSettings((s) => ({ ...s, ...draft }));
+    setDraft({});
+    setSavedMsg(true);
+  }
 
   async function onLogo(e: ChangeEvent<HTMLInputElement>) {
     const f = e.target.files?.[0];
@@ -66,16 +78,16 @@ export function SettingsPanel() {
         <h2 className="font-display text-xl font-semibold uppercase">Företagsuppgifter</h2>
         <div className="grid gap-3 sm:grid-cols-2">
           <label className="space-y-1 text-sm">Namn
-            <Input value={settings.company} onChange={(e) => setSettings((s) => ({ ...s, company: e.target.value }))} placeholder="Din verkstad" />
+            <Input value={val("company")} onChange={(e) => edit("company", e.target.value)} placeholder="Din verkstad" />
           </label>
           <label className="space-y-1 text-sm">Telefon
-            <Input value={settings.phone} onChange={(e) => setSettings((s) => ({ ...s, phone: e.target.value }))} placeholder="031-000 00" />
+            <Input value={val("phone")} onChange={(e) => edit("phone", e.target.value)} placeholder="031-000 00" />
           </label>
           <label className="space-y-1 text-sm">E-post
-            <Input value={settings.email} onChange={(e) => setSettings((s) => ({ ...s, email: e.target.value }))} placeholder="hej@verkstad.se" />
+            <Input value={val("email")} onChange={(e) => edit("email", e.target.value)} placeholder="hej@verkstad.se" />
           </label>
           <label className="space-y-1 text-sm">Gatuadress
-            <Input value={settings.address} onChange={(e) => setSettings((s) => ({ ...s, address: e.target.value }))} placeholder="Gatan 1" />
+            <Input value={val("address")} onChange={(e) => edit("address", e.target.value)} placeholder="Gatan 1" />
           </label>
           {([
             ["postalCode", "Postnummer", "123 45"],
@@ -87,11 +99,17 @@ export function SettingsPanel() {
             ["bankgiro", "Bankgiro", "123-4567"],
           ] as const).map(([key, label, ph]) => (
             <label key={key} className="space-y-1 text-sm">{label}
-              <Input value={settings[key]} onChange={(e) => setSettings((s) => ({ ...s, [key]: e.target.value }))} placeholder={ph} />
+              <Input value={val(key)} onChange={(e) => edit(key, e.target.value)} placeholder={ph} />
             </label>
           ))}
         </div>
-        <Button variant="outline" size="sm" onClick={() => setSettings(() => DEFAULT_SETTINGS)}>Återställ inställningar</Button>
+        <div className="flex flex-wrap items-center gap-3">
+          <Button onClick={save} disabled={!dirty}>Spara ändringar</Button>
+          {dirty && <Button variant="ghost" onClick={() => setDraft({})}>Ångra</Button>}
+          {dirty && <span className="text-sm text-muted-foreground">Du har ändringar som inte är sparade.</span>}
+          {savedMsg && !dirty && <span className="flex items-center gap-1 text-sm font-medium text-st-arrived"><Check className="h-4 w-4" />Ändringarna är sparade</span>}
+          <Button variant="outline" size="sm" className="ml-auto" onClick={() => { setDraft({}); setSettings(() => DEFAULT_SETTINGS); }}>Återställ inställningar</Button>
+        </div>
       </section>
     </div>
   );
