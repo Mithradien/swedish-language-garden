@@ -129,7 +129,8 @@ export const claimMyCar = createServerFn({ method: "POST" }).middleware([require
     // Superadmin kopplar bilar direkt utan godkännande.
     const status = isAdmin ? "kopplad" : claimStatus(me, car);
     const { data: existing } = await supabaseAdmin.from("customer_cars").select("status").eq("user_id", context.userId).eq("regnr", regnr).maybeSingle();
-    if (existing && existing.status === "vantar" && status === "kopplad") {
+    if (existing?.status === "nekad" && !isAdmin) return { ok: false as const, error: "Kopplingen av bilen har nekats. Kontakta verkstaden." };
+    if (existing && existing.status !== "kopplad" && status === "kopplad") {
       await supabaseAdmin.from("customer_cars").update({ status }).eq("user_id", context.userId).eq("regnr", regnr);
     } else if (!existing) {
       const { error } = await supabaseAdmin.from("customer_cars").insert({ user_id: context.userId, regnr, status });
