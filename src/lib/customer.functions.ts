@@ -3,7 +3,7 @@ import { loadScheduleServer } from "./schedule";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { endTimeFor, isBookable, stockholmNow, LEAD_HOURS } from "./booking-flow";
-import { matchesContact, normPhone, type Contact } from "./customer-match";
+import { claimStatus, matchesContact, normPhone, type Contact } from "./customer-match";
 import type { Tire } from "./bookings";
 
 // Signed-in customer: only rows whose e-mail/phone match the customer (or bookings for their linked cars) are returned.
@@ -125,7 +125,7 @@ export const claimMyCar = createServerFn({ method: "POST" }).middleware([require
     const me = await contactOf(context as Ctx);
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { data: car } = await supabaseAdmin.from("car_storage").select("email,phone").eq("regnr", regnr).maybeSingle();
-    const status = !car || matchesContact(me, car) ? "kopplad" : "vantar";
+    const status = claimStatus(me, car);
     const { data: existing } = await supabaseAdmin.from("customer_cars").select("status").eq("user_id", context.userId).eq("regnr", regnr).maybeSingle();
     if (!existing) {
       const { error } = await supabaseAdmin.from("customer_cars").insert({ user_id: context.userId, regnr, status });

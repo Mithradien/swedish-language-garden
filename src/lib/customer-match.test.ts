@@ -17,3 +17,11 @@ describe("customer matching", () => {
     expect(matchesContact({ email: "a@x.se", phone: "0701111111" }, { email: "b@x.se", phone: "0702222222" })).toBe(false);
   });
 });
+
+import { claimStatus } from "./customer-match";
+describe("koppla bil till konto", () => {
+  const me = { email: "anna@example.com", phone: "070-123 45 67" };
+  it("okänd bil kopplas direkt", () => expect(claimStatus(me, null)).toBe("kopplad"));
+  it("samma e-post kopplas direkt", () => expect(claimStatus(me, { email: "ANNA@example.com", phone: "" })).toBe("kopplad"));
+  it("andras bil väntar på godkännande", () => expect(claimStatus(me, { email: "bertil@example.com", phone: "0709999999" })).toBe("vantar"));
+});
