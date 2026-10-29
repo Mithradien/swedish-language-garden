@@ -22,12 +22,14 @@ function LoginPage() {
   const [mode, setMode] = useState<"in" | "up">("in");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [confirm, setConfirm] = useState("");
   const [name, setName] = useState("");
   const [msg, setMsg] = useState("");
   const [busy, setBusy] = useState(false);
 
   async function submit(e: React.FormEvent) {
     e.preventDefault(); setBusy(true); setMsg("");
+    if (mode === "up" && confirm !== password) { setBusy(false); return setMsg("Lösenorden stämmer inte överens."); }
     if (mode === "in") {
       const { data, error } = await supabase.auth.signInWithPassword({ email, password });
       setBusy(false);
@@ -49,6 +51,7 @@ function LoginPage() {
         {mode === "up" && <label className="block text-sm font-medium">Namn<Input className="mt-1" value={name} onChange={e => setName(e.target.value)} required/></label>}
         <label className="block text-sm font-medium">E-post<Input className="mt-1" type="email" value={email} onChange={e => setEmail(e.target.value)} required/></label>
         <label className="block text-sm font-medium">Lösenord<PasswordInput className="mt-1" minLength={8} value={password} onChange={e => setPassword(e.target.value)} required/></label>
+        {mode === "up" && <label className="block text-sm font-medium">Bekräfta lösenord<PasswordInput className="mt-1" minLength={8} value={confirm} onChange={e => setConfirm(e.target.value)} required/></label>}
         <Button type="submit" className="w-full" disabled={busy}>{mode === "in" ? "Logga in" : "Skapa konto"}</Button>
       </form>
       {msg && <p role="status" className="mt-4 rounded-md border bg-secondary p-3 text-sm">{msg}</p>}
