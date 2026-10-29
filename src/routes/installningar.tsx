@@ -44,7 +44,7 @@ function SettingsPage() {
       </header>
       <div className="mx-auto max-w-6xl px-6 py-8">
         <Tabs defaultValue="allmant" className="space-y-6">
-          <TabsList aria-label="Inställningsområden">
+          <TabsList aria-label="Inställningsområden" className="h-auto flex-wrap justify-start">
             <TabsTrigger value="allmant" className="gap-2"><Settings className="h-4 w-4" />Allmänt</TabsTrigger>
             <TabsTrigger value="konto" className="gap-2"><Users className="h-4 w-4" />Konto</TabsTrigger>
             <TabsTrigger value="bokningar" className="gap-2"><CalendarClock className="h-4 w-4" />Bokningar</TabsTrigger>
