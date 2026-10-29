@@ -1,5 +1,4 @@
 import { useState } from "react";
-import { Link } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -36,7 +35,6 @@ export function UserAdmin() {
   return (
     <section className="space-y-4 rounded-md border bg-card p-5">
       <h2 className="font-display text-xl font-semibold uppercase">Skapa användare</h2>
-      <p className="text-sm text-muted-foreground">Alla användare, roller och lösenord hanteras under <Link to="/personal" className="underline">Personal</Link>.</p>
       <form onSubmit={submit} className="grid gap-3 sm:grid-cols-2">
         <label className="space-y-1 text-sm">Namn<Input required value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} /></label>
         <label className="space-y-1 text-sm">E-post<Input required type="email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} /></label>

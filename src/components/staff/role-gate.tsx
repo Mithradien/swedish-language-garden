@@ -25,7 +25,7 @@ export function StaffArea() {
   const bar = <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-3 border-b px-5 py-3 text-sm"><span>Inloggad som <b>{user.email}</b> · {roles.map(r => LABEL[r]).join(", ") || "ingen roll"}</span><Button variant="outline" size="sm" onClick={signOut}>Logga ut</Button></div>;
 
   const readOnly = !hasRole("superadmin");
-  if (hasRole("superadmin") || hasRole("mekaniker")) return <><div className="bg-primary text-primary-foreground"><TopNav/></div>{bar}<div className="mx-auto max-w-6xl px-5 pt-8"><UserRoles selfId={user.id} readOnly={readOnly}/></div>{hasRole("superadmin") && <StaffPreview embedded/>}</>;
+  if (hasRole("superadmin") || hasRole("mekaniker")) return <><div className="bg-primary text-primary-foreground"><TopNav/></div>{bar}<div className="mx-auto max-w-6xl px-5 pt-8"><section className="mb-10 rounded-md border bg-card p-5"><h2 className="mb-2 text-2xl font-semibold">Verktyg för kundbilar</h2><p className="text-sm text-muted-foreground">Här kommer verktyg för kundbilar, till exempel att lägga upp bilder och ändra i förvaringen.{readOnly ? "" : " Användare och roller hanteras under Inställningar → Konto."}</p></section></div>{hasRole("superadmin") && <StaffPreview embedded/>}</>;
   return <><div className="bg-primary text-primary-foreground"><TopNav/></div>{bar}<div className="mx-auto max-w-4xl px-5 py-10"><h1 className="mb-3 text-3xl font-bold">Ingen personalbehörighet</h1><p className="text-muted-foreground">Ditt konto är ett kundkonto. Be en superadmin ge dig en personalroll.</p></div></>;
 }
 
