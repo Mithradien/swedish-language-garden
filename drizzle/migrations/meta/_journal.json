@@ -64,6 +64,13 @@
       "when": 1793300002533,
       "tag": "0008_booking_schedule_settings",
       "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1793300494557,
+      "tag": "0009_public_read_prices",
+      "breakpoints": true
     }
   ]
 }

@@ -1,3 +1,4 @@
+import { fromPrice } from "./prices";
 import { classifyService, normalizeRegnr, WORK_PASSES, SLOT_STEP, type Service } from "./bookings";
 
 /** Minsta framförhållning för kundbokning: 48 timmar. */
@@ -35,7 +36,7 @@ export const PRICES: Record<string, number> = {
 };
 
 export function priceFor(service: Service): number {
-  return PRICES[service] ?? 0;
+  return fromPrice(service) || PRICES[service] || 0;
 }
 
 /** Rasterna infaller efter angiven tid på dagen. */
@@ -161,6 +162,8 @@ export interface DemoCar {
   namn: string;
   telefon: string;
   epost: string;
+  /** Fälgstorlek i tum om bilen finns hos oss. */
+  tum?: number | null;
 }
 
 /** Exempelregister för skissen – ersätts av er egen databas. */

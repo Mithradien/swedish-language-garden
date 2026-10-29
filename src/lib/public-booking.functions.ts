@@ -1,5 +1,6 @@
 import { createServerFn } from "@tanstack/react-start";
 import { loadScheduleServer } from "./schedule";
+import { rimInch } from "./prices";
 import { z } from "zod";
 import { endTimeFor, isBookable, serviceFor, stockholmNow } from "./booking-flow";
 
@@ -26,9 +27,11 @@ export const publicCarLookup = createServerFn({ method: "POST" })
   .inputValidator((d: unknown) => z.object({ regnr: z.string().min(2).max(12) }).parse(d))
   .handler(async ({ data }) => {
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    const { data: car } = await supabaseAdmin.from("car_storage").select("regnr,modell,lagerplats").eq("regnr", clean(data.regnr)).maybeSingle();
+    const { data: car } = await supabaseAdmin.from("car_storage").select("regnr,modell,lagerplats,tires").eq("regnr", clean(data.regnr)).maybeSingle();
     if (!car) return null;
-    return { regnr: car.regnr, modell: car.modell, harDack: car.lagerplats.trim() !== "" };
+    const tires = Array.isArray(car.tires) ? (car.tires as { dimension?: string }[]) : [];
+    const inches = tires.map((t) => rimInch(String(t.dimension ?? ""))).filter((n): n is number => n != null);
+    return { regnr: car.regnr, modell: car.modell, harDack: car.lagerplats.trim() !== "", tum: inches.length ? Math.max(...inches) : null };
   });
 
 export const createPublicBooking = createServerFn({ method: "POST" })

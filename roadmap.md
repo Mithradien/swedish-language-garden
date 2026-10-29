@@ -36,6 +36,6 @@ Förutsättning: ingen Lovable Cloud eller extern lagring; verkliga inloggningar
 
 - [x] Stegvis flöde på /boka: regnummer, två däckfrågor, dag och tid, uppgifter, bekräftelse.
 - [x] 48-h-förhållning, raster, måndag–fredag och låsta/upptagna tider i tidvalen.
-- [ ] Riktiga priser in i prislistan (just nu platshållare: 590 / 890 / 1290 / 350 kr).
+- [x] Riktiga priser in i prislistan (just nu platshållare: 590 / 890 / 1290 / 350 kr).
 - [ ] Koppla flödet till egen databas: bokningar, kunder och lagerplatser.
 - [ ] Personalens låsning och öppning av tider styr vilka tider som visas i flödet.
