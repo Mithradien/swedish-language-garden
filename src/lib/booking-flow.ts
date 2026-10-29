@@ -162,6 +162,8 @@ export interface DemoCar {
   namn: string;
   telefon: string;
   epost: string;
+  /** Fälgstorlek i tum om bilen finns hos oss. */
+  tum?: number | null;
 }
 
 /** Exempelregister för skissen – ersätts av er egen databas. */

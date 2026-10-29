@@ -7,9 +7,10 @@ import { PortalHeader } from "@/components/customer/customer-portal";
 import { normalizeRegnr, type Service } from "@/lib/bookings";
 import {
   FRAN_CHOICES, TILL_CHOICES, availableServices, dayLabel,
-  franChoicesFor, longDayLabel, openDays, priceFor, serviceFor, slotsForDate, tillChoicesFor,
+  franChoicesFor, longDayLabel, openDays, serviceFor, slotsForDate, tillChoicesFor,
   type Choice, type DemoCar,
 } from "@/lib/booking-flow";
+import { priceForSize, priceText } from "@/lib/prices";
 import { createPublicBooking, publicCarLookup, publicTakenTimes } from "@/lib/public-booking.functions";
 import { Link } from "@tanstack/react-router";
 import { useAuth } from "@/hooks/use-auth";
@@ -118,7 +119,7 @@ export function Boka() {
     let found: DemoCar | undefined;
     try {
       const c = await publicCarLookup({ data: { regnr: key } });
-      if (c) found = { regnr: c.regnr, modell: c.modell, lagerplats: "", harDack: c.harDack, namn: "", telefon: "", epost: "" };
+      if (c) found = { regnr: c.regnr, modell: c.modell, lagerplats: "", harDack: c.harDack, tum: c.tum, namn: "", telefon: "", epost: "" };
     } catch { /* okänd bil går ändå att boka */ }
     setRegnr(found ? found.regnr : key);
     setCar(found ?? null);
@@ -327,7 +328,7 @@ export function Boka() {
                 <dl className="divide-y border-y">
                   <Row label="Regnummer" value={`${regnr}${car ? ` · ${car.modell}` : ""}`} />
                   <Row label="Tjänst" value={service} dot={SVC_DOT[service]} />
-                  <Row label="Pris" value={`${priceFor(service)} kr`} />
+                  <Row label="Pris" value={priceText(service, car?.tum ?? null)} />
                   <Row label="Dag" value={longDayLabel(activeDay)} />
                   <Row label="Tid" value={time} />
                   <Row label="Namn" value={namn} />
@@ -357,7 +358,7 @@ export function Boka() {
                 <dl className="divide-y border-y">
                   <Row label="Regnummer" value={`${regnr}${car ? ` · ${car.modell}` : ""}`} />
                   <Row label="Tjänst" value={service} dot={SVC_DOT[service]} />
-                  <Row label="Pris" value={`${priceFor(service)} kr`} />
+                  <Row label="Pris" value={priceText(service, car?.tum ?? null)} />
                   <Row label="Dag" value={longDayLabel(activeDay)} />
                   <Row label="Tid" value={time} />
                   {car?.lagerplats && <Row label="Lagerplats" value={car.lagerplats} />}
@@ -439,7 +440,7 @@ function Summary({ car, regnr, service, date, time, telefon, onEdit, tireStage }
           </span>
           <Edit onClick={() => onEdit(tireStage)} />
         </div>
-        {service !== "Okänd" && <p className="mt-1 text-sm text-muted-foreground">{priceFor(service)} kr</p>}
+        {service !== "Okänd" && <p className="mt-1 text-sm text-muted-foreground">{priceText(service, car?.tum ?? null)}{priceForSize(service, car?.tum ?? null) == null ? " – beror på fälgstorlek, slutpris bekräftas på plats" : ""}</p>}
       </div>
       <div className="border-t pt-3">
         <div className="flex items-center justify-between gap-3">
