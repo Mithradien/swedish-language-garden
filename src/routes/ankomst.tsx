@@ -126,6 +126,7 @@ function ArrivalPage() {
         <p className="mt-4 text-xl">Tack! Personalen ser att du är här.</p>
         <Button variant="outline" className="mt-10 h-14 px-8 text-lg" onClick={reset}>Klart<ArrowRight /></Button>
       </div>}
+      {error && stage === "entry" && regnr.length >= 2 && error.startsWith("Vi hittar") && <a href={`/boka?regnr=${encodeURIComponent(regnr)}`} className="mt-4 flex h-16 w-full items-center justify-center gap-2 rounded-md bg-primary font-display text-2xl font-bold uppercase text-primary-foreground">Boka tid nu<ArrowRight /></a>}
       {error && <p role="alert" className="mt-5 border-l-4 border-destructive bg-destructive/10 px-4 py-4 text-left text-lg">{error}</p>}
     </section>
   </main>;
