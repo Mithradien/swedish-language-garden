@@ -3,7 +3,7 @@ import { normalizeRegnr, parseBookingsCsv, type Booking, type ScheduleRow } from
 export const CSV_KEY = "bokningar.csv.v1";
 export const STATUS_KEY = "bokningar.status.v1";
 export const ARRIVAL_HISTORY_KEY = "bokningar.arrivals.v1";
-export type ArrivalStatus = "vantas" | "ankommen" | "ej" | "avbokad";
+export type ArrivalStatus = "vantas" | "ankommen" | "sen" | "ej" | "avbokad";
 type Statuses = Record<string, ArrivalStatus>;
 type Store = Pick<Storage, "getItem" | "setItem" | "removeItem">;
 export type ArrivalEvent = { bookingKey: string; regnr: string; arrivedAt: string };

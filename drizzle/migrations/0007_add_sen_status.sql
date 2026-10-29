@@ -1,0 +1,2 @@
+ALTER TABLE public.booking_statuses DROP CONSTRAINT IF EXISTS booking_statuses_status_check;
+ALTER TABLE public.booking_statuses ADD CONSTRAINT booking_statuses_status_check CHECK (status IN ('vantas','ankommen','sen','ej','avbokad'));
