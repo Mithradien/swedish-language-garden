@@ -39,3 +39,4 @@ Förutsättning: ingen Lovable Cloud eller extern lagring; verkliga inloggningar
 - [x] Riktiga priser in i prislistan (just nu platshållare: 590 / 890 / 1290 / 350 kr).
 - [ ] Koppla flödet till egen databas: bokningar, kunder och lagerplatser.
 - [ ] Personalens låsning och öppning av tider styr vilka tider som visas i flödet.
+- [ ] Ny roll "useradmin" (begränsad administratör) – behörigheter stäms av med användaren.
