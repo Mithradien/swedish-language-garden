@@ -39,4 +39,4 @@ Förutsättning: ingen Lovable Cloud eller extern lagring; verkliga inloggningar
 - [x] Riktiga priser in i prislistan (just nu platshållare: 590 / 890 / 1290 / 350 kr).
 - [ ] Koppla flödet till egen databas: bokningar, kunder och lagerplatser.
 - [x] Personalens låsning och öppning av tider styr vilka tider som visas i flödet (per enskild tid).
-- [ ] Roll "Användaradmin": klart = låsa tider + se översikt/ankomst. Kvar: flytta/avboka, godkänna väntande bilar, skapa mekaniker-/kundkonton.
+- [x] Roll "Användaradmin": låsa tider, flytta/avboka, godkänna väntande bilar, skapa mekaniker-/kundkonton.

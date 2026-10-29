@@ -8,3 +8,11 @@ describe("menu access", () => {
   it("mechanics lack settings and customer page", () => expect(paths(["mekaniker"])).toEqual(["/oversikt", "/boka", "/personal", "/ankomst"]));
   it("superadmin sees everything", () => expect(paths(["superadmin"])).toHaveLength(6));
 });
+
+describe("användaradmin", () => {
+  it("ser översikt, personal, ankomst och inställningar men inte Mina sidor", () => {
+    const paths = navItemsFor(["useradmin"]).map((i) => i.to);
+    expect(paths).toEqual(expect.arrayContaining(["/oversikt", "/personal", "/ankomst", "/installningar"]));
+    expect(paths).not.toContain("/kund");
+  });
+});

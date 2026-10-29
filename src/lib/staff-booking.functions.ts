@@ -14,8 +14,8 @@ export const staffMoveBooking = createServerFn({ method: "POST" })
   .handler(async ({ data, context }) => {
     await loadScheduleServer();
     const { supabase, userId } = context;
-    const { data: isAdmin } = await supabase.rpc("has_role", { _user_id: userId, _role: "superadmin" });
-    if (!isAdmin) throw new Error("Bara superadmin kan flytta bokningar");
+    const { data: isAdmin } = await supabase.rpc("is_admin", { _u: userId });
+    if (!isAdmin) throw new Error("Bara superadmin eller användaradmin kan flytta bokningar");
     const { data: b } = await supabase.from("bookings").select("*").eq("booking_key", data.key).maybeSingle();
     if (!b) throw new Error("Bokningen hittades inte");
     const { data: rows } = await supabase.from("bookings").select("booking_key,start_time").eq("booking_date", data.date);
