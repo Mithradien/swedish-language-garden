@@ -17,3 +17,11 @@ export function matchesContact(me: Contact, row: { email?: string | null; phone?
   const p = normPhone(me.phone);
   return p.length >= 7 && normPhone(row.phone) === p;
 }
+
+/** Regnummer från bokningen som ska kopplas till kontot efter inloggning. */
+export const PENDING_REGNR_KEY = "pending-regnr";
+
+/** Koppling av regnummer: okänd bil eller matchande kontakt kopplas direkt, annars väntar den på personalen. */
+export function claimStatus(me: Contact, car: { email?: string | null; phone?: string | null } | null): "kopplad" | "vantar" {
+  return !car || matchesContact(me, car) ? "kopplad" : "vantar";
+}

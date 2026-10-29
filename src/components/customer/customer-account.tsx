@@ -7,7 +7,8 @@ import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { supabase } from "@/integrations/supabase/client";
-import { cancelMyBooking, myCustomerPage, rebookMyBooking, updateMyProfile } from "@/lib/customer.functions";
+import { PENDING_REGNR_KEY } from "@/lib/customer-match";
+import { cancelMyBooking, claimMyCar, myCustomerPage, rebookMyBooking, updateMyProfile } from "@/lib/customer.functions";
 import { publicTakenTimes } from "@/lib/public-booking.functions";
 import { dayLabel, longDayLabel, openDays, slotsForDate, stockholmNow } from "@/lib/booking-flow";
 import { tireSeason, treadColor } from "@/lib/tread";
@@ -31,7 +32,17 @@ export function CustomerAccount() {
   const [details, setDetails] = useState<Car | null>(null);
   const [moving, setMoving] = useState<Bk | null>(null);
   const reload = () => fetchPage().then(setPage).catch(() => setError("Kunde inte hämta dina uppgifter."));
-  useEffect(() => { reload(); }, []);
+  const claim = useServerFn(claimMyCar);
+  useEffect(() => {
+    // Regnummer som kunden skrev in vid bokningen innan kontot skapades följer med hit.
+    const pendingRegnr = localStorage.getItem(PENDING_REGNR_KEY);
+    if (!pendingRegnr) { reload(); return; }
+    localStorage.removeItem(PENDING_REGNR_KEY);
+    claim({ data: { regnr: pendingRegnr } })
+      .then(r => { if (r.ok) setMsg(r.status === "kopplad" ? `${r.regnr} är tillagd under Mina bilar.` : `${r.regnr} väntar på att verkstaden godkänner kopplingen.`); })
+      .catch(() => {})
+      .finally(reload);
+  }, []);
 
   if (error) return <p className="mx-auto max-w-6xl px-5 py-10">{error}</p>;
   if (!page) return <p className="mx-auto max-w-6xl px-5 py-10 text-muted-foreground">Hämtar dina uppgifter…</p>;
@@ -56,9 +67,9 @@ export function CustomerAccount() {
       <TabsTrigger value="profile" className="px-4 py-3"><UserRound className="mr-2 h-4 w-4"/>Mitt konto</TabsTrigger></TabsList>
       <TabsContent value="overview" className="mt-8 space-y-10">
         <section><h2 className="mb-4 text-2xl font-semibold">Nästa bokning</h2>{upcoming[0] ? <BookingCard b={upcoming[0]} onMove={() => setMoving(upcoming[0]!)} onCancel={() => doCancel(upcoming[0]!)}/> : <Empty text="Ingen kommande bokning"/>}</section>
-        <section><h2 className="mb-4 text-2xl font-semibold">Mina bilar <span className="text-lg text-muted-foreground">{page.cars.length}</span></h2><Cars cars={page.cars} onDetails={setDetails}/></section>
+        <section><h2 className="mb-4 text-2xl font-semibold">Mina bilar <span className="text-lg text-muted-foreground">{page.cars.length}</span></h2><Cars cars={page.cars} pending={page.pending} onDetails={setDetails}/></section>
       </TabsContent>
-      <TabsContent value="vehicles" className="mt-8"><Cars cars={page.cars} onDetails={setDetails}/></TabsContent>
+      <TabsContent value="vehicles" className="mt-8"><Cars cars={page.cars} pending={page.pending} onDetails={setDetails}/></TabsContent>
       <TabsContent value="bookings" className="mt-8 space-y-4"><h2 className="text-2xl font-semibold">Kommande</h2>{upcoming.length ? upcoming.map(b => <BookingCard key={b.key} b={b} onMove={() => setMoving(b)} onCancel={() => doCancel(b)}/>) : <Empty text="Ingen kommande bokning"/>}
         <h2 className="pt-6 text-2xl font-semibold">Historik</h2>{history.length ? <ul className="divide-y rounded-md border bg-card">{history.map(b => <li key={b.key} className="flex flex-wrap justify-between gap-2 px-4 py-3 text-sm"><span><b>{b.regnr}</b> · {dayLabel(b.date)} kl. {b.time} · {b.service}</span><span className="text-muted-foreground">{b.status === "vantas" ? "Genomförd" : STATUS[b.status] ?? b.status}</span></li>)}</ul> : <Empty text="Ingen tidigare historik"/>}</TabsContent>
       <TabsContent value="profile" className="mt-8 max-w-xl"><Profile page={page} onSave={async d => { const r = await saveProfile({ data: d }); setMsg(r.ok ? "Uppgifterna är sparade." : "Kunde inte spara."); reload(); }}/></TabsContent>
@@ -72,9 +83,10 @@ export function CustomerAccount() {
 
 function Empty({ text }: { text: string }) { return <div className="flex min-h-28 items-center justify-center rounded-md border border-dashed text-muted-foreground">{text}</div>; }
 
-function Cars({ cars, onDetails }: { cars: Car[]; onDetails: (c: Car) => void }) {
+function Cars({ cars, pending, onDetails }: { cars: Car[]; pending: string[]; onDetails: (c: Car) => void }) {
+  if (!cars.length && pending.length) return <div className="grid gap-5 md:grid-cols-2">{pending.map(r => <PendingCar key={r} regnr={r}/>)}</div>;
   if (!cars.length) return <Empty text="Inga bilar hittades med din e-post eller ditt telefonnummer"/>;
-  return <div className="grid gap-5 md:grid-cols-2">{cars.map(c => <article key={c.regnr} className="rounded-md border bg-card p-5"><div className="flex items-center justify-between"><span className="rounded-sm border-2 border-primary px-3 py-1 font-display text-xl font-bold">{c.regnr}</span>{c.lagerplats && <span className="text-sm text-muted-foreground">Däck hos oss</span>}</div><h3 className="mt-4 text-2xl font-semibold">{c.modell || "Bil"}</h3><div className="my-4 border-y py-3"><p className="text-xs text-muted-foreground">Lägsta mönsterdjup</p><TreadReading depth={c.minDepth} tire={c.tires[0]?.typ ?? ""}/></div><div className="flex flex-wrap gap-2"><Button variant="outline" onClick={() => onDetails(c)}><Gauge/>Däckuppgifter</Button><Button variant="ghost" asChild><Link to="/boka">Boka tid</Link></Button></div></article>)}</div>;
+  return <div className="grid gap-5 md:grid-cols-2">{cars.map(c => <article key={c.regnr} className="rounded-md border bg-card p-5"><div className="flex items-center justify-between"><span className="rounded-sm border-2 border-primary px-3 py-1 font-display text-xl font-bold">{c.regnr}</span>{c.lagerplats && <span className="text-sm text-muted-foreground">Däck hos oss</span>}</div><h3 className="mt-4 text-2xl font-semibold">{c.modell || "Bil"}</h3><div className="my-4 border-y py-3"><p className="text-xs text-muted-foreground">Lägsta mönsterdjup</p><TreadReading depth={c.minDepth} tire={c.tires[0]?.typ ?? ""}/></div><div className="flex flex-wrap gap-2"><Button variant="outline" onClick={() => onDetails(c)}><Gauge/>Däckuppgifter</Button><Button variant="ghost" asChild><Link to="/boka">Boka tid</Link></Button></div></article>)}{pending.map(r => <PendingCar key={r} regnr={r}/>)}</div>;
 }
 
 function BookingCard({ b, onMove, onCancel }: { b: Bk; onMove: () => void; onCancel: () => void }) {
@@ -107,4 +119,8 @@ function Profile({ page, onSave }: { page: Page; onSave: (d: { name: string; pho
   return <form className="space-y-5" onSubmit={e => { e.preventDefault(); onSave(f); }}><h2 className="text-3xl font-semibold">Mitt konto</h2><p className="text-sm text-muted-foreground">E-post: <b className="text-foreground">{p.email}</b>. Bilar och bokningar med samma e-post eller telefonnummer visas automatiskt.</p>
     {field("name", "Namn")}{field("phone", "Telefon", "tel")}<h3 className="pt-4 text-xl font-semibold">Adress <span className="text-sm font-normal text-muted-foreground">(valfritt)</span></h3>{field("street", "Gatuadress")}<div className="grid gap-5 sm:grid-cols-[1fr_2fr]">{field("postalCode", "Postnummer")}{field("city", "Ort")}</div>
     <Button type="submit" className="h-11"><Check/>Spara</Button></form>;
+}
+
+function PendingCar({ regnr }: { regnr: string }) {
+  return <article className="rounded-md border border-dashed bg-card p-5"><span className="rounded-sm border-2 border-primary px-3 py-1 font-display text-xl font-bold">{regnr}</span><p className="mt-4 text-sm text-muted-foreground">Väntar på att verkstaden godkänner kopplingen. Däckuppgifterna visas när den är godkänd.</p></article>;
 }

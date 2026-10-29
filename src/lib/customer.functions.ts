@@ -3,7 +3,7 @@ import { loadScheduleServer } from "./schedule";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { endTimeFor, isBookable, stockholmNow, LEAD_HOURS } from "./booking-flow";
-import { matchesContact, normPhone, type Contact } from "./customer-match";
+import { claimStatus, matchesContact, normPhone, type Contact } from "./customer-match";
 import type { Tire } from "./bookings";
 
 // Signed-in customer: only rows whose e-mail/phone match the customer (or bookings for their linked cars) are returned.
@@ -15,17 +15,24 @@ async function contactOf(ctx: Ctx): Promise<Contact & { name: string; street: st
     street: data?.street ?? "", postalCode: data?.postal_code ?? "", city: data?.city ?? "" };
 }
 
-async function load(me: Contact) {
+async function load(me: Contact, userId?: string) {
   const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
   const ors: string[] = [];
   if (me.email) ors.push(`email.ilike.${me.email.replace(/[,()%*]/g, "")}`);
   const p = normPhone(me.phone);
   if (p.length >= 7) ors.push(`phone.ilike.*${p.slice(-7)}*`);
-  if (!ors.length) return { cars: [], bookings: [] };
-  const { data: carRows } = await supabaseAdmin.from("car_storage").select("regnr,modell,lagerplats,min_depth,tires,email,phone").or(ors.join(","));
+  const { data: links } = userId ? await supabaseAdmin.from("customer_cars").select("regnr,status").eq("user_id", userId) : { data: [] };
+  const linked = (links ?? []).filter(l => l.status === "kopplad").map(l => l.regnr);
+  const pending = (links ?? []).filter(l => l.status === "vantar").map(l => l.regnr);
+  if (!ors.length && !linked.length && !pending.length) return { cars: [], bookings: [], pending: [] as string[] };
+  const { data: carRows } = ors.length ? await supabaseAdmin.from("car_storage").select("regnr,modell,lagerplats,min_depth,tires,email,phone").or(ors.join(",")) : { data: [] };
+  const { data: linkedRows } = linked.length ? await supabaseAdmin.from("car_storage").select("regnr,modell,lagerplats,min_depth,tires,email,phone").in("regnr", linked) : { data: [] };
   const cars = (carRows ?? []).filter(c => matchesContact(me, c));
+  for (const c of linkedRows ?? []) if (!cars.some(x => x.regnr === c.regnr)) cars.push(c);
+  // Kopplade bilar som inte finns i billagret visas med bara regnumret.
+  for (const r of linked) if (!cars.some(x => x.regnr === r)) cars.push({ regnr: r, modell: "", lagerplats: "", min_depth: null, tires: [], email: "", phone: "" });
   const regnrs = cars.map(c => c.regnr);
-  const { data: byContact } = await supabaseAdmin.from("bookings").select("booking_key,regnr,booking_date,start_time,service,email,phone,name").or(ors.join(","));
+  const { data: byContact } = !ors.length ? { data: [] } : await supabaseAdmin.from("bookings").select("booking_key,regnr,booking_date,start_time,service,email,phone,name").or(ors.join(","));
   const { data: byCar } = regnrs.length ? await supabaseAdmin.from("bookings").select("booking_key,regnr,booking_date,start_time,service,email,phone,name").in("regnr", regnrs) : { data: [] };
   const map = new Map<string, NonNullable<typeof byContact>[number]>();
   for (const b of byContact ?? []) if (matchesContact(me, b)) map.set(b.booking_key, b);
@@ -37,13 +44,13 @@ async function load(me: Contact) {
     service: b.service ?? "", status: status.get(b.booking_key) ?? "vantas" }))
     .sort((a, b) => (b.date + b.time).localeCompare(a.date + a.time));
   return { cars: cars.map(c => ({ regnr: c.regnr, modell: c.modell, lagerplats: c.lagerplats,
-    minDepth: c.min_depth == null ? null : Number(c.min_depth), tires: (Array.isArray(c.tires) ? c.tires : []) as unknown as Tire[] })), bookings };
+    minDepth: c.min_depth == null ? null : Number(c.min_depth), tires: (Array.isArray(c.tires) ? c.tires : []) as unknown as Tire[] })), bookings, pending: pending.filter(r => !cars.some(c => c.regnr === r)) };
 }
 
 export const myCustomerPage = createServerFn({ method: "POST" }).middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
     const me = await contactOf(context as Ctx);
-    return { profile: me, ...(await load(me)) };
+    return { profile: me, ...(await load(me, context.userId)) };
   });
 
 export const updateMyProfile = createServerFn({ method: "POST" }).middleware([requireSupabaseAuth])
@@ -64,7 +71,7 @@ function changeable(date: string, time: string) {
 
 async function ownBooking(ctx: Ctx, key: string) {
   const me = await contactOf(ctx);
-  const { bookings } = await load(me);
+  const { bookings } = await load(me, ctx.userId);
   return bookings.find(b => b.key === key);
 }
 
@@ -107,4 +114,22 @@ export const rebookMyBooking = createServerFn({ method: "POST" }).middleware([re
     await markCancelled(b.key, b.regnr, context.userId);
     await supabaseAdmin.from("status_events").insert({ booking_key: newKey, regnr: b.regnr, status: "ombokad", source: "kund", actor_id: context.userId });
     return { ok: true as const };
+  });
+
+/** Kunden kopplar ett regnummer till sitt konto. Finns bilen i billagret med andra kontaktuppgifter väntar kopplingen på personalens godkännande. */
+export const claimMyCar = createServerFn({ method: "POST" }).middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) => z.object({ regnr: z.string().min(2).max(12) }).parse(d))
+  .handler(async ({ data, context }) => {
+    const regnr = data.regnr.toUpperCase().replace(/[^A-Z0-9ÅÄÖ]/g, "");
+    if (regnr.length < 2) return { ok: false as const, error: "Ange ett giltigt regnummer." };
+    const me = await contactOf(context as Ctx);
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data: car } = await supabaseAdmin.from("car_storage").select("email,phone").eq("regnr", regnr).maybeSingle();
+    const status = claimStatus(me, car);
+    const { data: existing } = await supabaseAdmin.from("customer_cars").select("status").eq("user_id", context.userId).eq("regnr", regnr).maybeSingle();
+    if (!existing) {
+      const { error } = await supabaseAdmin.from("customer_cars").insert({ user_id: context.userId, regnr, status });
+      if (error) return { ok: false as const, error: "Kunde inte lägga till bilen. Försök igen." };
+    }
+    return { ok: true as const, regnr, status: (existing?.status ?? status) as "kopplad" | "vantar" };
   });
