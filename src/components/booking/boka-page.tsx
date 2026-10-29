@@ -35,7 +35,8 @@ export function Boka() {
   useEffect(() => setNow(new Date()), []);
 
   const [stage, setStage] = useState<Stage>("regnr");
-  const [regnr, setRegnr] = useState(() => (typeof window !== "undefined" ? new URLSearchParams(window.location.search).get("regnr") ?? "" : "").toUpperCase().slice(0, 10));
+  const [regnr, setRegnr] = useState("");
+  useEffect(() => { const q = new URLSearchParams(window.location.search).get("regnr"); if (q) setRegnr(q.toUpperCase().slice(0, 10)); }, []);
   const [car, setCar] = useState<DemoCar | null | undefined>(undefined);
   const [tillId, setTillId] = useState("");
   const [franId, setFranId] = useState("");
