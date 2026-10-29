@@ -30,3 +30,4 @@
 - Tread colour limits are stored in app_config key 'tread' and applied via applyTread in src/lib/tread.ts (also rewrites guide range texts), loaded with schedule and prices.
 - Customer-claimed cars live in customer_cars (status kopplad/vantar via claimStatus in customer-match.ts); only 'kopplad' cars expose car_storage details, so typing someone else's regnr never reveals their tyres.
 - Booking confirmation e-mails are built in src/lib/booking-email.ts and sent via the workshop's own SMTP (nodemailer); SMTP details are saved in the superadmin-only mail_settings table (Inställningar → E-post) with SMTP_* env vars as fallback, and send failures never fail the booking.
+- Staff car tools (src/components/staff/car-tools.tsx) store internal notes, photo rows and wheel handovers in staff-only tables, with photos in the private car-photos bucket via signed URLs, so customers never see internal data.

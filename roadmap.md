@@ -49,3 +49,4 @@ Förutsättning: ingen Lovable Cloud eller extern lagring; verkliga inloggningar
 - [ ] QR-skylt för ankomst (väntar).
 - [ ] Surfplatta-anpassning av ankomstskärmen (väntar).
 - [ ] Roterande hjul i bakgrunden på ankomstsidan (väntar).
+- [x] Personal: bilder på däck/skador, intern anteckning, lagerplats och kvittens av utlämnade hjul.
