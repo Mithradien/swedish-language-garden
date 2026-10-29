@@ -104,6 +104,54 @@ export type Database = {
         }
         Relationships: []
       }
+      car_notes: {
+        Row: {
+          note: string
+          regnr: string
+          updated_at: string
+          updated_by: string | null
+        }
+        Insert: {
+          note?: string
+          regnr: string
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Update: {
+          note?: string
+          regnr?: string
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Relationships: []
+      }
+      car_photos: {
+        Row: {
+          caption: string
+          created_at: string
+          id: string
+          path: string
+          regnr: string
+          uploaded_by: string | null
+        }
+        Insert: {
+          caption?: string
+          created_at?: string
+          id?: string
+          path: string
+          regnr: string
+          uploaded_by?: string | null
+        }
+        Update: {
+          caption?: string
+          created_at?: string
+          id?: string
+          path?: string
+          regnr?: string
+          uploaded_by?: string | null
+        }
+        Relationships: []
+      }
       car_storage: {
         Row: {
           created_at: string
@@ -308,6 +356,36 @@ export type Database = {
           id?: string
           role?: Database["public"]["Enums"]["app_role"]
           user_id?: string
+        }
+        Relationships: []
+      }
+      wheel_handovers: {
+        Row: {
+          created_at: string
+          handed_by: string | null
+          id: string
+          lagerplats: string
+          note: string
+          received_by: string
+          regnr: string
+        }
+        Insert: {
+          created_at?: string
+          handed_by?: string | null
+          id?: string
+          lagerplats?: string
+          note?: string
+          received_by: string
+          regnr: string
+        }
+        Update: {
+          created_at?: string
+          handed_by?: string | null
+          id?: string
+          lagerplats?: string
+          note?: string
+          received_by?: string
+          regnr?: string
         }
         Relationships: []
       }
