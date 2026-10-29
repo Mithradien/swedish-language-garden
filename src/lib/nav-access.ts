@@ -5,9 +5,9 @@ const ALL: { to: NavPath; label: string; roles: NavRole[] | "all" }[] = [
   { to: "/oversikt", label: "Bokningsöversikt", roles: ["superadmin", "useradmin", "mekaniker"] },
   { to: "/boka", label: "Boka tid", roles: "all" },
   { to: "/kund", label: "Mina sidor", roles: ["superadmin", "kund"] },
-  { to: "/personal", label: "Personal", roles: ["superadmin", "mekaniker"] },
+  { to: "/personal", label: "Personal", roles: ["superadmin", "useradmin", "mekaniker"] },
   { to: "/ankomst", label: "Ankomst", roles: ["superadmin", "useradmin", "mekaniker"] },
-  { to: "/installningar", label: "Inställningar", roles: ["superadmin"] },
+  { to: "/installningar", label: "Inställningar", roles: ["superadmin", "useradmin"] },
 ];
 
 // Which menu items a user with these roles sees; signed-out visitors pass [].

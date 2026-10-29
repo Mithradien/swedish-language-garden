@@ -315,7 +315,7 @@ function Index() {
                           <span className={`h-3 w-3 shrink-0 rounded-full border border-primary ${STATUS[s].cls}`} />{STATUS[s].label}
                         </Button>
                       ))}
-                      {isAdmin && <div className="mt-1 border-t pt-1">
+                      {canLock && <div className="mt-1 border-t pt-1">
                         <Button type="button" variant="ghost" className="flex w-full justify-start rounded-sm px-3 py-2 text-sm" onClick={() => setMoving(b)}>Flytta bokning…</Button>
                         <Button type="button" variant="ghost" className="flex w-full justify-start rounded-sm px-3 py-2 text-sm text-destructive"
                           onClick={() => { if (window.confirm(`Avboka ${b.regnr} ${b.start}? Bokningen ligger kvar i historiken och tiden blir ledig.`)) setStatus(b, "avbokad"); }}>Avboka</Button>

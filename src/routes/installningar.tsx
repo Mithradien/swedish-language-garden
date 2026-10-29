@@ -28,10 +28,16 @@ export const Route = createFileRoute("/installningar")({
 });
 
 function GuardedSettings() {
-  return <RequireRole roles={["superadmin"]}><SettingsPage /></RequireRole>;
+  return <RequireRole roles={["superadmin", "useradmin"]}><SettingsGate /></RequireRole>;
 }
 
-function SettingsPage() {
+// Användaradmin ser bara fliken Konto med formuläret för nya mekaniker-/kundkonton.
+function SettingsGate() {
+  const { hasRole } = useAuth();
+  return <SettingsPage limited={!hasRole("superadmin")} />;
+}
+
+function SettingsPage({ limited }: { limited: boolean }) {
   return (
     <main className="min-h-screen">
       <header className="screen-only bg-primary text-primary-foreground">
@@ -43,23 +49,23 @@ function SettingsPage() {
         <div className="h-2 bg-[repeating-linear-gradient(45deg,var(--signal)_0_16px,var(--primary)_16px_32px)]" />
       </header>
       <div className="mx-auto max-w-6xl px-6 py-8">
-        <Tabs defaultValue="allmant" className="space-y-6">
+        <Tabs defaultValue={limited ? "konto" : "allmant"} className="space-y-6">
           <TabsList aria-label="Inställningsområden" className="h-auto flex-wrap justify-start">
-            <TabsTrigger value="allmant" className="gap-2"><Settings className="h-4 w-4" />Allmänt</TabsTrigger>
+            {!limited && <TabsTrigger value="allmant" className="gap-2"><Settings className="h-4 w-4" />Allmänt</TabsTrigger>}
             <TabsTrigger value="konto" className="gap-2"><Users className="h-4 w-4" />Konto</TabsTrigger>
-            <TabsTrigger value="bokningar" className="gap-2"><CalendarClock className="h-4 w-4" />Bokningar</TabsTrigger>
-            <TabsTrigger value="priser" className="gap-2"><BadgeDollarSign className="h-4 w-4" />Priser</TabsTrigger>
-            <TabsTrigger value="monsterdjup" className="gap-2"><Gauge className="h-4 w-4" />Mönsterdjup</TabsTrigger>
-            <TabsTrigger value="villkor" className="gap-2"><ScrollText className="h-4 w-4" />Villkor</TabsTrigger>
-            <TabsTrigger value="data" className="gap-2"><Database className="h-4 w-4" />Data &amp; import</TabsTrigger>
+            {!limited && <TabsTrigger value="bokningar" className="gap-2"><CalendarClock className="h-4 w-4" />Bokningar</TabsTrigger>}
+            {!limited && <TabsTrigger value="priser" className="gap-2"><BadgeDollarSign className="h-4 w-4" />Priser</TabsTrigger>}
+            {!limited && <TabsTrigger value="monsterdjup" className="gap-2"><Gauge className="h-4 w-4" />Mönsterdjup</TabsTrigger>}
+            {!limited && <TabsTrigger value="villkor" className="gap-2"><ScrollText className="h-4 w-4" />Villkor</TabsTrigger>}
+            {!limited && <TabsTrigger value="data" className="gap-2"><Database className="h-4 w-4" />Data &amp; import</TabsTrigger>}
           </TabsList>
-          <TabsContent value="allmant"><SettingsPanel /></TabsContent>
-          <TabsContent value="konto" className="space-y-8"><UserAdmin /><AccountRoles /></TabsContent>
-          <TabsContent value="bokningar"><ScheduleSettings /></TabsContent>
-          <TabsContent value="priser"><PriceSettings /></TabsContent>
-          <TabsContent value="monsterdjup"><TreadSettings /></TabsContent>
-          <TabsContent value="villkor"><TermsSettings /></TabsContent>
-          <TabsContent value="data"><DataImport /></TabsContent>
+          {!limited && <TabsContent value="allmant"><SettingsPanel /></TabsContent>}
+          <TabsContent value="konto" className="space-y-8"><UserAdmin />{!limited && <AccountRoles />}</TabsContent>
+          {!limited && <TabsContent value="bokningar"><ScheduleSettings /></TabsContent>}
+          {!limited && <TabsContent value="priser"><PriceSettings /></TabsContent>}
+          {!limited && <TabsContent value="monsterdjup"><TreadSettings /></TabsContent>}
+          {!limited && <TabsContent value="villkor"><TermsSettings /></TabsContent>}
+          {!limited && <TabsContent value="data"><DataImport /></TabsContent>}
         </Tabs>
       </div>
     </main>

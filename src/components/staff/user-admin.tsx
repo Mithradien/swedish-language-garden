@@ -14,7 +14,8 @@ export function UserAdmin() {
   const [busy, setBusy] = useState(false);
 
   if (loading) return null;
-  if (!user || !hasRole("superadmin")) {
+  const isSuper = hasRole("superadmin");
+  if (!user || (!isSuper && !hasRole("useradmin"))) {
     return <section className="rounded-md border bg-card p-5"><h2 className="font-display text-xl font-semibold uppercase">Användare</h2><p className="text-sm text-muted-foreground">Logga in som superadmin för att skapa användare.</p></section>;
   }
 
@@ -42,7 +43,8 @@ export function UserAdmin() {
         <label className="space-y-1 text-sm">Bekräfta lösenord<PasswordInput required minLength={8} value={form.confirm} onChange={(e) => setForm({ ...form, confirm: e.target.value })} /></label>
         <label className="space-y-1 text-sm">Roll
           <select className="flex h-10 w-full rounded-md border bg-background px-3 text-sm" value={form.role} onChange={(e) => setForm({ ...form, role: e.target.value as AppRole })}>
-            <option value="superadmin">Superadmin</option>
+            {isSuper && <option value="superadmin">Superadmin</option>}
+            {isSuper && <option value="useradmin">Användaradmin</option>}
             <option value="mekaniker">Mekaniker</option>
             <option value="kund">Kund</option>
           </select>

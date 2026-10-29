@@ -6,7 +6,7 @@ const schema = z.object({
   name: z.string().trim().min(1).max(100),
   email: z.string().trim().email().max(255),
   password: z.string().min(8).max(72),
-  role: z.enum(["superadmin", "mekaniker", "kund"]),
+  role: z.enum(["superadmin", "useradmin", "mekaniker", "kund"]),
 });
 
 // Superadmin creates a ready-to-use (pre-confirmed) account with a chosen role.
@@ -14,8 +14,10 @@ export const createUserWithRole = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d) => schema.parse(d))
   .handler(async ({ data, context }) => {
-    const { data: isAdmin } = await context.supabase.rpc("has_role", { _user_id: context.userId, _role: "superadmin" });
-    if (!isAdmin) throw new Error("Endast superadmin kan skapa användare");
+    const { data: isSuper } = await context.supabase.rpc("has_role", { _user_id: context.userId, _role: "superadmin" });
+    const { data: isUserAdmin } = await context.supabase.rpc("has_role", { _user_id: context.userId, _role: "useradmin" });
+    // Användaradmin får bara skapa mekaniker- och kundkonton.
+    if (!isSuper && !(isUserAdmin && (data.role === "mekaniker" || data.role === "kund"))) throw new Error("Du har inte behörighet att skapa den här typen av konto");
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { data: created, error } = await supabaseAdmin.auth.admin.createUser({
       email: data.email, password: data.password, email_confirm: true,
