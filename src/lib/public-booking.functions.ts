@@ -64,12 +64,13 @@ export const createPublicBooking = createServerFn({ method: "POST" })
     });
     if (error) return { ok: false as const, error: "Tiden kunde inte bokas. Försök med en annan tid." };
     const { data: cfg } = await supabaseAdmin.from("app_config").select("value").eq("key", "company").maybeSingle();
-    const { sendBookingConfirmation } = await import("./booking-email");
+    const { data: mailRow } = await supabaseAdmin.from("mail_settings").select("*").eq("id", 1).maybeSingle();
+    const { sendBookingConfirmation, resolveMailConfig } = await import("./booking-email");
     const { getRequestUrl } = await import("@tanstack/react-start/server");
-    let siteUrl = process.env["SITE_URL"];
-    try { siteUrl ||= new URL(getRequestUrl()).origin; } catch { /* ignore */ }
+    let siteUrl: string | undefined;
+    try { siteUrl = new URL(getRequestUrl()).origin; } catch { /* ignore */ }
     const mailed = await sendBookingConfirmation(data.email,
       { name: data.name, regnr, date: data.date, time: data.time, service, siteUrl },
-      (cfg?.value ?? {}) as Record<string, string>);
+      (cfg?.value ?? {}) as Record<string, string>, resolveMailConfig(mailRow, process.env));
     return { ok: true as const, service, mailed };
   });
