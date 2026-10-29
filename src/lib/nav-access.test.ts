@@ -5,8 +5,13 @@ const paths = (r: Parameters<typeof navItemsFor>[0]) => navItemsFor(r).map((i) =
 describe("menu access", () => {
   it("signed-out visitors only see booking", () => expect(paths([])).toEqual(["/boka"]));
   it("customers see booking and their own page", () => expect(paths(["kund"])).toEqual(["/boka", "/kund"]));
-  it("mechanics lack settings and customer page", () => expect(paths(["mekaniker"])).toEqual(["/oversikt", "/boka", "/personal", "/ankomst"]));
-  it("superadmin sees everything", () => expect(paths(["superadmin"])).toHaveLength(6));
+  it("mechanics lack settings and customer page", () => expect(paths(["mekaniker"])).toEqual(["/oversikt", "/boka", "/personal", "/verkstad", "/ankomst"]));
+  it("superadmin sees everything", () => expect(paths(["superadmin"])).toHaveLength(7));
+  it("verkstadsskärmen visas för personal, inte kunder eller besökare", () => {
+    for (const role of ["superadmin", "useradmin", "mekaniker"] as const) expect(paths([role])).toContain("/verkstad");
+    expect(paths(["kund"])).not.toContain("/verkstad");
+    expect(paths([])).not.toContain("/verkstad");
+  });
 });
 
 describe("användaradmin", () => {
