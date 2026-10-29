@@ -21,3 +21,12 @@ export async function saveDbStatus(key: string, regnr: string, status: ArrivalSt
   await supabase.from("status_events").insert({ booking_key: key, regnr, status, source: "personal", actor_id: u.user.id });
   return true;
 }
+
+/** Staff-only: when each arrived/late booking was registered (booking_key -> ISO time). */
+export async function fetchDbArrivalTimes(): Promise<Record<string, string> | null> {
+  const { data: u } = await supabase.auth.getUser();
+  if (!u.user) return null;
+  const { data, error } = await supabase.from("booking_statuses").select("booking_key,updated_at").in("status", ["ankommen", "sen"]);
+  if (error) return null;
+  return Object.fromEntries((data ?? []).map(r => [r.booking_key, r.updated_at as string]));
+}
