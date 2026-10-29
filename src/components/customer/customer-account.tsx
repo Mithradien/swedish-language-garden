@@ -69,7 +69,7 @@ export function CustomerAccount() {
         <section><h2 className="mb-4 text-2xl font-semibold">Nästa bokning</h2>{upcoming[0] ? <BookingCard b={upcoming[0]} onMove={() => setMoving(upcoming[0]!)} onCancel={() => doCancel(upcoming[0]!)}/> : <Empty text="Ingen kommande bokning"/>}</section>
         <section><h2 className="mb-4 text-2xl font-semibold">Mina bilar <span className="text-lg text-muted-foreground">{page.cars.length}</span></h2><Cars cars={page.cars} pending={page.pending} onDetails={setDetails}/></section>
       </TabsContent>
-      <TabsContent value="vehicles" className="mt-8"><Cars cars={page.cars} pending={page.pending} onDetails={setDetails}/></TabsContent>
+      <TabsContent value="vehicles" className="mt-8 space-y-6"><AddCar onAdd={async regnr => { const r = await claim({ data: { regnr } }); if (!r.ok) return r.error; setMsg(r.status === "kopplad" ? `${r.regnr} är tillagd under Mina bilar.` : `${r.regnr} väntar på att verkstaden godkänner kopplingen.`); reload(); return ""; }}/><Cars cars={page.cars} pending={page.pending} onDetails={setDetails}/></TabsContent>
       <TabsContent value="bookings" className="mt-8 space-y-4"><h2 className="text-2xl font-semibold">Kommande</h2>{upcoming.length ? upcoming.map(b => <BookingCard key={b.key} b={b} onMove={() => setMoving(b)} onCancel={() => doCancel(b)}/>) : <Empty text="Ingen kommande bokning"/>}
         <h2 className="pt-6 text-2xl font-semibold">Historik</h2>{history.length ? <ul className="divide-y rounded-md border bg-card">{history.map(b => <li key={b.key} className="flex flex-wrap justify-between gap-2 px-4 py-3 text-sm"><span><b>{b.regnr}</b> · {dayLabel(b.date)} kl. {b.time} · {b.service}</span><span className="text-muted-foreground">{b.status === "vantas" ? "Genomförd" : STATUS[b.status] ?? b.status}</span></li>)}</ul> : <Empty text="Ingen tidigare historik"/>}</TabsContent>
       <TabsContent value="profile" className="mt-8 max-w-xl"><Profile page={page} onSave={async d => { const r = await saveProfile({ data: d }); setMsg(r.ok ? "Uppgifterna är sparade." : "Kunde inte spara."); reload(); }}/></TabsContent>
@@ -123,4 +123,27 @@ function Profile({ page, onSave }: { page: Page; onSave: (d: { name: string; pho
 
 function PendingCar({ regnr }: { regnr: string }) {
   return <article className="rounded-md border border-dashed bg-card p-5"><span className="rounded-sm border-2 border-primary px-3 py-1 font-display text-xl font-bold">{regnr}</span><p className="mt-4 text-sm text-muted-foreground">Väntar på att verkstaden godkänner kopplingen. Däckuppgifterna visas när den är godkänd.</p></article>;
+}
+
+function AddCar({ onAdd }: { onAdd: (regnr: string) => Promise<string> }) {
+  const [open, setOpen] = useState(false);
+  const [regnr, setRegnr] = useState("");
+  const [err, setErr] = useState("");
+  const [busy, setBusy] = useState(false);
+  if (!open) return <Button variant="outline" onClick={() => setOpen(true)}><Plus/>Lägg till bil</Button>;
+  async function submit(e: FormEvent) {
+    e.preventDefault();
+    if (regnr.replace(/\s/g, "").length < 2) { setErr("Ange ett regnummer."); return; }
+    setBusy(true); const r = await onAdd(regnr).catch(() => "Kunde inte lägga till bilen."); setBusy(false);
+    if (r) { setErr(r); return; }
+    setRegnr(""); setErr(""); setOpen(false);
+  }
+  return <form onSubmit={submit} className="max-w-md space-y-3 rounded-md border bg-card p-5">
+    <label className="block space-y-1 text-sm font-medium">Regnummer
+      <Input value={regnr} onChange={e => { setErr(""); setRegnr(e.target.value.toUpperCase().slice(0, 10)); }} placeholder="ABC123" autoFocus className="h-12 font-display text-2xl font-bold uppercase tracking-widest"/>
+    </label>
+    {err && <p role="alert" className="text-sm text-destructive">{err}</p>}
+    <div className="flex gap-2"><Button type="submit" disabled={busy}>{busy ? "Lägger till…" : "Lägg till"}</Button><Button type="button" variant="ghost" onClick={() => { setOpen(false); setErr(""); }}>Avbryt</Button></div>
+    <p className="text-xs text-muted-foreground">Finns bilen hos oss med din e-post eller ditt telefonnummer visas däckuppgifterna direkt. Annars godkänner verkstaden kopplingen först.</p>
+  </form>;
 }
