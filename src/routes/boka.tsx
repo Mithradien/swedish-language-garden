@@ -12,6 +12,6 @@ export const Route = createFileRoute("/boka")({
       { name: "twitter:card", content: "summary" },
     ],
   }),
-  validateSearch: (s: Record<string, unknown>): { regnr?: string } => (typeof s.regnr === "string" ? { regnr: s.regnr.slice(0, 10) } : {}),
+  validateSearch: (s: Record<string, unknown>): { regnr?: string } => (typeof s["regnr"] === "string" ? { regnr: s["regnr"].slice(0, 10) } : {}),
   component: Boka,
 });
