@@ -8,7 +8,7 @@ import { Textarea } from "@/components/ui/textarea";
 
 const clean = (s: string) => s.toUpperCase().replace(/[^A-Z0-9ÅÄÖ]/g, "");
 type Car = { regnr: string; modell: string; lagerplats: string; owner: string };
-type Photo = { id: string; path: string; caption: string; created_at: string; url?: string };
+type Photo = { id: string; path: string; caption: string; created_at: string; url?: string | undefined };
 type Handover = { id: string; lagerplats: string; received_by: string; note: string; created_at: string };
 const fmt = (d: string) => new Date(d).toLocaleString("sv-SE", { dateStyle: "short", timeStyle: "short" });
 
