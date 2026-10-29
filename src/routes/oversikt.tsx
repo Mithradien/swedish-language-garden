@@ -4,7 +4,7 @@ import { fetchAllBookings, syncBookingsToDb } from "@/lib/booking-sync";
 import { fetchDbStatuses, saveDbStatus } from "@/lib/status-sync";
 import { createFileRoute } from "@tanstack/react-router";
 import { TopNav } from "@/components/top-nav";
-import { Fragment, useEffect, useMemo, useState, type ChangeEvent } from "react";
+import { Fragment, useEffect, useMemo, useRef, useState, type ChangeEvent } from "react";
 import { ARRIVAL_HISTORY_KEY, STATUS_KEY, readStatuses, resetArrival, statusKey, type ArrivalStatus } from "@/lib/arrival";
 import { useSettings } from "@/lib/settings";
 import { useAuth } from "@/hooks/use-auth";
@@ -182,7 +182,7 @@ function Index() {
     const parsed = parseBookingsCsv(text);
     setBookings(parsed);
     setCsvName(f.name);
-    setDay("alla");
+    setDay("alla"); autoDay.current = false;
     save(CSV_KEY, { name: f.name, text });
     e.target.value = "";
     const n = await syncBookingsToDb(parsed);
@@ -230,6 +230,16 @@ function Index() {
     () => [...new Set(bookings.map((b) => b.date))].sort(),
     [bookings],
   );
+  // Open on today's date (or the next upcoming booking day) once bookings are loaded.
+  const autoDay = useRef(false);
+  useEffect(() => {
+    if (autoDay.current || !days.length) return;
+    autoDay.current = true;
+    const n = new Date();
+    const today = `${n.getFullYear()}-${String(n.getMonth() + 1).padStart(2, "0")}-${String(n.getDate()).padStart(2, "0")}`;
+    const pick = days.includes(today) ? today : days.find(d => d > today);
+    if (pick) setDay(pick);
+  }, [days]);
   const labelFor = (d: string) => bookings.find((b) => b.date === d)?.dateLabel ?? d;
 
   const sorted = useMemo(
