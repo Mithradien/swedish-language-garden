@@ -57,6 +57,13 @@
       "when": 1793299276072,
       "tag": "0007_add_sen_status",
       "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1793300002533,
+      "tag": "0008_booking_schedule_settings",
+      "breakpoints": true
     }
   ]
 }

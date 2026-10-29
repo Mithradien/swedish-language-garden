@@ -25,3 +25,4 @@
 - Excel car storage is upserted into car_storage via src/lib/car-storage-sync.ts (mergeCard keeps stored values when the new file has blanks; cars absent from a file are never deleted) so import history survives.
 - Menu visibility per role lives in src/lib/nav-access.ts (tested) and staff pages wrap their content in RequireRole, so "/" stays the public booking page and staff tools sit behind login at /oversikt.
 - Staff booking moves go through staffMoveBooking in src/lib/staff-booking.functions.ts (superadmin checked server-side); cancelling reuses the "avbokad" status so bookings are never deleted and history/statistics survive.
+- Booking schedule (work passes + slot step) is stored in app_config key 'schedule' and applied via applySchedule in src/lib/bookings.ts; the root layout loads it on the client and booking server functions call loadScheduleServer before validating, so client and server use the same times.

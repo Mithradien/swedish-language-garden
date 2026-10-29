@@ -1,4 +1,4 @@
-import { classifyService, normalizeRegnr, WORK_PASSES, type Service } from "./bookings";
+import { classifyService, normalizeRegnr, WORK_PASSES, SLOT_STEP, type Service } from "./bookings";
 
 /** Minsta framförhållning för kundbokning: 48 timmar. */
 export const LEAD_HOURS = 48;
@@ -54,7 +54,7 @@ const toLabel = (value: number) =>
 /** Dagens samtliga schematider – 27 stycken. */
 export function scheduleTimes(): string[] {
   const out: string[] = [];
-  for (const [first, last] of WORK_PASSES) for (let t = first; t <= last; t += 15) out.push(toLabel(t));
+  for (const [first, last] of WORK_PASSES) for (let t = first; t <= last; t += SLOT_STEP) out.push(toLabel(t));
   return out;
 }
 

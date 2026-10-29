@@ -1,4 +1,5 @@
 import { createServerFn } from "@tanstack/react-start";
+import { loadScheduleServer } from "./schedule";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { canStaffMoveTo, endTimeFor, moveNote } from "./booking-flow";
@@ -11,6 +12,7 @@ export const staffMoveBooking = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d: unknown) => z.object({ key: z.string().min(5).max(80), date: dateSchema, time: timeSchema }).parse(d))
   .handler(async ({ data, context }) => {
+    await loadScheduleServer();
     const { supabase, userId } = context;
     const { data: isAdmin } = await supabase.rpc("has_role", { _user_id: userId, _role: "superadmin" });
     if (!isAdmin) throw new Error("Bara superadmin kan flytta bokningar");
