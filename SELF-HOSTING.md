@@ -120,3 +120,20 @@ men då utan HTTPS – rekommenderas inte om sidan nås över internet.
   om steget i avsnitt 2. Med Docker räcker `docker compose up -d --build`.
 - **Om bygget kraschar i alpine.** Byt `node:22-alpine` till `node:22` i Dockerfile – vissa
   byggverktyg gillar Debian-basen bättre.
+
+## Bekräftelsemail vid bokning (egen SMTP)
+
+När en kund bokar skickas ett bekräftelsemail via er egen mejlserver. Sätt dessa
+miljövariabler (t.ex. under `environment:` i docker-compose.yml eller `Environment=` i systemd):
+
+| Variabel | Exempel |
+|---|---|
+| `SMTP_HOST` | `send.one.com` |
+| `SMTP_PORT` | `587` (465 = SSL) |
+| `SMTP_USER` | `bokning@dindomän.se` |
+| `SMTP_PASS` | lösenordet till mejlkontot |
+| `SMTP_FROM` | `bokning@dindomän.se` |
+| `SITE_URL` | `https://bokningar.dindomän.se` (länken till Mina sidor) |
+
+Saknas `SMTP_HOST` eller `SMTP_FROM` sparas bokningen ändå, men inget mejl skickas.
+Företagsnamn, adress och telefon i mejlet hämtas från Inställningar → Företagsuppgifter.
