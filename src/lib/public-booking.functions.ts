@@ -63,5 +63,13 @@ export const createPublicBooking = createServerFn({ method: "POST" })
       end_time: endTimeFor(data.time), service, source: "kund",
     });
     if (error) return { ok: false as const, error: "Tiden kunde inte bokas. Försök med en annan tid." };
-    return { ok: true as const, service };
+    const { data: cfg } = await supabaseAdmin.from("app_config").select("value").eq("key", "company").maybeSingle();
+    const { sendBookingConfirmation } = await import("./booking-email");
+    const { getRequestUrl } = await import("@tanstack/react-start/server");
+    let siteUrl = process.env["SITE_URL"];
+    try { siteUrl ||= new URL(getRequestUrl()).origin; } catch { /* ignore */ }
+    const mailed = await sendBookingConfirmation(data.email,
+      { name: data.name, regnr, date: data.date, time: data.time, service, siteUrl },
+      (cfg?.value ?? {}) as Record<string, string>);
+    return { ok: true as const, service, mailed };
   });

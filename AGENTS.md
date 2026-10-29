@@ -29,3 +29,4 @@
 - Service prices (tiers by rim inch) are stored in app_config key 'prices' and applied via applyPrices in src/lib/prices.ts, loaded together with the schedule, so booking pages and settings share one price source.
 - Tread colour limits are stored in app_config key 'tread' and applied via applyTread in src/lib/tread.ts (also rewrites guide range texts), loaded with schedule and prices.
 - Customer-claimed cars live in customer_cars (status kopplad/vantar via claimStatus in customer-match.ts); only 'kopplad' cars expose car_storage details, so typing someone else's regnr never reveals their tyres.
+- Booking confirmation e-mails are built in src/lib/booking-email.ts and sent via the workshop's own SMTP (SMTP_* env vars, nodemailer) after the booking is saved; send failures never fail the booking, so self-hosting needs no Lovable mail service.
