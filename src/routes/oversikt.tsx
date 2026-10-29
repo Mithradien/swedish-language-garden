@@ -8,7 +8,7 @@ import { Fragment, useEffect, useMemo, useRef, useState, type ChangeEvent } from
 import { ARRIVAL_HISTORY_KEY, STATUS_KEY, readStatuses, resetArrival, statusKey, type ArrivalStatus } from "@/lib/arrival";
 import { useSettings } from "@/lib/settings";
 import { useAuth } from "@/hooks/use-auth";
-import { searchCars } from "@/lib/admin-car";
+import { bookingMatches, searchCars } from "@/lib/admin-car";
 import { CarDetailDialog } from "@/components/staff/car-detail-dialog";
 import { MoveBookingDialog } from "@/components/staff/move-booking-dialog";
 
@@ -219,8 +219,8 @@ function Index() {
   const scheduleRows = useMemo(() => withEmptySlots(bookings), [bookings]);
   const dayList = day === "alla" ? scheduleRows : scheduleRows.filter((b) => b.date === day);
   const dayBooked = dayList.filter(b => b.service !== "").length;
-  const q = normalizeRegnr(query);
-  const hits = q ? sorted.filter((b) => b.regnr.includes(q)) : [];
+  const q = query.trim();
+  const hits = q ? sorted.filter((b) => bookingMatches(query, b)) : [];
   const matchingCars = searchCars(query, bookings, cards, platsMap);
 
 
@@ -342,7 +342,7 @@ function Index() {
         <Tabs defaultValue="bokade">
           <TabsList className="screen-only h-auto">
             <TabsTrigger value="bokade" className="px-5 py-2 font-display text-base uppercase">Bokade bilar</TabsTrigger>
-            <TabsTrigger value="sok" className="px-5 py-2 font-display text-base uppercase">Sök regnr</TabsTrigger>
+            <TabsTrigger value="sok" className="px-5 py-2 font-display text-base uppercase">Sök</TabsTrigger>
             <TabsTrigger value="statistik" className="px-5 py-2 font-display text-base uppercase">Statistik</TabsTrigger>
 
           </TabsList>
@@ -383,8 +383,8 @@ function Index() {
               <Input
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
-                placeholder="T.ex. ABC123"
-                className="h-12 bg-card pl-10 font-display text-xl uppercase tracking-widest"
+                placeholder="Regnr, namn, kundnr, lagerplats, modell, telefon…"
+                className="h-12 bg-card pl-10 text-lg"
               />
             </div>
             {q && (
