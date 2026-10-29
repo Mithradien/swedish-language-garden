@@ -125,11 +125,15 @@ export const claimMyCar = createServerFn({ method: "POST" }).middleware([require
     const me = await contactOf(context as Ctx);
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { data: car } = await supabaseAdmin.from("car_storage").select("email,phone").eq("regnr", regnr).maybeSingle();
-    const status = claimStatus(me, car);
+    const { data: isAdmin } = await context.supabase.rpc("has_role", { _user_id: context.userId, _role: "superadmin" });
+    // Superadmin kopplar bilar direkt utan godkännande.
+    const status = isAdmin ? "kopplad" : claimStatus(me, car);
     const { data: existing } = await supabaseAdmin.from("customer_cars").select("status").eq("user_id", context.userId).eq("regnr", regnr).maybeSingle();
-    if (!existing) {
+    if (existing && existing.status === "vantar" && status === "kopplad") {
+      await supabaseAdmin.from("customer_cars").update({ status }).eq("user_id", context.userId).eq("regnr", regnr);
+    } else if (!existing) {
       const { error } = await supabaseAdmin.from("customer_cars").insert({ user_id: context.userId, regnr, status });
       if (error) return { ok: false as const, error: "Kunde inte lägga till bilen. Försök igen." };
     }
-    return { ok: true as const, regnr, status: (existing?.status ?? status) as "kopplad" | "vantar" };
+    return { ok: true as const, regnr, status: (existing && existing.status === "kopplad" ? "kopplad" : status) as "kopplad" | "vantar" };
   });
