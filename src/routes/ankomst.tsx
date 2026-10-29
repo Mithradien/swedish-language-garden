@@ -99,7 +99,7 @@ function ArrivalPage() {
     <section className="mx-auto max-w-3xl px-4 py-8 text-center sm:px-8 sm:py-10">
       <p className="mb-3 font-display text-lg uppercase text-muted-foreground">{today ? new Date(`${today}T12:00:00`).toLocaleDateString("sv-SE", { weekday: "long", day: "numeric", month: "long" }) : "Välkommen"}</p>
       {stage === "entry" ? <>
-        <h1 className="text-4xl font-bold uppercase sm:text-5xl">Välkommen till oss</h1>
+        <h1 className="text-4xl font-bold uppercase sm:text-5xl">Välkommen</h1>
         <form onSubmit={lookup} className="mt-7">
           <label htmlFor="arrival-regnr" className="mb-3 block text-xl font-medium">Ditt registreringsnummer</label>
           <Input ref={input} id="arrival-regnr" value={regnr} onChange={e => { setRegnr(normalizeRegnr(e.target.value).slice(0, 10)); setError(""); }} autoComplete="off" autoCapitalize="characters" spellCheck={false} maxLength={10} className="mx-auto h-20 max-w-sm border-2 border-primary bg-card text-center font-display text-4xl font-bold uppercase sm:text-5xl" />
