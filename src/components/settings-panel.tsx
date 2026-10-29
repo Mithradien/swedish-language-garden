@@ -107,7 +107,7 @@ export function SettingsPanel() {
           <Button onClick={save} disabled={!dirty}>Spara ändringar</Button>
           {dirty && <Button variant="ghost" onClick={() => setDraft({})}>Ångra</Button>}
           {dirty && <span className="text-sm text-muted-foreground">Du har ändringar som inte är sparade.</span>}
-          {savedMsg && !dirty && <span className="flex items-center gap-1 text-sm font-medium text-st-arrived"><Check className="h-4 w-4" />Ändringarna är sparade</span>}
+          {savedMsg && !dirty && <span className="flex items-center gap-1 rounded-md bg-st-arrived px-2 py-1 text-sm font-medium text-foreground"><Check className="h-4 w-4" />Ändringarna är sparade</span>}
           <Button variant="outline" size="sm" className="ml-auto" onClick={() => { setDraft({}); setSettings(() => DEFAULT_SETTINGS); }}>Återställ inställningar</Button>
         </div>
       </section>
