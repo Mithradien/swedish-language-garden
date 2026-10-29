@@ -143,7 +143,7 @@ function Index() {
       try { local = readStatuses(localStorage); } catch { /* ignoreras */ }
       setStatuses(local);
       fetchDbStatuses().then(db => { if (db) setStatuses({ ...local, ...db }); });
-      let localTimes: Record<string, string> = {};
+      const localTimes: Record<string, string> = {};
       try { const h = JSON.parse(localStorage.getItem("bokningar.arrivals.v1") || "[]"); if (Array.isArray(h)) for (const e of h) if (e?.bookingKey && e?.arrivedAt) localTimes[e.bookingKey] = e.arrivedAt; } catch { /* ignoreras */ }
       setArrivedAt(localTimes);
       fetchDbArrivalTimes().then(db => { if (db) setArrivedAt({ ...localTimes, ...db }); });
