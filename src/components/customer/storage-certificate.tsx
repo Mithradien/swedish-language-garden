@@ -5,7 +5,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } f
 import { supabase } from "@/integrations/supabase/client";
 import { DEFAULT_SETTINGS, type Settings } from "@/lib/settings";
 import { PRICE_LIST, PRICE_SERVICES, tierLabel } from "@/lib/prices";
-import { DEFAULT_INSURANCE_TEXT, DEFAULT_SPECIAL_TERMS } from "@/lib/storage-terms";
+import { parseTerms, type StorageTerms } from "@/lib/storage-terms";
 import { tireSeason, treadColor } from "@/lib/tread";
 import type { Tire } from "@/lib/bookings";
 import { TREAD_STYLES } from "./tread-reading";
@@ -28,10 +28,13 @@ function seasonLabel(tires: Tire[]) {
 /** Förvaringsbevis för en bil – visas på Mina sidor och kan skrivas ut eller sparas som PDF. */
 export function StorageCertificate({ car, customer, open, onOpenChange }: { car: CertCar | null; customer: CertCustomer; open: boolean; onOpenChange: (o: boolean) => void }) {
   const [company, setCompany] = useState<Company>(DEFAULT_SETTINGS);
+  const [terms, setTerms] = useState<StorageTerms>(() => parseTerms(null));
   useEffect(() => {
     if (!open) return;
-    supabase.from("app_config").select("value").eq("key", "company").maybeSingle().then(({ data }) => {
-      if (data?.value && typeof data.value === "object") setCompany({ ...DEFAULT_SETTINGS, ...(data.value as Partial<Company>) });
+    supabase.from("app_config").select("key,value").in("key", ["company", "storage_terms"]).then(({ data }) => {
+      const c = data?.find((r) => r.key === "company")?.value;
+      if (c && typeof c === "object") setCompany({ ...DEFAULT_SETTINGS, ...(c as Partial<Company>) });
+      setTerms(parseTerms(data?.find((r) => r.key === "storage_terms")?.value));
     });
   }, [open]);
 
@@ -109,12 +112,12 @@ export function StorageCertificate({ car, customer, open, onOpenChange }: { car:
 
           <section>
             <h3 className="mb-1 font-display font-semibold uppercase">Försäkring och ansvar</h3>
-            <p>{DEFAULT_INSURANCE_TEXT}</p>
+            <p className="whitespace-pre-line">{terms.insurance}</p>
           </section>
 
           <section>
             <h3 className="mb-1 font-display font-semibold uppercase">Särskilda villkor</h3>
-            <ul className="list-disc space-y-0.5 pl-5">{DEFAULT_SPECIAL_TERMS.map((t) => <li key={t}>{t}</li>)}</ul>
+            <ul className="list-disc space-y-0.5 pl-5">{terms.special.map((t) => <li key={t}>{t}</li>)}</ul>
           </section>
 
           <section>
