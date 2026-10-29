@@ -44,19 +44,36 @@ ${contact.length ? `<p style="color:#666;font-size:13px">${contact.map(esc).join
   return { subject, text, html };
 }
 
-export async function sendBookingConfirmation(to: string, b: BookingMail, c: Company): Promise<boolean> {
-  const host = process.env["SMTP_HOST"];
-  const from = process.env["SMTP_FROM"];
-  if (!host || !from) { console.warn("[mail] SMTP_HOST/SMTP_FROM saknas – inget bekräftelsemail skickat"); return false; }
+export type MailConfig = { host: string; port: number; username: string; password: string; from_address: string; site_url: string; enabled: boolean };
+
+/** Saved settings (Inställningar → E-post) win; SMTP_* env vars are the fallback. */
+export function resolveMailConfig(saved: Partial<MailConfig> | null, env: Record<string, string | undefined>): MailConfig | null {
+  if (saved && saved.enabled === false) return null;
+  const host = saved?.host || env["SMTP_HOST"] || "";
+  const from = saved?.from_address || env["SMTP_FROM"] || "";
+  if (!host || !from) return null;
+  return {
+    host, from_address: from, enabled: true,
+    port: saved?.host ? saved.port || 587 : Number(env["SMTP_PORT"] || 587),
+    username: saved?.host ? saved.username ?? "" : env["SMTP_USER"] ?? "",
+    password: saved?.host ? saved.password ?? "" : env["SMTP_PASS"] ?? "",
+    site_url: saved?.site_url || env["SITE_URL"] || "",
+  };
+}
+
+export async function sendMail(cfg: MailConfig, to: string, m: { subject: string; text: string; html: string }, fromName?: string, replyTo?: string) {
+  const nodemailer = await import("nodemailer");
+  const transport = nodemailer.createTransport({
+    host: cfg.host, port: cfg.port, secure: cfg.port === 465,
+    auth: cfg.username ? { user: cfg.username, pass: cfg.password } : undefined,
+  });
+  await transport.sendMail({ from: fromName ? `"${fromName.replace(/"/g, "")}" <${cfg.from_address}>` : cfg.from_address, to, replyTo: replyTo || undefined, ...m });
+}
+
+export async function sendBookingConfirmation(to: string, b: BookingMail, c: Company, cfg: MailConfig | null): Promise<boolean> {
+  if (!cfg) { console.warn("[mail] e-postinställningar saknas – inget bekräftelsemail skickat"); return false; }
   try {
-    const { subject, text, html } = buildConfirmation(b, c);
-    const nodemailer = await import("nodemailer");
-    const port = Number(process.env["SMTP_PORT"] || 587);
-    const transport = nodemailer.createTransport({
-      host, port, secure: port === 465,
-      auth: process.env["SMTP_USER"] ? { user: process.env["SMTP_USER"], pass: process.env["SMTP_PASS"] ?? "" } : undefined,
-    });
-    await transport.sendMail({ from: c.company ? `"${c.company.replace(/"/g, "")}" <${from}>` : from, to, replyTo: c.email || undefined, subject, text, html });
+    await sendMail(cfg, to, buildConfirmation({ ...b, siteUrl: cfg.site_url || b.siteUrl }, c), c.company, c.email);
     return true;
   } catch (e) {
     console.error("[mail] kunde inte skicka bekräftelse", e);
