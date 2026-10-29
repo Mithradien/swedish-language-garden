@@ -51,4 +51,4 @@ Förutsättning: ingen Lovable Cloud eller extern lagring; verkliga inloggningar
 - [ ] Roterande hjul i bakgrunden på ankomstsidan (väntar).
 - [x] Personal: bilder på däck/skador, intern anteckning, lagerplats och kvittens av utlämnade hjul.
 - [x] Verkstadsskärm: Väntas → Ankommen → Pågående → Klar med tid, regnummer, tjänst och lagerplats. Automatisk uppdatering var tionde sekund och helskärm verifierade inloggat med dagens bokningar; statusregler testade.
-- [ ] Kundskärm (TV i kundmottagning/väntrum): samma flöde men utan intern info – bara tid, regnummer och status med tydlig "Klar för avhämtning".
+- [x] Kundmottagning: endast tid, regnummer och status med "Klar för avhämtning"; Verkstad och Kundmottagning under menyn Skärmar. Menyval, automatisk uppdatering, helskärm och frånvaro av interna uppgifter verifierade inloggat.
