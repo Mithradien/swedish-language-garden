@@ -1,0 +1,2 @@
+ALTER TABLE public.customer_cars DROP CONSTRAINT IF EXISTS customer_cars_status_check;
+ALTER TABLE public.customer_cars ADD CONSTRAINT customer_cars_status_check CHECK (status IN ('kopplad', 'vantar', 'nekad'));
