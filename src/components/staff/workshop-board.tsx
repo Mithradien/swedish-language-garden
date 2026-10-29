@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { TopNav } from "@/components/top-nav";
 import { useSettings } from "@/lib/settings";
 import { BOARD_STAGES, buildWorkshopBoard, workshopDay, type BoardCar } from "@/lib/workshop-board";
+import { parseScreenSettings, receptionCars, screenColumn } from "@/lib/screen-settings";
 
 const STAGES = {
   vantas: { label: "Väntas", icon: Clock3, color: "border-muted-foreground", badge: "bg-muted text-muted-foreground" },
@@ -21,6 +22,7 @@ export function WorkshopBoard({ audience = "workshop" }: { audience?: "workshop"
   const [error, setError] = useState("");
   const [fullscreen, setFullscreen] = useState(false);
   const [retry, setRetry] = useState(0);
+  const [screen, setScreen] = useState(() => parseScreenSettings(null));
   const { settings } = useSettings();
   const date = now ? workshopDay(now) : "";
 
@@ -31,6 +33,18 @@ export function WorkshopBoard({ audience = "workshop" }: { audience?: "workshop"
     document.addEventListener("fullscreenchange", sync);
     return () => { window.clearInterval(timer); document.removeEventListener("fullscreenchange", sync); };
   }, []);
+
+  useEffect(() => {
+    if (!reception) return;
+    let active = true;
+    const load = async () => {
+      const { data, error } = await supabase.from("app_config").select("value").eq("key", "screens").maybeSingle();
+      if (active && !error) setScreen(parseScreenSettings(data?.value));
+    };
+    void load();
+    const timer = window.setInterval(() => { if (!document.hidden) void load(); }, 10000);
+    return () => { active = false; window.clearInterval(timer); };
+  }, [reception]);
 
   useEffect(() => {
     if (!date) return;
@@ -58,12 +72,12 @@ export function WorkshopBoard({ audience = "workshop" }: { audience?: "workshop"
       } finally { busy = false; }
     }
     void load();
-    const timer = window.setInterval(() => { if (!document.hidden) void load(); }, 10000);
+    const timer = window.setInterval(() => { if (!document.hidden) void load(); }, reception ? screen.interval * 1000 : 10000);
     const refresh = () => { if (!document.hidden) void load(); };
     document.addEventListener("visibilitychange", refresh);
     window.addEventListener("online", refresh);
     return () => { active = false; window.clearInterval(timer); document.removeEventListener("visibilitychange", refresh); window.removeEventListener("online", refresh); };
-  }, [date, retry, reception]);
+  }, [date, retry, reception, screen.interval]);
 
   async function toggleFullscreen() {
     try {
@@ -72,13 +86,16 @@ export function WorkshopBoard({ audience = "workshop" }: { audience?: "workshop"
     } catch { setError("Helskärm kunde inte öppnas i denna webbläsare."); }
   }
 
+  const displayed = reception && now ? receptionCars(cars, screen, now) : cars;
+  const stages = BOARD_STAGES.filter(stage => !reception || screen.columns[stage].visible);
+  const grid = stages.length === 1 ? "lg:grid-cols-1" : stages.length === 2 ? "lg:grid-cols-2" : stages.length === 3 ? "lg:grid-cols-3" : "lg:grid-cols-4";
   return <main className="min-h-screen bg-background">
     {!fullscreen && <div className="bg-primary text-primary-foreground"><TopNav hideAccount={reception} /></div>}
     <div className="px-4 py-6 sm:px-6 lg:px-8">
       <header className="mb-7 flex flex-wrap items-center justify-between gap-4 border-b pb-5">
         <div className="flex min-w-0 items-center gap-4">
           {settings.logo && <img src={settings.logo} alt={settings.company || "Verkstadens logotyp"} className="h-14 w-20 object-contain" />}
-          <div><h1 className="text-4xl font-bold tracking-normal">{reception ? "Kundmottagning" : "Verkstadsskärm"}</h1>{settings.company && <p className="text-muted-foreground">{settings.company}</p>}</div>
+          <div><h1 className="break-words text-4xl font-bold tracking-normal">{reception ? screen.title : "Verkstadsskärm"}</h1>{settings.company && <p className="text-muted-foreground">{settings.company}</p>}</div>
         </div>
         <div className="flex flex-wrap items-center gap-5">
           <div className="text-right"><p className="text-base capitalize">{now?.toLocaleDateString("sv-SE", { timeZone: "Europe/Stockholm", weekday: "long", day: "numeric", month: "long" }) ?? "—"}</p><p className="font-display text-4xl font-bold tabular-nums">{now?.toLocaleTimeString("sv-SE", { timeZone: "Europe/Stockholm", hour: "2-digit", minute: "2-digit" }) ?? "—"}</p></div>
@@ -86,15 +103,15 @@ export function WorkshopBoard({ audience = "workshop" }: { audience?: "workshop"
         </div>
       </header>
       <div className="mb-5 flex flex-wrap items-center justify-between gap-3 text-sm">
-        <p className="font-medium">{cars.length} bokningar idag</p>
+        <p className="font-medium">{reception ? stages.reduce((n, stage) => n + screenColumn(displayed, stage, screen).length, 0) : cars.length} {reception ? "visade bokningar" : "bokningar idag"}</p>
         <div className="flex items-center gap-3"><p role="status" className={error ? "text-destructive" : "text-muted-foreground"}>{error || (updated ? `Uppdaterad ${updated.toLocaleTimeString("sv-SE", { timeZone: "Europe/Stockholm" })}` : "Hämtar dagens bokningar…")}</p>{error && <Button variant="outline" size="icon" aria-label="Försök igen" title="Försök igen" onClick={() => setRetry(v => v + 1)}><RefreshCw /></Button>}</div>
       </div>
-      <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
-        {BOARD_STAGES.map(stage => {
-          const meta = STAGES[stage]; const Icon = meta.icon; const list = cars.filter(c => c.stage === stage);
-          const label = reception && stage === "klar" ? "Klar för avhämtning" : meta.label;
+      <div className={`grid grid-cols-1 gap-6 sm:grid-cols-2 ${grid}`}>
+        {stages.map(stage => {
+          const meta = STAGES[stage]; const Icon = meta.icon; const list = reception ? screenColumn(displayed, stage, screen) : cars.filter(c => c.stage === stage);
+          const label = reception ? screen.columns[stage].label : meta.label;
           return <section key={stage} aria-label={label} className="min-w-0">
-            <div className={`mb-4 flex items-center justify-between gap-2 border-t-4 pt-4 ${meta.color}`}><h2 className="flex min-w-0 items-center gap-2 text-3xl font-bold tracking-normal"><Icon className="h-6 w-6 shrink-0" /><span>{label}</span></h2><span className={`flex h-9 min-w-9 shrink-0 items-center justify-center rounded px-2 text-lg font-bold tabular-nums ${meta.badge}`}>{list.length}</span></div>
+            <div className={`mb-4 flex items-center justify-between gap-2 border-t-4 pt-4 ${meta.color}`}><h2 className="flex min-w-0 items-center gap-2 text-3xl font-bold tracking-normal"><Icon className="h-6 w-6 shrink-0" /><span className="break-words">{label}</span></h2><span className={`flex h-9 min-w-9 shrink-0 items-center justify-center rounded px-2 text-lg font-bold tabular-nums ${meta.badge}`}>{list.length}</span></div>
             <ul className="space-y-3">{list.map(car => <li key={car.booking_key} className={`rounded-md border border-l-4 bg-card p-4 text-card-foreground ${meta.color}`}>
               <div className="flex flex-wrap items-baseline justify-between gap-2"><span className="font-display text-3xl font-bold break-all">{car.regnr}</span><span className="text-xl font-semibold tabular-nums">{car.start_time}</span></div>
               {!reception && <>
