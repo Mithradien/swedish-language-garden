@@ -23,7 +23,8 @@ const STATUS: Record<ArrivalStatus, { label: string; cls: string }> = {
   ej: { label: "Ej ankommen", cls: "bg-st-noshow status-mark" },
   avbokad: { label: "Avbokad under dagen", cls: "bg-st-cancelled status-mark" },
 };
-import { Printer, Search, Tag, ChevronDown, CarFront, ArrowRight } from "lucide-react";
+import { Printer, Search, Tag, ChevronDown, CarFront, ArrowRight, Lock, LockOpen } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
 import { printLabel } from "@/lib/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
@@ -71,14 +72,33 @@ function ServiceTag({ s }: { s: Service }) {
 }
 
 function GuardedIndex() {
-  return <RequireRole roles={["superadmin", "mekaniker"]}><Index /></RequireRole>;
+  return <RequireRole roles={["superadmin", "useradmin", "mekaniker"]}><Index /></RequireRole>;
 }
 
 function Index() {
   const { settings } = useSettings();
   const { hasRole } = useAuth();
-  const isStaff = hasRole("superadmin") || hasRole("mekaniker");
+  const isStaff = hasRole("superadmin") || hasRole("useradmin") || hasRole("mekaniker");
   const isAdmin = hasRole("superadmin");
+  const canLock = isAdmin || hasRole("useradmin");
+  const [locks, setLocks] = useState<Set<string>>(new Set());
+  const lockKey = (date: string, time: string) => `${date}|${time.slice(0, 5)}`;
+  useEffect(() => {
+    if (!isStaff && !canLock) return;
+    supabase.from("slot_locks").select("slot_date,slot_time").then(({ data }) => {
+      if (data) setLocks(new Set(data.map(l => lockKey(l.slot_date, l.slot_time))));
+    });
+  }, [isStaff, canLock]);
+  async function toggleLock(date: string, time: string) {
+    const k = lockKey(date, time); const t = time.slice(0, 5);
+    const locked = locks.has(k);
+    const { error } = locked
+      ? await supabase.from("slot_locks").delete().eq("slot_date", date).eq("slot_time", t)
+      : await supabase.from("slot_locks").insert({ slot_date: date, slot_time: t });
+    if (error) { toast.error("Kunde inte ändra låsningen."); return; }
+    setLocks(prev => { const n = new Set(prev); if (locked) n.delete(k); else n.add(k); return n; });
+    toast.success(locked ? `Tiden ${t} är öppnad för bokning.` : `Tiden ${t} är låst.`);
+  }
   const [moving, setMoving] = useState<ScheduleRow | null>(null);
   const reloadBookings = () => fetchAllBookings().then(db => { if (db) setBookings(db); });
   const [selectedRegnr, setSelectedRegnr] = useState<string | null>(null);
@@ -273,7 +293,12 @@ function Index() {
             <tr className="border-t">
               {showDate && <td className="px-4 py-2.5 whitespace-nowrap">{b.dateLabel}</td>}
               <td className="px-4 py-2.5 whitespace-nowrap tabular-nums">{b.start}</td>
-              <td className="px-4 py-2.5">{b.service && (
+              <td className="px-4 py-2.5">{!b.service && (locks.has(lockKey(b.date, b.start)) || canLock) && (
+                canLock ? <Button type="button" size="sm" variant={locks.has(lockKey(b.date, b.start)) ? "secondary" : "ghost"} className="h-8 gap-2 px-2"
+                  title={locks.has(lockKey(b.date, b.start)) ? "Öppna tiden för bokning" : "Lås tiden"} onClick={() => toggleLock(b.date, b.start)}>
+                  {locks.has(lockKey(b.date, b.start)) ? <><Lock className="h-4 w-4" />Låst</> : <><LockOpen className="h-4 w-4 opacity-50" /><span className="screen-only text-muted-foreground">Lås</span></>}
+                </Button> : <span className="inline-flex items-center gap-2 text-sm"><Lock className="h-4 w-4" />Låst</span>
+              )}{b.service && (
                 <span className="inline-flex items-center gap-2">
                   {isStaff ? <Button type="button" variant="outline" title={`Visa bil ${b.regnr}`} onClick={() => setSelectedRegnr(normalizeRegnr(b.regnr))}
                     className={`h-8 w-30 min-w-30 shrink-0 justify-center rounded-sm border-2 border-primary px-2 font-display font-bold whitespace-nowrap ${STATUS[statusOf(b)].cls}`}>

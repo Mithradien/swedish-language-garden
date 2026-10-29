@@ -16,7 +16,10 @@ async function takenTimes(date: string): Promise<string[]> {
     ? await supabaseAdmin.from("booking_statuses").select("booking_key,status").in("booking_key", keys)
     : { data: [] as { booking_key: string; status: string }[] };
   const cancelled = new Set((st ?? []).filter((s) => s.status === "avbokad").map((s) => s.booking_key));
-  return (rows ?? []).filter((r) => !cancelled.has(r.booking_key)).map((r) => r.start_time.slice(0, 5));
+  const { data: locks } = await supabaseAdmin.from("slot_locks").select("slot_time").eq("slot_date", date);
+  const booked = (rows ?? []).filter((r) => !cancelled.has(r.booking_key)).map((r) => r.start_time.slice(0, 5));
+  // Staff-locked slots are reported as taken so customers can never book them.
+  return [...booked, ...(locks ?? []).map((l) => l.slot_time.slice(0, 5))];
 }
 
 export const publicTakenTimes = createServerFn({ method: "POST" })

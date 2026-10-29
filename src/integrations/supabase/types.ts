@@ -203,6 +203,27 @@ export type Database = {
         }
         Relationships: []
       }
+      slot_locks: {
+        Row: {
+          created_at: string
+          locked_by: string | null
+          slot_date: string
+          slot_time: string
+        }
+        Insert: {
+          created_at?: string
+          locked_by?: string | null
+          slot_date: string
+          slot_time: string
+        }
+        Update: {
+          created_at?: string
+          locked_by?: string | null
+          slot_date?: string
+          slot_time?: string
+        }
+        Relationships: []
+      }
       status_events: {
         Row: {
           actor_id: string | null
@@ -322,7 +343,7 @@ export type Database = {
       }
     }
     Enums: {
-      app_role: "superadmin" | "mekaniker" | "kund"
+      app_role: "superadmin" | "mekaniker" | "kund" | "useradmin"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -450,7 +471,7 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
-      app_role: ["superadmin", "mekaniker", "kund"],
+      app_role: ["superadmin", "mekaniker", "kund", "useradmin"],
     },
   },
 } as const
