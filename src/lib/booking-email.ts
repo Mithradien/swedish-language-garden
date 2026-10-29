@@ -4,7 +4,7 @@
 // must not undo a booking.
 
 export type Company = { company?: string; phone?: string; email?: string; address?: string; postalCode?: string; city?: string };
-export type BookingMail = { name: string; regnr: string; date: string; time: string; service: string; price?: string | null; siteUrl?: string };
+export type BookingMail = { name: string; regnr: string; date: string; time: string; service: string; price?: string | null | undefined; siteUrl?: string | undefined };
 
 const esc = (s: string) => s.replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]!);
 
@@ -67,7 +67,7 @@ export async function sendMail(cfg: MailConfig, to: string, m: { subject: string
     host: cfg.host, port: cfg.port, secure: cfg.port === 465,
     auth: cfg.username ? { user: cfg.username, pass: cfg.password } : undefined,
   });
-  await transport.sendMail({ from: fromName ? `"${fromName.replace(/"/g, "")}" <${cfg.from_address}>` : cfg.from_address, to, replyTo: replyTo || undefined, ...m });
+  await transport.sendMail({ from: fromName ? `"${fromName.replace(/"/g, "")}" <${cfg.from_address}>` : cfg.from_address, to, ...(replyTo ? { replyTo } : {}), ...m });
 }
 
 export async function sendBookingConfirmation(to: string, b: BookingMail, c: Company, cfg: MailConfig | null): Promise<boolean> {
