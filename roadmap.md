@@ -17,7 +17,7 @@ Förutsättning: ingen Lovable Cloud eller extern lagring; verkliga inloggningar
 
 ## Mina sidor – nästa steg
 - [x] Skifteshistorik: genomförda skiften, dokumenterad hjulsats/säsong och mönsterdjup med jämförelse över år. Verifierad med sparat testskifte på inloggat kundkonto; testposterna borttagna.
-- [ ] Förnya förvaringen: kunden godkänner en ny förvaringssäsong.
+- [x] Förnya förvaringen: kunden väljer vår/höst och godkänner villkor; godkännandet med villkors- och prisögonblicksbild sparas och visas för personalen. Verifierat inloggad inklusive omladdning och exempelvy; testuppgifter borttagna.
 - [ ] Anmäla hämtning av hjul utan skifte: kunden väljer datum så personalen kan förbereda hjulen.
 - [x] Mina sidor-undermeny med Mitt konto och Kundens exempelvy; direktval till exempelvyn fungerar även inloggad.
 
