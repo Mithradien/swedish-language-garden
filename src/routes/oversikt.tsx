@@ -230,6 +230,16 @@ function Index() {
     () => [...new Set(bookings.map((b) => b.date))].sort(),
     [bookings],
   );
+  // Open on today's date (or the next upcoming booking day) once bookings are loaded.
+  const autoDay = useRef(false);
+  useEffect(() => {
+    if (autoDay.current || !days.length) return;
+    autoDay.current = true;
+    const n = new Date();
+    const today = `${n.getFullYear()}-${String(n.getMonth() + 1).padStart(2, "0")}-${String(n.getDate()).padStart(2, "0")}`;
+    const pick = days.includes(today) ? today : days.find(d => d > today);
+    if (pick) setDay(pick);
+  }, [days]);
   const labelFor = (d: string) => bookings.find((b) => b.date === d)?.dateLabel ?? d;
 
   const sorted = useMemo(
