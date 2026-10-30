@@ -11,7 +11,7 @@ const LABEL: Record<AppRole, string> = { superadmin: "Superadmin", useradmin: "A
 // En enda meny, used on every page, so it always sits in the same spot. Items follow the user's roles.
 // hideAccount hides the area; logoutOnly shows only the log out button (no e-mail), used on the reception screen.
 export function TopNav({ hideAccount = false, logoutOnly = false }: { hideAccount?: boolean; logoutOnly?: boolean }) {
-  const { user, roles, loading } = useAuth();
+  const { user, roles } = useAuth();
   const navigate = useNavigate();
   const items = navItemsFor(user ? roles : []);
   const screens = items.filter(item => item.group === "screens");
@@ -41,7 +41,7 @@ export function TopNav({ hideAccount = false, logoutOnly = false }: { hideAccoun
         </DropdownMenu>}
         {!hideAccount &&
         <div className="ml-auto flex items-center gap-2">
-          {loading ? null : user ? (
+          {user ? (
             <>
               {!logoutOnly &&
               <span className="hidden normal-case tracking-normal opacity-80 sm:inline">
