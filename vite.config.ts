@@ -7,6 +7,19 @@
 import { defineConfig } from "@lovable.dev/vite-tanstack-config";
 
 export default defineConfig({
+  vite: {
+    build: {
+      rollupOptions: {
+        output: {
+          // Keep bundler helpers independent: putting them in an app chunk
+          // creates a React ↔ bookings cycle before the helpers initialize.
+          manualChunks(id) {
+            if (id.includes("rolldown/runtime")) return "bundler-runtime";
+          },
+        },
+      },
+    },
+  },
   tanstackStart: {
     // Redirect TanStack Start's bundled server entry to src/server.ts (our SSR error wrapper).
     // nitro/vite builds from this

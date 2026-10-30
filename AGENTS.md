@@ -10,6 +10,7 @@
 <!-- LOVABLE:END -->
 
 ## Rules
+- Keep Rolldown runtime helpers in an independent bundler-runtime chunk so React initialization cannot depend on an uninitialized application chunk.
 - Storage renewals use authenticated ownership checks in customer.functions.ts and immutable terms/price snapshots; customers read only their own approvals, staff read them in CarTools, and the example view never persists approvals.
 - Customer tyre history uses completed owned booking keys and safe work-order projections through customer.functions.ts; per-visit tyre season/set are recorded in mechanic protocols, never inferred from current storage. The explicit /kund-exempel route always opens isolated sample data, even for signed-in staff.
 - Staff screens share WorkshopBoard and workshop-board.ts status derivation with Stockholm dates; reception never queries storage or shows internal fields/account identity. Its filtering, labels, limits and polling use screen-settings.ts and staff-only app_config screens; only superadmin edits them. Both links share nav-access.ts Skärmar grouping.
