@@ -59,13 +59,13 @@ export function MechanicView({ userId }: { userId: string }) {
             {arrival[key] === "ankommen" && <span className="rounded bg-st-arrived px-2 py-1 text-xs font-semibold text-foreground">Ankommen</span>}
             {arrival[key] === "sen" && <span className="rounded bg-st-late px-2 py-1 text-xs font-semibold text-foreground">Sen ankomst</span>}
             {arrival[key] === "avbokad" && <span className="rounded bg-st-cancelled px-2 py-1 text-xs font-semibold text-foreground">Avbokad</span>}
-            {status === "ej_paborjad" && <Button size="lg" className="h-12 px-6 text-base" onClick={() => save(b, { status: "paborjad", started_at: new Date().toISOString() })}>Påbörja</Button>}
-            {status === "paborjad" && <Button size="lg" className="h-12 px-6 text-base" onClick={() => save(b, { status: "klar", finished_at: new Date().toISOString() })}>Klar</Button>}
+            {status === "ej_paborjad" && <Button size="lg" className="h-12 w-36 text-base" onClick={() => save(b, { status: "paborjad", started_at: new Date().toISOString() })}>Påbörja</Button>}
+            {status === "paborjad" && <Button size="lg" className="h-12 w-36 text-base" onClick={() => save(b, { status: "klar", finished_at: new Date().toISOString() })}>Klar</Button>}
             {status === "paborjad" && <Button size="lg" variant="outline" className="h-12 px-6 text-base" onClick={() => save(b, { status: "ej_paborjad", started_at: null })}>Ångra</Button>}
             {status === "paborjad" && <Button size="lg" variant="destructive" className="h-12 px-6 text-base" onClick={() => save(b, { status: "avbruten" })}>Avbryt</Button>}
-            {status === "avbruten" && <Button size="lg" className="h-12 px-6 text-base" onClick={() => save(b, { status: "paborjad" })}>Återuppta</Button>}
+            {status === "avbruten" && <Button size="lg" className="h-12 w-36 text-base" onClick={() => save(b, { status: "paborjad" })}>Återuppta</Button>}
             {status === "avbruten" && <Button size="lg" variant="outline" className="h-12 px-6 text-base" onClick={() => save(b, { status: "ej_paborjad", started_at: null })}>Ej påbörjad</Button>}
-            {status === "klar" && <Button size="lg" className="h-12 px-6 text-base" onClick={() => save(b, { status: "hamtad", picked_up_at: new Date().toISOString() })}>Hämtad</Button>}
+            {status === "klar" && <Button size="lg" className="h-12 w-36 text-base" onClick={() => save(b, { status: "hamtad", picked_up_at: new Date().toISOString() })}>Hämtad</Button>}
             {status === "hamtad" && <Button size="lg" variant="outline" className="h-12 px-6 text-base" onClick={() => save(b, { status: "klar", picked_up_at: null })}>Ångra hämtad</Button>}
             <Button size="lg" variant="outline" className="h-12 px-6 text-base" onClick={() => setOpen(open === key ? null : key)}>Protokoll</Button>
           </div>
@@ -94,6 +94,6 @@ function Protocol({ order, onSave }: { order: Order | undefined; onSave: (p: Par
       {WHEELS.map(([k, label]) => <label key={k} className="text-sm">{label}<Input inputMode="decimal" className="mt-1 h-14 text-center text-2xl font-bold" value={vals[k]} onChange={e => setVals({ ...vals, [k]: e.target.value })}/></label>)}
     </div>
     <label className="mt-3 block text-sm">Notering<textarea className="mt-1 w-full rounded-md border bg-background p-2" rows={2} value={note} onChange={e => setNote(e.target.value)}/></label>
-    <div className="mt-3 flex items-center gap-3"><Button type="submit" size="lg" className="h-12 px-6 text-base">Spara protokoll</Button>{msg && <span role="status" className="text-sm">{msg}</span>}</div>
+    <div className="mt-3 flex items-center gap-3"><Button type="submit" size="lg" className="h-12 w-36 text-base">Spara protokoll</Button>{msg && <span role="status" className="text-sm">{msg}</span>}</div>
   </form>;
 }
