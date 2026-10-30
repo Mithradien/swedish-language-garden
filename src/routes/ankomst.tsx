@@ -3,7 +3,6 @@ import { useEffect, useRef, useState, type FormEvent } from "react";
 import { ArrowLeft, ArrowRight, CarFront, Check, Clock3, Delete, Maximize, Minimize, RotateCcw } from "lucide-react";
 import { TopNav } from "@/components/top-nav";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { kioskLookup, kioskRegister } from "@/lib/kiosk.functions";
 import { findArrivalBookings, localDate, readBookings, readStatuses, registerArrival } from "@/lib/arrival";
 import { normalizeRegnr, type Booking } from "@/lib/bookings";
@@ -117,7 +116,7 @@ function ArrivalPage() {
         <form onSubmit={lookup} className="landscape:grid landscape:grid-cols-2 landscape:items-center landscape:gap-8">
           <div className="min-w-0">
             <h1 className="text-4xl font-bold uppercase sm:text-5xl">Välkommen</h1>
-            <label htmlFor="arrival-regnr" className="mb-3 mt-7 block text-xl font-medium landscape:mt-4">Ditt registreringsnummer</label>
+            <p className="mb-3 mt-7 block text-xl font-medium landscape:mt-4">Ditt registreringsnummer</p>
             <div id="arrival-regnr" role="status" aria-live="polite" aria-label="Regnummer" className="mx-auto flex h-28 max-w-xl select-none items-center justify-center rounded-md border-4 border-primary bg-card text-center font-display text-6xl font-bold uppercase tracking-widest sm:h-32 sm:text-7xl landscape:h-24 landscape:text-5xl">{regnr || <span className="text-muted-foreground/40">ABC123</span>}</div>
           </div>
           <div className="min-w-0 touch-manipulation">
