@@ -15,6 +15,7 @@ export default defineConfig({
           // creates a React ↔ bookings cycle before the helpers initialize.
           manualChunks(id) {
             if (id.includes("rolldown/runtime")) return "bundler-runtime";
+            return undefined;
           },
         },
       },
