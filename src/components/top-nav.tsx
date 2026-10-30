@@ -43,9 +43,10 @@ export function TopNav({ hideAccount = false, logoutOnly = false }: { hideAccoun
         <div className="ml-auto flex items-center gap-2">
           {loading ? null : user ? (
             <>
+              {!logoutOnly &&
               <span className="hidden normal-case tracking-normal opacity-80 sm:inline">
                 {user.email}{roles[0] ? ` · ${LABEL[roles[0]]}` : ""}
-              </span>
+              </span>}
               <button type="button" onClick={signOut} className={`${link} inline-flex items-center gap-2 uppercase`}>
                 <LogOut className="h-4 w-4" />Logga ut
               </button>
