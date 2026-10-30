@@ -44,7 +44,7 @@ function LoginPage() {
     }
   }
 
-  return <main className="min-h-screen"><div className="bg-primary text-primary-foreground"><TopNav/></div>
+  return <main className="min-h-screen"><div className="screen-only sticky top-0 z-50 bg-primary text-primary-foreground shadow-md"><TopNav/></div>
     <div className="mx-auto max-w-sm px-5 py-12">
       <h1 className="mb-6 text-3xl font-bold">{mode === "in" ? "Logga in" : "Skapa konto"}</h1>
       <form onSubmit={submit} className="space-y-4">
