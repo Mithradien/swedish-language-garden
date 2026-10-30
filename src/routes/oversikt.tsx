@@ -345,7 +345,7 @@ function Index() {
 
   return (
     <main className="min-h-screen">
-      <header className="screen-only bg-primary text-primary-foreground">
+      <header className="screen-only sticky top-0 z-50 bg-primary text-primary-foreground shadow-md">
         <TopNav />
         <div className="mx-auto flex max-w-6xl items-center gap-5 px-6 py-8">
           {settings.logo && (
