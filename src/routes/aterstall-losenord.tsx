@@ -26,7 +26,7 @@ function ResetPage() {
     if (error) return setMsg("Kunde inte byta lösenord. Länken kan ha gått ut – begär en ny.");
     navigate({ to: "/kund" });
   }
-  return <main className="min-h-screen"><div className="bg-primary text-primary-foreground"><TopNav/></div>
+  return <main className="min-h-screen"><div className="screen-only sticky top-0 z-50 bg-primary text-primary-foreground shadow-md"><TopNav/></div>
     <form onSubmit={submit} className="mx-auto max-w-sm space-y-4 px-5 py-12"><h1 className="text-3xl font-bold">Välj nytt lösenord</h1>
       <label className="block text-sm font-medium">Nytt lösenord<PasswordInput className="mt-1" minLength={8} value={pw} onChange={e => setPw(e.target.value)} required/></label>
       <Button type="submit" className="w-full">Spara lösenord</Button>{msg && <p role="status" className="text-sm">{msg}</p>}</form></main>;

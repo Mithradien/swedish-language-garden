@@ -102,7 +102,7 @@ function ArrivalPage() {
   }
 
   return <main className={kiosk ? "fixed inset-0 z-50 overflow-auto bg-background" : "min-h-screen bg-background"}>
-    <header className="bg-primary text-primary-foreground">
+    <header className="sticky top-0 z-50 bg-primary text-primary-foreground shadow-md">
       {!kiosk && <TopNav />}
       <div className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-5 py-5 sm:px-6">
         <div className="flex min-w-0 items-center gap-3"><CarFront className="h-8 w-8 shrink-0 text-signal" /><span className="break-words font-display text-2xl font-bold uppercase">{company}</span></div>

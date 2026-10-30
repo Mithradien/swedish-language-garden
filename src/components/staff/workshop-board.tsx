@@ -91,7 +91,7 @@ export function WorkshopBoard({ audience = "workshop" }: { audience?: "workshop"
   const stages = BOARD_STAGES.filter(stage => !reception || screen.columns[stage].visible);
   const grid = stages.length === 1 ? "lg:grid-cols-1" : stages.length === 2 ? "lg:grid-cols-2" : stages.length === 3 ? "lg:grid-cols-3" : stages.length === 4 ? "lg:grid-cols-4" : "lg:grid-cols-5";
   return <main className="min-h-screen bg-background">
-    {!fullscreen && <div className="bg-primary text-primary-foreground"><TopNav hideAccount={reception} /></div>}
+    {!fullscreen && <div className="screen-only sticky top-0 z-50 bg-primary text-primary-foreground shadow-md"><TopNav hideAccount={reception} /></div>}
     <div className="px-4 py-6 sm:px-6 lg:px-8">
       <header className="mb-7 flex flex-wrap items-center justify-between gap-4 border-b pb-5">
         <div className="flex min-w-0 items-center gap-4">

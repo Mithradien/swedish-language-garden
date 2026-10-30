@@ -22,7 +22,7 @@ import { EXAMPLE_TYRE_HISTORY } from "@/lib/tyre-history-example";
 import { StorageRenewal } from "./storage-renewal";
 
 export function PortalHeader({ staff = false }: { staff?: boolean }) {
-  return <header className="border-b bg-primary text-primary-foreground"><TopNav />
+  return <header className="screen-only sticky top-0 z-50 border-b bg-primary text-primary-foreground shadow-md"><TopNav />
     <div className="mx-auto flex max-w-6xl flex-wrap items-center gap-4 px-6 py-5">
       <Link to="/kund" className="flex items-center gap-3"><span className="flex h-10 w-10 items-center justify-center rounded-md bg-signal text-signal-foreground"><CarFront /></span><span className="font-display text-2xl font-bold uppercase">Däckhotell<span className="ml-2 text-sm font-medium text-signal">{staff ? "Personal" : "Mina sidor"}</span></span></Link>
     </div></header>;

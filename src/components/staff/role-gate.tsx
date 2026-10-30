@@ -16,7 +16,7 @@ import { setUserPassword } from "@/lib/users.functions";
 const LABEL: Record<AppRole, string> = { superadmin: "Superadmin", useradmin: "Användaradmin", mekaniker: "Mekaniker", kund: "Kund" };
 
 function Shell({ children }: { children: React.ReactNode }) {
-  return <main className="min-h-screen"><div className="bg-primary text-primary-foreground"><TopNav/></div><div className="mx-auto max-w-4xl px-5 py-10">{children}</div></main>;
+  return <main className="min-h-screen"><div className="screen-only sticky top-0 z-50 bg-primary text-primary-foreground shadow-md"><TopNav/></div><div className="mx-auto max-w-4xl px-5 py-10">{children}</div></main>;
 }
 
 export function StaffArea() {
@@ -29,8 +29,8 @@ export function StaffArea() {
   const bar = <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-3 border-b px-5 py-3 text-sm"><span>Inloggad som <b>{user.email}</b> · {roles.map(r => LABEL[r]).join(", ") || "ingen roll"}</span><Button variant="outline" size="sm" onClick={signOut}>Logga ut</Button></div>;
 
   const readOnly = !hasRole("superadmin") && !hasRole("useradmin");
-  if (hasRole("superadmin") || hasRole("useradmin") || hasRole("mekaniker")) return <><div className="bg-primary text-primary-foreground"><TopNav/></div>{bar}<MechanicView userId={user.id}/><div className="mx-auto max-w-6xl px-5 pt-8"><PendingCars canApprove={!readOnly}/><PickList/><CarTools/></div>{hasRole("superadmin") && <StaffPreview embedded/>}</>;
-  return <><div className="bg-primary text-primary-foreground"><TopNav/></div>{bar}<div className="mx-auto max-w-4xl px-5 py-10"><h1 className="mb-3 text-3xl font-bold">Ingen personalbehörighet</h1><p className="text-muted-foreground">Ditt konto är ett kundkonto. Be en superadmin ge dig en personalroll.</p></div></>;
+  if (hasRole("superadmin") || hasRole("useradmin") || hasRole("mekaniker")) return <><div className="screen-only sticky top-0 z-50 bg-primary text-primary-foreground shadow-md"><TopNav/></div>{bar}<MechanicView userId={user.id}/><div className="mx-auto max-w-6xl px-5 pt-8"><PendingCars canApprove={!readOnly}/><PickList/><CarTools/></div>{hasRole("superadmin") && <StaffPreview embedded/>}</>;
+  return <><div className="screen-only sticky top-0 z-50 bg-primary text-primary-foreground shadow-md"><TopNav/></div>{bar}<div className="mx-auto max-w-4xl px-5 py-10"><h1 className="mb-3 text-3xl font-bold">Ingen personalbehörighet</h1><p className="text-muted-foreground">Ditt konto är ett kundkonto. Be en superadmin ge dig en personalroll.</p></div></>;
 }
 
 type Row = { id: string; email: string | null; display_name: string | null; roles: AppRole[] };
