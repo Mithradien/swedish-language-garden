@@ -56,6 +56,9 @@ export function MechanicView({ userId }: { userId: string }) {
             <span className="flex-1 text-sm">{b.service}</span>
             <span className={`rounded px-2 py-1 text-xs font-medium ${status === "klar" ? "bg-tread-green/20" : status === "paborjad" ? "bg-tread-yellow/30" : status === "avbruten" ? "bg-destructive/20" : "bg-secondary"}`}>{STATUS_LABEL[status]}</span>
             {noShow && <span className="rounded bg-st-noshow px-2 py-1 text-xs font-semibold">Ej ankommen</span>}
+            {arrival[key] === "ankommen" && <span className="rounded bg-st-arrived px-2 py-1 text-xs font-semibold text-foreground">Ankommen</span>}
+            {arrival[key] === "sen" && <span className="rounded bg-st-late px-2 py-1 text-xs font-semibold text-foreground">Sen ankomst</span>}
+            {arrival[key] === "avbokad" && <span className="rounded bg-st-cancelled px-2 py-1 text-xs font-semibold text-foreground">Avbokad</span>}
             {status === "ej_paborjad" && <Button size="lg" className="h-12 px-6 text-base" onClick={() => save(b, { status: "paborjad", started_at: new Date().toISOString() })}>Påbörja</Button>}
             {status === "paborjad" && <Button size="lg" className="h-12 px-6 text-base" onClick={() => save(b, { status: "klar", finished_at: new Date().toISOString() })}>Klar</Button>}
             {status === "paborjad" && <Button size="lg" variant="outline" className="h-12 px-6 text-base" onClick={() => save(b, { status: "ej_paborjad", started_at: null })}>Ångra</Button>}
