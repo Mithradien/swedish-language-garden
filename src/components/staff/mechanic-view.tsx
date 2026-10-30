@@ -61,13 +61,13 @@ export function MechanicView({ userId }: { userId: string }) {
             {arrival[key] === "avbokad" && <span className="rounded bg-st-cancelled px-2 py-1 text-xs font-semibold text-foreground">Avbokad</span>}
             {status === "ej_paborjad" && <Button size="lg" className="h-12 w-36 text-base" onClick={() => save(b, { status: "paborjad", started_at: new Date().toISOString() })}>Påbörja</Button>}
             {status === "paborjad" && <Button size="lg" className="h-12 w-36 text-base" onClick={() => save(b, { status: "klar", finished_at: new Date().toISOString() })}>Klar</Button>}
-            {status === "paborjad" && <Button size="lg" variant="outline" className="h-12 px-6 text-base" onClick={() => save(b, { status: "ej_paborjad", started_at: null })}>Ångra</Button>}
-            {status === "paborjad" && <Button size="lg" variant="destructive" className="h-12 px-6 text-base" onClick={() => save(b, { status: "avbruten" })}>Avbryt</Button>}
+            {status === "paborjad" && <Button size="lg" variant="outline" className="h-12 w-36 text-base" onClick={() => save(b, { status: "ej_paborjad", started_at: null })}>Ångra</Button>}
+            {status === "paborjad" && <Button size="lg" variant="destructive" className="h-12 w-36 text-base" onClick={() => save(b, { status: "avbruten" })}>Avbryt</Button>}
             {status === "avbruten" && <Button size="lg" className="h-12 w-36 text-base" onClick={() => save(b, { status: "paborjad" })}>Återuppta</Button>}
-            {status === "avbruten" && <Button size="lg" variant="outline" className="h-12 px-6 text-base" onClick={() => save(b, { status: "ej_paborjad", started_at: null })}>Ej påbörjad</Button>}
+            {status === "avbruten" && <Button size="lg" variant="outline" className="h-12 w-36 text-base" onClick={() => save(b, { status: "ej_paborjad", started_at: null })}>Ej påbörjad</Button>}
             {status === "klar" && <Button size="lg" className="h-12 w-36 text-base" onClick={() => save(b, { status: "hamtad", picked_up_at: new Date().toISOString() })}>Hämtad</Button>}
-            {status === "hamtad" && <Button size="lg" variant="outline" className="h-12 px-6 text-base" onClick={() => save(b, { status: "klar", picked_up_at: null })}>Ångra hämtad</Button>}
-            <Button size="lg" variant="outline" className="h-12 px-6 text-base" onClick={() => setOpen(open === key ? null : key)}>Protokoll</Button>
+            {status === "hamtad" && <Button size="lg" variant="outline" className="h-12 w-36 text-base" onClick={() => save(b, { status: "klar", picked_up_at: null })}>Ångra hämtad</Button>}
+            <Button size="lg" variant="outline" className="h-12 w-36 text-base" onClick={() => setOpen(open === key ? null : key)}>Protokoll</Button>
           </div>
           {open === key && <Protocol order={o} onSave={patch => save(b, patch)}/>}
         </li>;
