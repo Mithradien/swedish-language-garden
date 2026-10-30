@@ -34,11 +34,8 @@ function ArrivalPage() {
   const [company, setCompany] = useState("Däckhotell");
   const busy = useRef(false);
   const remote = useRef(new WeakMap<Booking, string>());
-  const input = useRef<HTMLInputElement>(null);
-
   function reset() {
     setRegnr(""); setStage("entry"); setMatches([]); setSelected(null); setError(""); setAlready(false);
-    input.current?.focus();
   }
   const [time, setTime] = useState("");
   useEffect(() => {
@@ -84,12 +81,28 @@ function ArrivalPage() {
       setError(err instanceof Error && err.message.includes("Kontakta") ? err.message : "Ankomsten kunde inte sparas. Kontakta personalen.");
     } finally { busy.current = false; }
   }
+  useEffect(() => {
+    const onChange = () => { const d = document as Document & { webkitFullscreenElement?: Element }; if (!document.fullscreenElement && !d.webkitFullscreenElement) setKiosk(k => (k && wasNative.current ? false : k)); };
+    document.addEventListener("fullscreenchange", onChange); document.addEventListener("webkitfullscreenchange", onChange);
+    return () => { document.removeEventListener("fullscreenchange", onChange); document.removeEventListener("webkitfullscreenchange", onChange); };
+  }, []);
+  const wasNative = useRef(false);
   async function toggleKiosk() {
-    if (kiosk) { setKiosk(false); if (document.fullscreenElement) await document.exitFullscreen().catch(() => {}); }
-    else { setKiosk(true); await document.documentElement.requestFullscreen?.().catch(() => {}); }
+    const d = document as Document & { webkitFullscreenElement?: Element; webkitExitFullscreen?: () => void };
+    const el = document.documentElement as HTMLElement & { webkitRequestFullscreen?: () => void };
+    if (kiosk) {
+      setKiosk(false); wasNative.current = false;
+      try { if (document.fullscreenElement) await document.exitFullscreen(); else if (d.webkitFullscreenElement) d.webkitExitFullscreen?.(); } catch { /* ignore */ }
+    } else {
+      setKiosk(true); wasNative.current = false;
+      try {
+        if (el.requestFullscreen) { await el.requestFullscreen(); wasNative.current = true; }
+        else if (el.webkitRequestFullscreen) { el.webkitRequestFullscreen(); wasNative.current = true; }
+      } catch { /* tablet browser refused – overlay mode still fills the screen */ }
+    }
   }
 
-  return <main className="min-h-screen bg-background">
+  return <main className={kiosk ? "fixed inset-0 z-50 overflow-auto bg-background" : "min-h-screen bg-background"}>
     <header className="bg-primary text-primary-foreground">
       {!kiosk && <TopNav />}
       <div className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-5 py-5 sm:px-6">
@@ -105,7 +118,7 @@ function ArrivalPage() {
           <div className="min-w-0">
             <h1 className="text-4xl font-bold uppercase sm:text-5xl">Välkommen</h1>
             <label htmlFor="arrival-regnr" className="mb-3 mt-7 block text-xl font-medium landscape:mt-4">Ditt registreringsnummer</label>
-            <Input ref={input} id="arrival-regnr" value={regnr} readOnly inputMode="none" tabIndex={-1} onFocus={e => e.currentTarget.blur()} onChange={e => { setRegnr(normalizeRegnr(e.target.value).slice(0, 10)); setError(""); }} autoComplete="off" autoCapitalize="characters" spellCheck={false} maxLength={10} className="mx-auto h-28 max-w-xl border-4 border-primary bg-card text-center font-display !text-6xl font-bold uppercase tracking-widest sm:h-32 sm:!text-7xl landscape:h-24 landscape:!text-5xl" />
+            <div id="arrival-regnr" role="status" aria-live="polite" aria-label="Regnummer" className="mx-auto flex h-28 max-w-xl select-none items-center justify-center rounded-md border-4 border-primary bg-card text-center font-display text-6xl font-bold uppercase tracking-widest sm:h-32 sm:text-7xl landscape:h-24 landscape:text-5xl">{regnr || <span className="text-muted-foreground/40">ABC123</span>}</div>
           </div>
           <div className="min-w-0 touch-manipulation">
             <div className="mt-6 space-y-2 landscape:mt-0" aria-label="Tangentbord för registreringsnummer">
