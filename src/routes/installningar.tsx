@@ -42,7 +42,7 @@ function SettingsGate() {
 function SettingsPage({ limited }: { limited: boolean }) {
   return (
     <main className="min-h-screen">
-      <header className="screen-only bg-primary text-primary-foreground">
+      <header className="screen-only sticky top-0 z-50 shadow-md bg-primary text-primary-foreground">
         <TopNav />
         <div className="mx-auto max-w-6xl px-6 py-8">
           <p className="font-display text-sm uppercase tracking-[0.3em] text-signal">Verkstad</p>
