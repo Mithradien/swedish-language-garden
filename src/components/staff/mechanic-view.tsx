@@ -16,6 +16,7 @@ export function MechanicView({ userId }: { userId: string }) {
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [orders, setOrders] = useState<Partial<Record<string, Order>>>({});
   const [open, setOpen] = useState<string | null>(null);
+  const [arrival, setArrival] = useState<Record<string, string>>({});
 
   useEffect(() => { setDate(localDate()); }, []);
   useEffect(() => { if (date) fetchBookingsForDate(date).then(setBookings); }, [date]);
@@ -25,8 +26,10 @@ export function MechanicView({ userId }: { userId: string }) {
     if (!date) return;
     const { data } = await supabase.from("work_orders").select("*").eq("booking_date", date);
     setOrders(Object.fromEntries((data ?? []).map(o => [o.booking_key, o])));
+    const { data: st } = await supabase.from("booking_statuses").select("booking_key,status").like("booking_key", `${date}|%`);
+    setArrival(Object.fromEntries((st ?? []).map(r => [r.booking_key, r.status])));
   }
-  useEffect(() => { load(); }, [date]);
+  useEffect(() => { load(); const t = setInterval(load, 30000); return () => clearInterval(t); }, [date]);
 
   async function save(b: Booking, patch: Partial<Order>) {
     const key = statusKey(b);
@@ -45,13 +48,14 @@ export function MechanicView({ userId }: { userId: string }) {
     {!list.length && <p className="text-muted-foreground">Inga bokningar denna dag. Bokningar kommer in när en superadmin läser in bokningsfilen i Bokningsöversikten.</p>}
     <ul className="divide-y border-y">
       {list.map(b => {
-        const key = statusKey(b); const o = orders[key]; const status = o?.status ?? "ej_paborjad";
+        const key = statusKey(b); const o = orders[key]; const status = o?.status ?? "ej_paborjad"; const noShow = arrival[key] === "ej" && status === "ej_paborjad";
         return <li key={key} className="py-4">
           <div className="flex flex-wrap items-center gap-3">
             <span className="w-14 font-mono">{b.start}</span>
             <span className="w-28 rounded border px-2 py-1 text-center font-display text-lg font-bold">{b.regnr}</span>
             <span className="flex-1 text-sm">{b.service}</span>
             <span className={`rounded px-2 py-1 text-xs font-medium ${status === "klar" ? "bg-tread-green/20" : status === "paborjad" ? "bg-tread-yellow/30" : status === "avbruten" ? "bg-destructive/20" : "bg-secondary"}`}>{STATUS_LABEL[status]}</span>
+            {noShow && <span className="rounded bg-st-noshow px-2 py-1 text-xs font-semibold">Ej ankommen</span>}
             {status === "ej_paborjad" && <Button size="lg" className="h-12 px-6 text-base" onClick={() => save(b, { status: "paborjad", started_at: new Date().toISOString() })}>Påbörja</Button>}
             {status === "paborjad" && <Button size="lg" className="h-12 px-6 text-base" onClick={() => save(b, { status: "klar", finished_at: new Date().toISOString() })}>Klar</Button>}
             {status === "paborjad" && <Button size="lg" variant="outline" className="h-12 px-6 text-base" onClick={() => save(b, { status: "ej_paborjad", started_at: null })}>Ångra</Button>}
