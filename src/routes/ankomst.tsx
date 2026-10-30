@@ -98,18 +98,22 @@ function ArrivalPage() {
       </div>
       <div className="h-1.5 bg-signal" />
     </header>
-    <section className="mx-auto max-w-3xl px-4 py-8 text-center sm:px-8 sm:py-10">
+    <section className="mx-auto max-w-3xl px-4 py-8 text-center sm:px-8 sm:py-10 landscape:max-w-6xl landscape:py-4 landscape:sm:py-6">
       <p className="mb-3 font-display text-lg uppercase text-muted-foreground">{today ? <>{new Date(`${today}T12:00:00`).toLocaleDateString("sv-SE", { weekday: "long", day: "numeric", month: "long" })} · <span className="font-bold text-foreground tabular-nums">{time}</span></> : "Välkommen"}</p>
       {stage === "entry" ? <>
-        <h1 className="text-4xl font-bold uppercase sm:text-5xl">Välkommen</h1>
-        <form onSubmit={lookup} className="mt-7">
-          <label htmlFor="arrival-regnr" className="mb-3 block text-xl font-medium">Ditt registreringsnummer</label>
-          <Input ref={input} id="arrival-regnr" value={regnr} readOnly inputMode="none" tabIndex={-1} onFocus={e => e.currentTarget.blur()} onChange={e => { setRegnr(normalizeRegnr(e.target.value).slice(0, 10)); setError(""); }} autoComplete="off" autoCapitalize="characters" spellCheck={false} maxLength={10} className="mx-auto h-28 max-w-xl border-4 border-primary bg-card text-center font-display !text-6xl font-bold uppercase tracking-widest sm:h-32 sm:!text-7xl" />
-          <div className="mt-6 space-y-2" aria-label="Tangentbord för registreringsnummer">
-            {KEYS.map(row => <div key={row} className="flex justify-center gap-1 sm:gap-2">{[...row].map(key => <Button key={key} type="button" variant="outline" className="h-12 min-w-0 flex-1 px-0 font-display text-xl font-semibold sm:h-14 sm:text-2xl" onClick={() => { setRegnr(value => (value + key).slice(0, 10)); setError(""); }}>{key}</Button>)}</div>)}
-            <div className="flex justify-center gap-2"><Button type="button" variant="ghost" className="h-12 px-6" onClick={() => setRegnr("")}><RotateCcw />Rensa</Button><Button type="button" variant="outline" className="h-12 px-6" title="Ta bort sista tecknet" aria-label="Ta bort sista tecknet" onClick={() => setRegnr(value => value.slice(0, -1))}><Delete /></Button></div>
+        <form onSubmit={lookup} className="landscape:grid landscape:grid-cols-2 landscape:items-center landscape:gap-8">
+          <div className="min-w-0">
+            <h1 className="text-4xl font-bold uppercase sm:text-5xl">Välkommen</h1>
+            <label htmlFor="arrival-regnr" className="mb-3 mt-7 block text-xl font-medium landscape:mt-4">Ditt registreringsnummer</label>
+            <Input ref={input} id="arrival-regnr" value={regnr} readOnly inputMode="none" tabIndex={-1} onFocus={e => e.currentTarget.blur()} onChange={e => { setRegnr(normalizeRegnr(e.target.value).slice(0, 10)); setError(""); }} autoComplete="off" autoCapitalize="characters" spellCheck={false} maxLength={10} className="mx-auto h-28 max-w-xl border-4 border-primary bg-card text-center font-display !text-6xl font-bold uppercase tracking-widest sm:h-32 sm:!text-7xl landscape:h-24 landscape:!text-5xl" />
           </div>
-          <Button type="submit" disabled={regnr.length < 2} className="mt-6 h-16 w-full bg-signal font-display text-2xl font-bold uppercase text-signal-foreground hover:bg-signal/90">Hitta min bokning<ArrowRight /></Button>
+          <div className="min-w-0 touch-manipulation">
+            <div className="mt-6 space-y-2 landscape:mt-0" aria-label="Tangentbord för registreringsnummer">
+              {KEYS.map(row => <div key={row} className="flex justify-center gap-1 sm:gap-2">{[...row].map(key => <Button key={key} type="button" variant="outline" className="h-12 min-w-0 flex-1 touch-manipulation px-0 font-display text-xl font-semibold sm:h-14 sm:text-2xl" onClick={() => { setRegnr(value => (value + key).slice(0, 10)); setError(""); }}>{key}</Button>)}</div>)}
+              <div className="flex justify-center gap-2"><Button type="button" variant="ghost" className="h-12 px-6" onClick={() => setRegnr("")}><RotateCcw />Rensa</Button><Button type="button" variant="outline" className="h-12 px-6" title="Ta bort sista tecknet" aria-label="Ta bort sista tecknet" onClick={() => setRegnr(value => value.slice(0, -1))}><Delete /></Button></div>
+            </div>
+            <Button type="submit" disabled={regnr.length < 2} className="mt-6 h-16 w-full touch-manipulation bg-signal font-display text-2xl font-bold uppercase text-signal-foreground hover:bg-signal/90 landscape:mt-4">Hitta min bokning<ArrowRight /></Button>
+          </div>
         </form>
       </> : stage === "confirm" ? <>
         <h1 className="text-4xl font-bold uppercase sm:text-5xl">Din bokning idag</h1>
