@@ -162,6 +162,13 @@
       "when": 1793308434499,
       "tag": "0022_staff_screen_settings_read",
       "breakpoints": true
+    },
+    {
+      "idx": 23,
+      "version": "7",
+      "when": 1793342122818,
+      "tag": "0023_work_order_avbruten_hamtad",
+      "breakpoints": true
     }
   ]
 }

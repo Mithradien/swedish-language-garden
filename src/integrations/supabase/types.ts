@@ -453,6 +453,7 @@ export type Database = {
           id: string
           mechanic_id: string | null
           note: string | null
+          picked_up_at: string | null
           regnr: string
           service: string | null
           started_at: string | null
@@ -472,6 +473,7 @@ export type Database = {
           id?: string
           mechanic_id?: string | null
           note?: string | null
+          picked_up_at?: string | null
           regnr: string
           service?: string | null
           started_at?: string | null
@@ -491,6 +493,7 @@ export type Database = {
           id?: string
           mechanic_id?: string | null
           note?: string | null
+          picked_up_at?: string | null
           regnr?: string
           service?: string | null
           started_at?: string | null

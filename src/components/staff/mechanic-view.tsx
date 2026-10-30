@@ -9,7 +9,7 @@ import type { Booking } from "@/lib/bookings";
 
 type Order = Database["public"]["Tables"]["work_orders"]["Row"];
 const WHEELS = [["depth_vf", "VF"], ["depth_hf", "HF"], ["depth_vb", "VB"], ["depth_hb", "HB"]] as const;
-const STATUS_LABEL: Record<string, string> = { ej_paborjad: "Ej påbörjad", paborjad: "Påbörjad", klar: "Klar" };
+const STATUS_LABEL: Record<string, string> = { ej_paborjad: "Ej påbörjad", paborjad: "Påbörjad", avbruten: "Avbruten", klar: "Klar", hamtad: "Hämtad" };
 
 export function MechanicView({ userId }: { userId: string }) {
   const [date, setDate] = useState("");
@@ -51,9 +51,15 @@ export function MechanicView({ userId }: { userId: string }) {
             <span className="w-14 font-mono">{b.start}</span>
             <span className="w-28 rounded border px-2 py-1 text-center font-display text-lg font-bold">{b.regnr}</span>
             <span className="flex-1 text-sm">{b.service}</span>
-            <span className={`rounded px-2 py-1 text-xs font-medium ${status === "klar" ? "bg-tread-green/20" : status === "paborjad" ? "bg-tread-yellow/30" : "bg-secondary"}`}>{STATUS_LABEL[status]}</span>
+            <span className={`rounded px-2 py-1 text-xs font-medium ${status === "klar" ? "bg-tread-green/20" : status === "paborjad" ? "bg-tread-yellow/30" : status === "avbruten" ? "bg-destructive/20" : "bg-secondary"}`}>{STATUS_LABEL[status]}</span>
             {status === "ej_paborjad" && <Button size="lg" className="h-12 px-6 text-base" onClick={() => save(b, { status: "paborjad", started_at: new Date().toISOString() })}>Påbörja</Button>}
             {status === "paborjad" && <Button size="lg" className="h-12 px-6 text-base" onClick={() => save(b, { status: "klar", finished_at: new Date().toISOString() })}>Klar</Button>}
+            {status === "paborjad" && <Button size="lg" variant="outline" className="h-12 px-6 text-base" onClick={() => save(b, { status: "ej_paborjad", started_at: null })}>Ångra</Button>}
+            {status === "paborjad" && <Button size="lg" variant="destructive" className="h-12 px-6 text-base" onClick={() => save(b, { status: "avbruten" })}>Avbryt</Button>}
+            {status === "avbruten" && <Button size="lg" className="h-12 px-6 text-base" onClick={() => save(b, { status: "paborjad" })}>Återuppta</Button>}
+            {status === "avbruten" && <Button size="lg" variant="outline" className="h-12 px-6 text-base" onClick={() => save(b, { status: "ej_paborjad", started_at: null })}>Ej påbörjad</Button>}
+            {status === "klar" && <Button size="lg" className="h-12 px-6 text-base" onClick={() => save(b, { status: "hamtad", picked_up_at: new Date().toISOString() })}>Hämtad</Button>}
+            {status === "hamtad" && <Button size="lg" variant="outline" className="h-12 px-6 text-base" onClick={() => save(b, { status: "klar", picked_up_at: null })}>Ångra hämtad</Button>}
             <Button size="lg" variant="outline" className="h-12 px-6 text-base" onClick={() => setOpen(open === key ? null : key)}>Protokoll</Button>
           </div>
           {open === key && <Protocol order={o} onSave={patch => save(b, patch)}/>}

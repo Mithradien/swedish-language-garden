@@ -4,12 +4,13 @@ export const ARRIVAL_STATUSES = { vantas: "Väntas", ankommen: "Ankommen", sen: 
 export interface ScreenSettings {
   title: string;
   interval: number;
+  hideAfter: number;
   statuses: string[];
   columns: Record<BoardStage, { label: string; visible: boolean; limit: number }>;
 }
 export const DEFAULT_SCREEN: ScreenSettings = {
-  title: "Kundmottagning", interval: 10, statuses: ["vantas", "ankommen", "sen"],
-  columns: { vantas: { label: "Väntas", visible: true, limit: 5 }, ankommen: { label: "Ankommen", visible: true, limit: 0 }, paborjad: { label: "Pågående", visible: true, limit: 0 }, klar: { label: "Klar för avhämtning", visible: true, limit: 0 } },
+  title: "Kundmottagning", interval: 10, hideAfter: 30, statuses: ["vantas", "ankommen", "sen"],
+  columns: { vantas: { label: "Väntas", visible: true, limit: 5 }, ankommen: { label: "Ankommen", visible: true, limit: 0 }, paborjad: { label: "Pågående", visible: true, limit: 0 }, avbruten: { label: "Avbruten", visible: true, limit: 0 }, klar: { label: "Klar för avhämtning", visible: true, limit: 0 } },
 };
 export function parseScreenSettings(value: unknown): ScreenSettings {
   const v = value as Partial<ScreenSettings> | null;
@@ -20,7 +21,7 @@ export function parseScreenSettings(value: unknown): ScreenSettings {
     columns[key] = { label: text(c?.label, fallback.label), visible: typeof c?.visible === "boolean" ? c.visible : fallback.visible, limit: Number.isInteger(c?.limit) && Number(c?.limit) >= 0 && Number(c?.limit) <= 100 ? Number(c?.limit) : fallback.limit };
   }
   if (!BOARD_STAGES.some(k => columns[k].visible)) columns.vantas.visible = true;
-  return { title: text(v?.title, DEFAULT_SCREEN.title), interval: Number.isInteger(v?.interval) && Number(v?.interval) >= 5 && Number(v?.interval) <= 300 ? Number(v?.interval) : 10, statuses: Array.isArray(v?.statuses) ? v.statuses.filter(s => s in ARRIVAL_STATUSES) : [...DEFAULT_SCREEN.statuses], columns };
+  return { title: text(v?.title, DEFAULT_SCREEN.title), interval: Number.isInteger(v?.interval) && Number(v?.interval) >= 5 && Number(v?.interval) <= 300 ? Number(v?.interval) : 10, hideAfter: Number.isInteger(v?.hideAfter) && Number(v?.hideAfter) >= 0 && Number(v?.hideAfter) <= 1440 ? Number(v?.hideAfter) : DEFAULT_SCREEN.hideAfter, statuses: Array.isArray(v?.statuses) ? v.statuses.filter(s => s in ARRIVAL_STATUSES) : [...DEFAULT_SCREEN.statuses], columns };
 }
 export function receptionCars(cars: BoardCar[], settings: ScreenSettings, now: Date) {
   const time = now.toLocaleTimeString("sv-SE", { timeZone: "Europe/Stockholm", hour: "2-digit", minute: "2-digit" });
