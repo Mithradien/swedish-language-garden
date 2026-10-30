@@ -9,7 +9,8 @@ import { navItemsFor } from "@/lib/nav-access";
 const LABEL: Record<AppRole, string> = { superadmin: "Superadmin", useradmin: "Användaradmin", mekaniker: "Mekaniker", kund: "Kund" };
 
 // En enda meny, used on every page, so it always sits in the same spot. Items follow the user's roles.
-export function TopNav({ hideAccount = false }: { hideAccount?: boolean }) {
+// hideAccount hides the area; logoutOnly shows only the log out button (no e-mail), used on the reception screen.
+export function TopNav({ hideAccount = false, logoutOnly = false }: { hideAccount?: boolean; logoutOnly?: boolean }) {
   const { user, roles, loading } = useAuth();
   const navigate = useNavigate();
   const items = navItemsFor(user ? roles : []);
