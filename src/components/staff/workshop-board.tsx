@@ -1,16 +1,17 @@
 import { useEffect, useState } from "react";
-import { CheckCheck, Clock3, Expand, LogIn, MapPin, Minimize, RefreshCw, Wrench } from "lucide-react";
+import { Ban, CheckCheck, Clock3, Expand, LogIn, MapPin, Minimize, RefreshCw, Wrench } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { TopNav } from "@/components/top-nav";
 import { useSettings } from "@/lib/settings";
-import { BOARD_STAGES, buildWorkshopBoard, workshopDay, type BoardCar } from "@/lib/workshop-board";
+import { BOARD_STAGES, buildWorkshopBoard, hideCollected, workshopDay, type BoardCar } from "@/lib/workshop-board";
 import { parseScreenSettings, receptionCars, screenColumn } from "@/lib/screen-settings";
 
 const STAGES = {
   vantas: { label: "Väntas", icon: Clock3, color: "border-muted-foreground", badge: "bg-muted text-muted-foreground" },
   ankommen: { label: "Ankommen", icon: LogIn, color: "border-st-arrived", badge: "bg-st-arrived text-foreground" },
   paborjad: { label: "Pågående", icon: Wrench, color: "border-svc-skifte", badge: "bg-svc-skifte/15 text-foreground" },
+  avbruten: { label: "Avbruten", icon: Ban, color: "border-destructive", badge: "bg-destructive/15 text-foreground" },
   klar: { label: "Klar", icon: CheckCheck, color: "border-tread-green", badge: "bg-tread-green/15 text-foreground" },
 };
 
@@ -35,7 +36,6 @@ export function WorkshopBoard({ audience = "workshop" }: { audience?: "workshop"
   }, []);
 
   useEffect(() => {
-    if (!reception) return;
     let active = true;
     const load = async () => {
       const { data, error } = await supabase.from("app_config").select("value").eq("key", "screens").maybeSingle();
@@ -57,7 +57,7 @@ export function WorkshopBoard({ audience = "workshop" }: { audience?: "workshop"
       try {
         const [bookings, orders] = await Promise.all([
           supabase.from("bookings").select("booking_key,regnr,start_time,service").eq("booking_date", date).order("start_time"),
-          supabase.from("work_orders").select("booking_key,status").eq("booking_date", date),
+          supabase.from("work_orders").select("booking_key,status,finished_at").eq("booking_date", date),
         ]);
         if (bookings.error || orders.error) throw new Error("read");
         const rows = bookings.data ?? [];
