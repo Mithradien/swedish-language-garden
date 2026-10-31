@@ -51,7 +51,7 @@ export function StaffArea() {
   return <><div className="screen-only sticky top-0 z-50 bg-primary text-primary-foreground shadow-md"><TopNav/></div>{bar}<div className="mx-auto max-w-4xl px-5 py-10"><h1 className="mb-3 text-3xl font-bold">Ingen personalbehörighet</h1><p className="text-muted-foreground">Ditt konto är ett kundkonto. Be en superadmin ge dig en personalroll.</p></div></>;
 }
 
-export function UserRoles({ selfId, readOnly = false }: { selfId: string; readOnly?: boolean }) {
+export function UserRoles({ selfId, readOnly = false, refreshKey = 0 }: { selfId: string; readOnly?: boolean; refreshKey?: number }) {
   const [rows, setRows] = useState<AccountRow[]>([]);
   const [search, setSearch] = useState("");
   const [group, setGroup] = useState<AccountGroup>("admins");
@@ -87,7 +87,7 @@ export function UserRoles({ selfId, readOnly = false }: { selfId: string; readOn
     } catch { setError("Kunde inte hämta kontolistan. Försök igen."); }
     finally { setLoading(false); }
   }
-  useEffect(() => { load(); }, []);
+  useEffect(() => { load(); }, [refreshKey]);
 
   async function setRole(userId: string, role: AppRole) {
     const removed = await supabase.from("user_roles").delete().eq("user_id", userId);

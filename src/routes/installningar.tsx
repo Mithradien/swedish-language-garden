@@ -1,4 +1,5 @@
 import { RequireRole } from "@/components/staff/require-role";
+import { useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
 import { TopNav } from "@/components/top-nav";
 import { SettingsPanel } from "@/components/settings-panel";
@@ -40,6 +41,7 @@ function SettingsGate() {
 }
 
 function SettingsPage({ limited }: { limited: boolean }) {
+  const [accountRevision, setAccountRevision] = useState(0);
   return (
     <main className="min-h-screen">
       <header className="screen-only sticky top-0 z-50 shadow-md bg-primary text-primary-foreground">
@@ -64,7 +66,7 @@ function SettingsPage({ limited }: { limited: boolean }) {
             {!limited && <TabsTrigger value="data" className="gap-2"><Database className="h-4 w-4" />Data &amp; import</TabsTrigger>}
           </TabsList>
           {!limited && <TabsContent value="allmant"><SettingsPanel /></TabsContent>}
-          <TabsContent value="konto" className="space-y-8"><UserAdmin />{!limited && <AccountRoles />}</TabsContent>
+          <TabsContent value="konto" className="space-y-8"><UserAdmin onCreated={() => setAccountRevision(v => v + 1)} />{!limited && <AccountRoles refreshKey={accountRevision} />}</TabsContent>
           {!limited && <TabsContent value="bokningar"><ScheduleSettings /></TabsContent>}
           {!limited && <TabsContent value="priser"><PriceSettings /></TabsContent>}
           {!limited && <TabsContent value="monsterdjup"><TreadSettings /></TabsContent>}
@@ -78,7 +80,7 @@ function SettingsPage({ limited }: { limited: boolean }) {
   );
 }
 
-function AccountRoles() {
+function AccountRoles({ refreshKey }: { refreshKey: number }) {
   const { user } = useAuth();
-  return user ? <UserRoles selfId={user.id} /> : null;
+  return user ? <UserRoles selfId={user.id} refreshKey={refreshKey} /> : null;
 }

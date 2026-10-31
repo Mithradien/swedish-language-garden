@@ -7,7 +7,7 @@ import { PasswordInput } from "@/components/password-input";
 import { useAuth, type AppRole } from "@/hooks/use-auth";
 import { createUserWithRole } from "@/lib/users.functions";
 
-export function UserAdmin() {
+export function UserAdmin({ onCreated }: { onCreated?: () => void }) {
   const { user, loading, hasRole } = useAuth();
   const create = useServerFn(createUserWithRole);
   const [form, setForm] = useState({ name: "", email: "", password: "", confirm: "", role: "mekaniker" as AppRole });
@@ -28,6 +28,7 @@ export function UserAdmin() {
       await create({ data: form });
       toast.success(`${form.email} skapad – kan logga in direkt`);
       setForm({ name: "", email: "", password: "", confirm: "", role: "mekaniker" });
+      onCreated?.();
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Kunde inte skapa användaren");
     } finally { setBusy(false); }
