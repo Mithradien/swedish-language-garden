@@ -14,6 +14,8 @@
 Förutsättning: ingen Lovable Cloud eller extern lagring; verkliga inloggningar och lagring behöver kunna köras och verifieras på den egna serverlösningen.
 
 # Nuvarande att-göra (en punkt i taget, avstämning inför varje)
+- [ ] Klick på kundnamn i Konto öppnar kundens Mina sidor med bilinformation.
+- [ ] Framtida punkt: administratörer redigerar kundens uppgifter direkt i kundens Mina sidor (väntar på separat avstämning).
 - [x] Konto: flikar Admins, Mekaniker, Kunder och Övrigt samt sökning på namn, e-post, kontots regnummer, telefon, ort och bilmodell; befintliga behörigheter behållna.
 - [ ] Kundmottagning: dölj Ej ankommen, visa fem kommande under Väntas och lägg skärmens värden under Inställningar.
 
