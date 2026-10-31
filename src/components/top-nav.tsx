@@ -1,5 +1,5 @@
 import { Link, useNavigate, useRouterState } from "@tanstack/react-router";
-import { ChevronDown, LogIn, LogOut, Monitor, Settings, UserRound, Wrench } from "lucide-react";
+import { CalendarDays, ChevronDown, LayoutDashboard, LogIn, LogOut, Monitor, Settings, UserRound, Wrench } from "lucide-react";
 
 const STAFF_MENU = [
   { id: "arbetslista", label: "Arbetslista" },
@@ -34,8 +34,9 @@ export function TopNav({ hideAccount = false, logoutOnly = false }: { hideAccoun
     <nav aria-label="Huvudmeny" className="border-b border-primary-foreground/20">
       <div className="mx-auto flex max-w-6xl flex-wrap items-center gap-1 px-6 py-2 font-display text-sm uppercase tracking-wider">
         {items.filter(item => !item.group && item.to !== "/boka").map((item) => (
-          <Link key={item.to} to={item.to} activeOptions={{ exact: true }} className={link}
+          <Link key={item.to} to={item.to} activeOptions={{ exact: true }} className={`${link} inline-flex items-center gap-2`}
             activeProps={{ className: "bg-primary-foreground/15 opacity-100" }}>
+            {item.to === "/dashboard" ? <LayoutDashboard className="h-4 w-4" /> : item.to === "/oversikt" ? <CalendarDays className="h-4 w-4" /> : null}
             {item.label}
           </Link>
         ))}
