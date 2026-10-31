@@ -17,6 +17,7 @@ import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Search, X } from "lucide-react";
 import { ACCOUNT_GROUPS, accountGroup, accountMatches, type AccountRow, type AccountGroup } from "@/lib/account-directory";
 import { matchesContact } from "@/lib/customer-match";
+import { CustomerAccountView } from "./customer-account-view";
 
 const LABEL: Record<AppRole, string> = { superadmin: "Superadmin", useradmin: "Användaradmin", mekaniker: "Mekaniker", kund: "Kund", skarm: "Skärm" };
 
@@ -55,6 +56,7 @@ export function UserRoles({ selfId, readOnly = false, refreshKey = 0 }: { selfId
   const [rows, setRows] = useState<AccountRow[]>([]);
   const [search, setSearch] = useState("");
   const [group, setGroup] = useState<AccountGroup>("admins");
+  const [customer, setCustomer] = useState<AccountRow | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   async function load() {
@@ -104,14 +106,14 @@ export function UserRoles({ selfId, readOnly = false, refreshKey = 0 }: { selfId
     <Tabs value={group} onValueChange={v => setGroup(v as AccountGroup)}><TabsList aria-label="Kontokategorier" className="h-auto flex-wrap justify-start">{ACCOUNT_GROUPS.map(g => <TabsTrigger key={g.id} value={g.id} className="gap-2">{g.label}<span className="text-xs text-muted-foreground">{matching.filter(r => accountGroup(r.roles) === g.id).length}</span></TabsTrigger>)}</TabsList></Tabs>
     {loading ? <p className="text-sm text-muted-foreground">Laddar konton…</p> : error ? <div role="alert" className="flex items-center gap-3"><p className="text-sm text-destructive">{error}</p><Button variant="outline" size="sm" onClick={load}>Försök igen</Button></div> : <div className="divide-y border-y">
     {visible.length === 0 && <p className="py-6 text-sm text-muted-foreground">{search ? "Inga konton matchar sökningen i den här fliken." : "Inga konton i den här fliken."}</p>}
-    {visible.map(r => <div key={r.id} className="flex flex-wrap items-center justify-between gap-3 py-4"><div className="min-w-0 space-y-1"><p className="break-words font-medium">{r.display_name || r.email}</p><p className="break-all text-sm text-muted-foreground">{r.email}</p>{(r.phone || r.city) && <p className="text-sm text-muted-foreground">{[r.phone, r.city].filter(Boolean).join(" · ")}</p>}{r.registrations.length > 0 && <p className="max-w-xl break-words text-sm">{r.registrations.join(", ")}</p>}</div>
+    {visible.map(r => <div key={r.id} className="flex flex-wrap items-center justify-between gap-3 py-4"><div className="min-w-0 space-y-1">{r.roles.includes("kund") ? <Button variant="link" className="h-auto max-w-full whitespace-normal p-0 text-left font-medium" onClick={() => setCustomer(r)}>{r.display_name || r.email}</Button> : <p className="break-words font-medium">{r.display_name || r.email}</p>}<p className="break-all text-sm text-muted-foreground">{r.email}</p>{(r.phone || r.city) && <p className="text-sm text-muted-foreground">{[r.phone, r.city].filter(Boolean).join(" · ")}</p>}{r.registrations.length > 0 && <p className="max-w-xl break-words text-sm">{r.registrations.join(", ")}</p>}</div>
       {r.id === selfId ? <div className="flex flex-wrap items-center gap-2">{!readOnly && <PasswordButton userId={r.id} email={r.email ?? ""}/>}<span className="text-sm">{r.roles.map(x => LABEL[x]).join(", ")} (du)</span></div> :
         readOnly ? <span className="text-sm">{r.roles.map(x => LABEL[x]).join(", ") || "Ingen roll"}</span> :
         <div className="flex flex-wrap items-center gap-2"><PasswordButton userId={r.id} email={r.email ?? ""}/><select aria-label={`Roll för ${r.email}`} className="rounded-md border bg-background px-3 py-2 text-sm" value={r.roles[0] ?? "kund"} onChange={e => setRole(r.id, e.target.value as AppRole)}>
           {(Object.keys(LABEL) as AppRole[]).map(k => <option key={k} value={k}>{LABEL[k]}</option>)}
         </select></div>}
     </div>)}
-  </div>}</section>;
+  </div>}{customer && <CustomerAccountView key={customer.id} customer={customer} onClose={() => setCustomer(null)} />}</section>;
 }
 
 function PasswordButton({ userId, email }: { userId: string; email: string }) {
