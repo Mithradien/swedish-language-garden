@@ -176,6 +176,13 @@
       "when": 1793438057880,
       "tag": "0024_add_skarm_enum_value",
       "breakpoints": true
+    },
+    {
+      "idx": 25,
+      "version": "7",
+      "when": 1793438072815,
+      "tag": "0025_skarm_read_policies",
+      "breakpoints": true
     }
   ]
 }
