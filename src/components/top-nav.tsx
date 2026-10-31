@@ -13,7 +13,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth, type AppRole } from "@/hooks/use-auth";
 import { navItemsFor } from "@/lib/nav-access";
 
-const LABEL: Record<AppRole, string> = { superadmin: "Superadmin", useradmin: "Useradmin", mekaniker: "Mekaniker", kund: "Kund" };
+const LABEL: Record<AppRole, string> = { superadmin: "Superadmin", useradmin: "Useradmin", mekaniker: "Mekaniker", kund: "Kund", skarm: "Skärm" };
 
 // En enda meny, used on every page, so it always sits in the same spot. Items follow the user's roles.
 // hideAccount hides the area; logoutOnly shows only the log out button (no e-mail), used on the reception screen.
