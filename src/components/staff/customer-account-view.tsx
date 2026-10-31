@@ -5,7 +5,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } f
 import type { AccountRow } from "@/lib/account-directory";
 import { fetchCarStorage } from "@/lib/car-storage-sync";
 import { fetchAllBookings } from "@/lib/booking-sync";
-import { fetchStatuses } from "@/lib/status-sync";
+import { fetchDbStatuses } from "@/lib/status-sync";
 import { normalizeRegnr, type Booking, type CarCard } from "@/lib/bookings";
 import type { ArrivalStatus } from "@/lib/arrival";
 import { TreadReading } from "@/components/customer/tread-reading";
@@ -17,7 +17,7 @@ export function CustomerAccountView({ customer, onClose }: { customer: AccountRo
   const [selected, setSelected] = useState<string | null>(null);
   useEffect(() => {
     let active = true;
-    Promise.all([fetchCarStorage(), fetchAllBookings(), fetchStatuses()]).then(([cards, bookings, statuses]) => {
+    Promise.all([fetchCarStorage(), fetchAllBookings(), fetchDbStatuses()]).then(([cards, bookings, statuses]) => {
       if (!cards || !bookings || !statuses) throw new Error("Kunde inte läsa kundens biluppgifter.");
       if (active) setData({ cards, bookings, statuses });
     }).catch(() => { if (active) setError("Kunde inte hämta biluppgifterna. Stäng kundvyn och försök igen."); });
@@ -41,7 +41,7 @@ export function CustomerAccountView({ customer, onClose }: { customer: AccountRo
             const card = data.cards.get(regnr);
             return <article key={regnr} className="min-w-0 space-y-4 rounded-md border bg-card p-5">
               <div className="flex items-center gap-3"><CarFront className="h-8 w-8 shrink-0 text-muted-foreground" /><div className="min-w-0"><h3 className="break-words font-display text-2xl font-bold">{regnr}</h3><p className="break-words text-sm text-muted-foreground">{card?.modell || "Modell ej angiven"}</p></div></div>
-              <div className="flex flex-wrap gap-x-6 gap-y-3 border-y py-3"><div><p className="text-xs text-muted-foreground">Lagerplats</p><p className="font-medium">{card?.lagerplats || "Ej angiven"}</p></div><div><p className="text-xs text-muted-foreground">Lägsta mönsterdjup</p><TreadReading depth={card?.minDepth} tire={card?.tires[0]?.typ} /></div></div>
+              <div className="flex flex-wrap gap-x-6 gap-y-3 border-y py-3"><div><p className="text-xs text-muted-foreground">Lagerplats</p><p className="font-medium">{card?.lagerplats || "Ej angiven"}</p></div><div><p className="text-xs text-muted-foreground">Lägsta mönsterdjup</p><TreadReading depth={card?.minDepth} tire={card?.tires[0]?.typ ?? ""} /></div></div>
               <Button variant="outline" onClick={() => setSelected(regnr)}><Gauge className="h-4 w-4" />Bil- och däckuppgifter</Button>
             </article>;
           })}</div>}
