@@ -36,7 +36,7 @@ function LoginPage() {
       if (error) return setMsg("Fel e-post eller lösenord, eller kontot är inte bekräftat än.");
       const { data: r } = await supabase.from("user_roles").select("role").eq("user_id", data.user.id);
       const staff = (r ?? []).some(x => x.role === "superadmin" || x.role === "mekaniker");
-      navigate({ to: staff ? "/oversikt" : "/kund" });
+      navigate({ to: staff ? "/dashboard" : "/kund" });
     } else {
       const { error } = await supabase.auth.signUp({ email, password, options: { emailRedirectTo: window.location.origin + "/personal", data: { display_name: name } } });
       setBusy(false);
