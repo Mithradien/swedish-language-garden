@@ -10,8 +10,8 @@ const ALL: { to: NavPath; label: string; roles: NavRole[] | "all"; group?: "scre
   { to: "/personal", label: "Personal", roles: ["superadmin", "useradmin", "mekaniker"], group: "staff" },
   { to: "/verkstad", label: "Verkstad", roles: ["superadmin", "useradmin", "mekaniker"], group: "screens" },
   { to: "/kundmottagning", label: "Kundmottagning", roles: ["superadmin", "useradmin", "mekaniker"], group: "screens" },
-  { to: "/ankomst", label: "Ankomst", roles: ["superadmin", "useradmin", "mekaniker"] },
-  { to: "/installningar", label: "Inställningar", roles: ["superadmin", "useradmin"] },
+  { to: "/ankomst", label: "Ankomst", roles: ["superadmin", "useradmin", "mekaniker"], group: "screens" },
+  { to: "/installningar", label: "Inställningar", roles: ["superadmin", "useradmin"], group: "customer" },
 ];
 
 // Which menu items a user with these roles sees; signed-out visitors pass [].
