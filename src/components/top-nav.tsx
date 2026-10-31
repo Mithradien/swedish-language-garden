@@ -1,5 +1,12 @@
 import { Link, useNavigate, useRouterState } from "@tanstack/react-router";
-import { ChevronDown, LogIn, LogOut, Monitor, UserRound } from "lucide-react";
+import { ChevronDown, LogIn, LogOut, Monitor, UserRound, Wrench } from "lucide-react";
+
+const STAFF_MENU = [
+  { id: "arbetslista", label: "Arbetslista" },
+  { id: "plocklista", label: "Plocklista" },
+  { id: "godkannande", label: "Godkännande" },
+  { id: "verktyg", label: "Verktyg för kundbilar" },
+] as const;
 import { Button } from "@/components/ui/button";
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from "@/components/ui/dropdown-menu";
 import { supabase } from "@/integrations/supabase/client";
@@ -16,6 +23,7 @@ export function TopNav({ hideAccount = false, logoutOnly = false }: { hideAccoun
   const items = navItemsFor(user ? roles : []);
   const screens = items.filter(item => item.group === "screens");
   const customer = items.filter(item => item.group === "customer");
+  const staff = items.some(item => item.group === "staff");
   const pathname = useRouterState({ select: state => state.location.pathname });
   async function signOut() {
     await supabase.auth.signOut();
@@ -34,6 +42,10 @@ export function TopNav({ hideAccount = false, logoutOnly = false }: { hideAccoun
         {customer.length > 0 && <DropdownMenu>
           <DropdownMenuTrigger asChild><Button variant="ghost" className="uppercase text-primary-foreground hover:bg-primary-foreground/10 hover:text-primary-foreground"><UserRound className="h-4 w-4"/>Mina sidor<ChevronDown className="h-4 w-4"/></Button></DropdownMenuTrigger>
           <DropdownMenuContent align="start">{customer.map(item=><DropdownMenuItem key={item.to} asChild><Link to={item.to} className="py-3"><UserRound className="h-4 w-4"/>{item.label}</Link></DropdownMenuItem>)}</DropdownMenuContent>
+        </DropdownMenu>}
+        {staff && <DropdownMenu>
+          <DropdownMenuTrigger asChild><Button variant="ghost" className={`text-primary-foreground hover:bg-primary-foreground/10 hover:text-primary-foreground uppercase ${pathname === "/personal" ? "bg-primary-foreground/15" : ""}`}><Wrench className="h-4 w-4" />Personal<ChevronDown className="h-4 w-4" /></Button></DropdownMenuTrigger>
+          <DropdownMenuContent align="start">{STAFF_MENU.map(t => <DropdownMenuItem key={t.id} asChild><Link to="/personal" search={{ flik: t.id }} className="py-3"><Wrench className="h-4 w-4" />{t.label}</Link></DropdownMenuItem>)}</DropdownMenuContent>
         </DropdownMenu>}
         {screens.length > 0 && <DropdownMenu>
           <DropdownMenuTrigger asChild><Button variant="ghost" className={`text-primary-foreground hover:bg-primary-foreground/10 hover:text-primary-foreground uppercase ${screens.some(item => item.to === pathname) ? "bg-primary-foreground/15" : ""}`}><Monitor className="h-4 w-4" />Skärmar<ChevronDown className="h-4 w-4" /></Button></DropdownMenuTrigger>

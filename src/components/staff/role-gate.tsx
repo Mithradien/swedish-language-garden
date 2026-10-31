@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Link } from "@tanstack/react-router";
+import { Link, useSearch } from "@tanstack/react-router";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth, type AppRole } from "@/hooks/use-auth";
@@ -19,8 +19,17 @@ function Shell({ children }: { children: React.ReactNode }) {
   return <main className="min-h-screen"><div className="screen-only sticky top-0 z-50 bg-primary text-primary-foreground shadow-md"><TopNav/></div><div className="mx-auto max-w-4xl px-5 py-10">{children}</div></main>;
 }
 
+export const STAFF_TABS = [
+  { id: "arbetslista", label: "Arbetslista" },
+  { id: "plocklista", label: "Plocklista" },
+  { id: "godkannande", label: "Godkännande" },
+  { id: "verktyg", label: "Verktyg för kundbilar" },
+] as const;
+
 export function StaffArea() {
   const { user, roles, loading, hasRole } = useAuth();
+  const search = useSearch({ strict: false }) as { flik?: string };
+  const tab = STAFF_TABS.some(t => t.id === search.flik) ? search.flik : "arbetslista";
   const signOut = async () => { await supabase.auth.signOut(); };
 
   if (loading) return <Shell><p className="text-muted-foreground">Laddar…</p></Shell>;
@@ -29,7 +38,11 @@ export function StaffArea() {
   const bar = <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-3 border-b px-5 py-3 text-sm"><span>Inloggad som <b>{user.email}</b> · {roles.map(r => LABEL[r]).join(", ") || "ingen roll"}</span><Button variant="outline" size="sm" onClick={signOut}>Logga ut</Button></div>;
 
   const readOnly = !hasRole("superadmin") && !hasRole("useradmin");
-  if (hasRole("superadmin") || hasRole("useradmin") || hasRole("mekaniker")) return <><div className="screen-only sticky top-0 z-50 bg-primary text-primary-foreground shadow-md"><TopNav/></div>{bar}<MechanicView userId={user.id}/><div className="mx-auto max-w-6xl px-5 pt-8"><PendingCars canApprove={!readOnly}/><PickList/><CarTools/></div>{hasRole("superadmin") && <StaffPreview embedded/>}</>;
+  if (hasRole("superadmin") || hasRole("useradmin") || hasRole("mekaniker")) return <><div className="screen-only sticky top-0 z-50 bg-primary text-primary-foreground shadow-md"><TopNav/></div>{bar}
+    <div className="screen-only mx-auto flex max-w-6xl flex-wrap gap-2 px-5 pt-6">{STAFF_TABS.map(t => <Link key={t.id} to="/personal" search={{ flik: t.id }} className={`rounded-md border px-4 py-2.5 text-sm font-medium ${tab === t.id ? "bg-primary text-primary-foreground" : "hover:bg-secondary"}`}>{t.label}</Link>)}</div>
+    {tab === "arbetslista" && <MechanicView userId={user.id}/>}
+    <div className="mx-auto max-w-6xl px-5 pt-8">{tab === "godkannande" && <PendingCars canApprove={!readOnly}/>}{tab === "plocklista" && <PickList/>}{tab === "verktyg" && <CarTools/>}</div>
+    {tab === "arbetslista" && hasRole("superadmin") && <StaffPreview embedded/>}</>;
   return <><div className="screen-only sticky top-0 z-50 bg-primary text-primary-foreground shadow-md"><TopNav/></div>{bar}<div className="mx-auto max-w-4xl px-5 py-10"><h1 className="mb-3 text-3xl font-bold">Ingen personalbehörighet</h1><p className="text-muted-foreground">Ditt konto är ett kundkonto. Be en superadmin ge dig en personalroll.</p></div></>;
 }
 
