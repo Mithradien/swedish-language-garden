@@ -7,7 +7,7 @@ export const Route = createFileRoute("/personal")({
     { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" }, { name: "robots", content: "noindex" },
   ] }),
   validateSearch: (s: Record<string, unknown>): { flik?: "arbetslista" | "plocklista" | "godkannande" | "verktyg" } => {
-    const f = s.flik;
+    const f = s["flik"];
     return f === "plocklista" || f === "godkannande" || f === "verktyg" || f === "arbetslista" ? { flik: f } : {};
   },
   component: StaffArea,
