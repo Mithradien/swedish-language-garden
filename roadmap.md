@@ -15,6 +15,7 @@ Förutsättning: ingen Lovable Cloud eller extern lagring; verkliga inloggningar
 
 # Nuvarande att-göra (en punkt i taget, avstämning inför varje)
 - [x] Klick på kundnamn i Konto öppnar en skrivskyddad kundvy med kundens bilar, däckuppgifter, bokningar och historik utan att byta inloggning.
+- [x] Lägg till en avstängd Redigera-knapp i kundvyn inför framtida redigeringsläge för den valda kunden.
 - [ ] Framtida punkt: administratörer redigerar kundens uppgifter direkt i kundens Mina sidor (väntar på separat avstämning).
 - [x] Konto: flikar Admins, Mekaniker, Kunder och Övrigt samt sökning på namn, e-post, kontots regnummer, telefon, ort och bilmodell; befintliga behörigheter behållna.
 - [ ] Kundmottagning: dölj Ej ankommen, visa fem kommande under Väntas och lägg skärmens värden under Inställningar.

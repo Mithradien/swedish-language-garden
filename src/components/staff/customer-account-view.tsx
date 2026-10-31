@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { CarFront, Gauge, UserRound } from "lucide-react";
+import { CarFront, Gauge, Pencil, UserRound } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import type { AccountRow } from "@/lib/account-directory";
@@ -28,7 +28,14 @@ export function CustomerAccountView({ customer, onClose }: { customer: AccountRo
     <Dialog open onOpenChange={open => { if (!open) onClose(); }}>
       <DialogContent className="max-h-[90dvh] w-[calc(100%-2rem)] max-w-4xl overflow-y-auto p-5 sm:p-8">
         <DialogHeader className="border-b pb-5 pr-6 text-left">
-          <DialogTitle className="text-3xl">Mina sidor</DialogTitle>
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <DialogTitle className="text-3xl">Mina sidor</DialogTitle>
+            <span title="Redigering av denna kund kommer senare">
+              <Button variant="outline" disabled aria-label="Redigera kunden – kommer senare">
+                <Pencil className="h-4 w-4" />Redigera
+              </Button>
+            </span>
+          </div>
           <DialogDescription className="break-words text-base">{customer.display_name || customer.email} · Kundvy</DialogDescription>
         </DialogHeader>
         <section className="space-y-4 border-b pb-6">
