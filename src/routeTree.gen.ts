@@ -13,6 +13,7 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as AnkomstRouteImport } from './routes/ankomst'
 import { Route as AterstallLosenordRouteImport } from './routes/aterstall-losenord'
 import { Route as BokaRouteImport } from './routes/boka'
+import { Route as DashboardRouteImport } from './routes/dashboard'
 import { Route as InstallningarRouteImport } from './routes/installningar'
 import { Route as KundRouteImport } from './routes/kund'
 import { Route as KundExempelRouteImport } from './routes/kund-exempel'
@@ -40,6 +41,11 @@ const AterstallLosenordRoute = AterstallLosenordRouteImport.update({
 const BokaRoute = BokaRouteImport.update({
   id: '/boka',
   path: '/boka',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DashboardRoute = DashboardRouteImport.update({
+  id: '/dashboard',
+  path: '/dashboard',
   getParentRoute: () => rootRouteImport,
 } as any)
 const InstallningarRoute = InstallningarRouteImport.update({
@@ -88,6 +94,7 @@ export interface FileRoutesByFullPath {
   '/ankomst': typeof AnkomstRoute
   '/aterstall-losenord': typeof AterstallLosenordRoute
   '/boka': typeof BokaRoute
+  '/dashboard': typeof DashboardRoute
   '/installningar': typeof InstallningarRoute
   '/kund': typeof KundRoute
   '/kund-exempel': typeof KundExempelRoute
@@ -102,6 +109,7 @@ export interface FileRoutesByTo {
   '/ankomst': typeof AnkomstRoute
   '/aterstall-losenord': typeof AterstallLosenordRoute
   '/boka': typeof BokaRoute
+  '/dashboard': typeof DashboardRoute
   '/installningar': typeof InstallningarRoute
   '/kund': typeof KundRoute
   '/kund-exempel': typeof KundExempelRoute
@@ -117,6 +125,7 @@ export interface FileRoutesById {
   '/ankomst': typeof AnkomstRoute
   '/aterstall-losenord': typeof AterstallLosenordRoute
   '/boka': typeof BokaRoute
+  '/dashboard': typeof DashboardRoute
   '/installningar': typeof InstallningarRoute
   '/kund': typeof KundRoute
   '/kund-exempel': typeof KundExempelRoute
@@ -133,6 +142,7 @@ export interface FileRouteTypes {
     | '/ankomst'
     | '/aterstall-losenord'
     | '/boka'
+    | '/dashboard'
     | '/installningar'
     | '/kund'
     | '/kund-exempel'
@@ -147,6 +157,7 @@ export interface FileRouteTypes {
     | '/ankomst'
     | '/aterstall-losenord'
     | '/boka'
+    | '/dashboard'
     | '/installningar'
     | '/kund'
     | '/kund-exempel'
@@ -161,6 +172,7 @@ export interface FileRouteTypes {
     | '/ankomst'
     | '/aterstall-losenord'
     | '/boka'
+    | '/dashboard'
     | '/installningar'
     | '/kund'
     | '/kund-exempel'
@@ -176,6 +188,7 @@ export interface RootRouteChildren {
   AnkomstRoute: typeof AnkomstRoute
   AterstallLosenordRoute: typeof AterstallLosenordRoute
   BokaRoute: typeof BokaRoute
+  DashboardRoute: typeof DashboardRoute
   InstallningarRoute: typeof InstallningarRoute
   KundRoute: typeof KundRoute
   KundExempelRoute: typeof KundExempelRoute
@@ -214,6 +227,13 @@ declare module '@tanstack/react-router' {
       path: '/boka'
       fullPath: '/boka'
       preLoaderRoute: typeof BokaRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/dashboard': {
+      id: '/dashboard'
+      path: '/dashboard'
+      fullPath: '/dashboard'
+      preLoaderRoute: typeof DashboardRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/installningar': {
@@ -280,6 +300,7 @@ const rootRouteChildren: RootRouteChildren = {
   AnkomstRoute: AnkomstRoute,
   AterstallLosenordRoute: AterstallLosenordRoute,
   BokaRoute: BokaRoute,
+  DashboardRoute: DashboardRoute,
   InstallningarRoute: InstallningarRoute,
   KundRoute: KundRoute,
   KundExempelRoute: KundExempelRoute,
