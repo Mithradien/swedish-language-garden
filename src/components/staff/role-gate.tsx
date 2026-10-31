@@ -13,7 +13,7 @@ import { useServerFn } from "@tanstack/react-start";
 import { toast } from "sonner";
 import { setUserPassword } from "@/lib/users.functions";
 
-const LABEL: Record<AppRole, string> = { superadmin: "Superadmin", useradmin: "Användaradmin", mekaniker: "Mekaniker", kund: "Kund" };
+const LABEL: Record<AppRole, string> = { superadmin: "Superadmin", useradmin: "Användaradmin", mekaniker: "Mekaniker", kund: "Kund", skarm: "Skärm" };
 
 function Shell({ children }: { children: React.ReactNode }) {
   return <main className="min-h-screen"><div className="screen-only sticky top-0 z-50 bg-primary text-primary-foreground shadow-md"><TopNav/></div><div className="mx-auto max-w-4xl px-5 py-10">{children}</div></main>;

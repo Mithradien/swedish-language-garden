@@ -46,6 +46,7 @@ export function UserAdmin() {
             {isSuper && <option value="superadmin">Superadmin</option>}
             {isSuper && <option value="useradmin">Användaradmin</option>}
             <option value="mekaniker">Mekaniker</option>
+            <option value="skarm">Skärm</option>
             <option value="kund">Kund</option>
           </select>
         </label>

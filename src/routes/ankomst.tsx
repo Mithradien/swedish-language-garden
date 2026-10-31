@@ -2,6 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useRef, useState, type FormEvent } from "react";
 import { ArrowLeft, ArrowRight, CarFront, Check, Clock3, Delete, Maximize, Minimize, RotateCcw } from "lucide-react";
 import { TopNav } from "@/components/top-nav";
+import { RequireRole } from "@/components/staff/require-role";
 import { Button } from "@/components/ui/button";
 import { kioskLookup, kioskRegister } from "@/lib/kiosk.functions";
 import { findArrivalBookings, localDate, readBookings, readStatuses, registerArrival } from "@/lib/arrival";
@@ -16,7 +17,7 @@ export const Route = createFileRoute("/ankomst")({
     { property: "og:type", content: "website" },
     { name: "twitter:card", content: "summary" },
   ] }),
-  component: ArrivalPage,
+  component: () => <RequireRole roles={["superadmin", "useradmin", "mekaniker", "skarm"]}><ArrivalPage /></RequireRole>,
 });
 
 const KEYS = ["1234567890", "QWERTYUIOP", "ASDFGHJKL", "ZXCVBNM"];

@@ -12,5 +12,5 @@ export const Route = createFileRoute("/verkstad")({
     { name: "twitter:card", content: "summary" },
     { name: "robots", content: "noindex" },
   ] }),
-  component: () => <RequireRole roles={["superadmin", "useradmin", "mekaniker"]}><WorkshopBoard /></RequireRole>,
+  component: () => <RequireRole roles={["superadmin", "useradmin", "mekaniker", "skarm"]}><WorkshopBoard /></RequireRole>,
 });
